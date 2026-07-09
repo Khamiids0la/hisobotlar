@@ -6,6 +6,7 @@
     <title>Hisobotchi by khamiid</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         .view-section { display: none; }
         .view-section.active { display: flex; }
@@ -343,12 +344,50 @@
         </main>
     </div>
 
+    <!-- Firebase SDKs for auth (used to get token for REST requests) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
     <script>
+        // <-- CONFIGURE: put your Firebase project values here -->
+        const firebaseConfig = {
+            apiKey: "PASTE_API_KEY",
+            authDomain: "PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://hisotb-46af8-default-rtdb.firebaseio.com",
+            projectId: "PROJECT_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+
         // base firebase -> o'zgartiring agar sizning baza URL boshqacha bo'lsa
         const baseUrl = "https://hisotb-46af8-default-rtdb.firebaseio.com/";
         let currentUser = null;
         let allRegisteredUsers = {}; // { username: { fullName, role } }
         let ropEditing = null;
+
+        // AUTH TOKEN + fetch wrapper to avoid 401
+        let firebaseIdToken = null;
+        async function ensureAuth() {
+            try {
+                if (!firebase.auth().currentUser) {
+                    // anonymous sign-in; you can change to email/password workflow if you prefer
+                    await firebase.auth().signInAnonymously();
+                }
+                const u = firebase.auth().currentUser;
+                if (u) {
+                    firebaseIdToken = await u.getIdToken(true);
+                }
+            } catch (err) {
+                console.error('ensureAuth error', err);
+            }
+        }
+
+        async function fetchWithAuth(path, options = {}) {
+            // path: full URL without trailing .json (we'll add it)
+            if (!firebaseIdToken) await ensureAuth();
+            const sep = path.includes('?') ? '&' : '?';
+            const url = `${path}.json${sep}auth=${encodeURIComponent(firebaseIdToken)}`;
+            return fetch(url, options);
+        }
 
         // UTIL
         function toDateIso(d) {
@@ -395,7 +434,8 @@
             }
 
             try {
-                const res = await fetch(`${baseUrl}users/${encodeURIComponent(user)}.json`);
+                // use fetchWithAuth to avoid 401
+                const res = await fetchWithAuth(`${baseUrl}users/${encodeURIComponent(user)}`);
                 const userData = await res.json();
                 if (userData && userData.password === pass) {
                     currentUser = { username: user, ...userData };
@@ -445,7 +485,7 @@
         // USERS CRUD & cache
         async function loadUsersList() {
             try {
-                const res = await fetch(`${baseUrl}users.json`);
+                const res = await fetchWithAuth(`${baseUrl}users`);
                 const data = await res.json() || {};
                 allRegisteredUsers = {}; // reset
                 const tableBody = document.getElementById('users-table-body');
@@ -484,12 +524,12 @@
             if (!username) return alert("Login kiriting!");
             try {
                 if (editId) {
-                    await fetch(`${baseUrl}users/${encodeURIComponent(editId)}.json`, {
+                    await fetchWithAuth(`${baseUrl}users/${encodeURIComponent(editId)}`, {
                         method: 'PATCH',
                         body: JSON.stringify({ password, fullName, role })
                     });
                 } else {
-                    await fetch(`${baseUrl}users/${encodeURIComponent(username)}.json`, {
+                    await fetchWithAuth(`${baseUrl}users/${encodeURIComponent(username)}`, {
                         method: 'PUT',
                         body: JSON.stringify({ password, fullName, role })
                     });
@@ -515,7 +555,7 @@
         window.deleteUser = async function(id) {
             if (!confirm("O'chirilsinmi?")) return;
             try {
-                await fetch(`${baseUrl}users/${encodeURIComponent(id)}.json`, { method: 'DELETE' });
+                await fetchWithAuth(`${baseUrl}users/${encodeURIComponent(id)}`, { method: 'DELETE' });
                 loadUsersList();
             } catch (e) {
                 console.error(e);
@@ -544,7 +584,7 @@
             // Ensure users cache is filled
             try {
                 if (Object.keys(allRegisteredUsers).length === 0) {
-                    const res = await fetch(`${baseUrl}users.json`);
+                    const res = await fetchWithAuth(`${baseUrl}users`);
                     const data = await res.json() || {};
                     Object.keys(data).forEach(k => {
                         allRegisteredUsers[k] = { fullName: data[k].fullName || k, role: data[k].role || 'worker' };
@@ -617,7 +657,7 @@
                     }
                 }
 
-                await fetch(`${baseUrl}rop_reports/${encodeURIComponent(date)}/${encodeURIComponent(worker)}.json`, {
+                await fetchWithAuth(`${baseUrl}rop_reports/${encodeURIComponent(date)}/${encodeURIComponent(worker)}`, {
                     method: 'PUT',
                     body: JSON.stringify(payload)
                 });
@@ -645,7 +685,7 @@
             const dateEnd = document.getElementById('rop-date-end').value || dateStart;
 
             try {
-                const res = await fetch(`${baseUrl}rop_reports.json`);
+                const res = await fetchWithAuth(`${baseUrl}rop_reports`);
                 const all = await res.json() || {};
 
                 // totals
@@ -734,7 +774,7 @@
                     return alert('Siz bu hisobotni tahrirlashga haqli emassiz.');
                 }
 
-                const res = await fetch(`${baseUrl}rop_reports/${encodeURIComponent(date)}/${encodeURIComponent(worker)}.json`);
+                const res = await fetchWithAuth(`${baseUrl}rop_reports/${encodeURIComponent(date)}/${encodeURIComponent(worker)}`);
                 const data = await res.json();
                 if (!data) return alert('Topilmadi');
                 // set date inputs to the selection date for editing context
@@ -769,7 +809,7 @@
 
             if (!confirm('Ushbu hisobotni o`chirmoqchimisiz?')) return;
             try {
-                await fetch(`${baseUrl}rop_reports/${encodeURIComponent(date)}/${encodeURIComponent(worker)}.json`, { method: 'DELETE' });
+                await fetchWithAuth(`${baseUrl}rop_reports/${encodeURIComponent(date)}/${encodeURIComponent(worker)}`, { method: 'DELETE' });
                 alert('O`chirildi ✅');
                 loadRopReports();
             } catch (e) {
@@ -812,7 +852,7 @@
             const dateEnd = document.getElementById('sarkor-date-end').value || dateStart;
 
             try {
-                const res = await fetch(`${baseUrl}rop_reports.json`);
+                const res = await fetchWithAuth(`${baseUrl}rop_reports`);
                 const all = await res.json() || {};
 
                 // totals
@@ -889,7 +929,7 @@
         // initial load of registered users map (for labels)
         (async function prefetchUsers() {
             try {
-                const res = await fetch(`${baseUrl}users.json`);
+                const res = await fetchWithAuth(`${baseUrl}users`);
                 const data = await res.json() || {};
                 Object.keys(data).forEach(k => allRegisteredUsers[k] = { fullName: data[k].fullName || k, role: data[k].role || 'worker' });
             } catch (e) {
