@@ -9,7 +9,6 @@
     <style>
         .view-section { display: none; }
         .view-section.active { display: flex; }
-        /* Kalendar kunlari uchun silliq effektlar */
         .calendar-day { transition: all 0.2s ease-in-out; }
         .calendar-day:hover:not(.disabled) { transform: scale(1.08); }
     </style>
@@ -184,7 +183,6 @@
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-3">
                         <h3 class="text-base font-bold text-gray-700 border-b border-gray-100 pb-2">Xodimlar (Workers)</h3>
-                        <!-- JAMI SARKOR TUGMASI (HUDDI CRM LIVE KABI) -->
                         <div id="sarkor-total-btn-container" class="pb-2 border-b border-gray-100 hidden">
                             <button id="btn-total-sarkor" onclick="selectTotalSarkor()" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex justify-between items-center bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 cursor-pointer">
                                 <span>🗂️ Jami xodimlar</span> <span class="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded-md">Jamlama</span>
@@ -197,7 +195,10 @@
                         
                         <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200">
                             <div class="flex justify-between items-center mb-4">
-                                <h3 id="calendar-month-title" class="text-base font-bold text-gray-800">Iyul 2026</h3>
+                                <div>
+                                    <h3 id="calendar-month-title" class="text-base font-bold text-gray-800">Iyul 2026</h3>
+                                    <p id="calendar-hint" class="text-[10px] text-gray-400 mt-0.5"></p>
+                                </div>
                                 <div class="flex gap-1">
                                     <button onclick="changeMonth(-1)" class="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-xs font-bold cursor-pointer">◀</button>
                                     <button onclick="changeMonth(1)" class="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-xs font-bold cursor-pointer">▶</button>
@@ -212,7 +213,7 @@
 
                         <div class="space-y-4">
                             <div class="bg-white p-4 rounded-2xl shadow-xs border border-gray-200 h-36 flex flex-col items-center justify-center relative">
-                                <h4 class="text-xs font-bold text-gray-400 absolute top-3 left-4">O'sha kungi samaradorlik</h4>
+                                <h4 class="text-xs font-bold text-gray-400 absolute top-3 left-4">Samaradorlik</h4>
                                 <div class="w-full h-full pt-4"><canvas id="sarkorMiniChart"></canvas></div>
                             </div>
 
@@ -231,7 +232,7 @@
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-xs font-semibold text-gray-500 mb-1">Sarflangan Soat</label>
-                                            <input type="number" id="sarkor-hours" min="0" max="24" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                            <input type="number" id="sarkor-hours" min="0" max="9999" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-semibold text-gray-500 mb-1">Daqiqa</label>
@@ -264,7 +265,12 @@
         let selectedWorkerUsername = null;
         let currentCalYear = 2026;
         let currentCalMonth = 6; 
+        
+        // DIAPAZON (RANGE) UCHUN O'ZGARUVCHILAR
         let selectedDateStr = null; 
+        let rangeStartDateStr = null;
+        let rangeEndDateStr = null;
+
         let sarkorChartObj = null;
 
         const stageColors = ['rgba(14, 165, 233, 0.75)', 'rgba(245, 158, 11, 0.75)', 'rgba(249, 115, 22, 0.75)', 'rgba(99, 102, 241, 0.75)', 'rgba(168, 85, 247, 0.75)', 'rgba(16, 185, 129, 0.75)', 'rgba(20, 184, 166, 0.75)', 'rgba(34, 197, 94, 0.75)', 'rgba(244, 63, 94, 0.75)'];
@@ -319,6 +325,7 @@
 
         function logout() {
             currentUser = null; selectedFunnelId = null; selectedWorkerUsername = null; selectedDateStr = null;
+            rangeStartDateStr = null; rangeEndDateStr = null;
             if(myChart) { myChart.destroy(); myChart = null; }
             if(sarkorChartObj) { sarkorChartObj.destroy(); sarkorChartObj = null; }
             document.getElementById('login-form').reset();
@@ -413,10 +420,8 @@
         async function loadSarkorWorkersList() {
             const container = document.getElementById('sarkor-workers-list'); container.innerHTML = '';
             
-            // Agar super-admin yoki shunchaki boss bo'lsa, Jami tugmasini ko'rsatamiz
             if (currentUser.role === 'superboss' || currentUser.role === 'boss') {
                 document.getElementById('sarkor-total-btn-container').classList.remove('hidden');
-                // Agar Jami tanlangan bo'lsa tugma dizaynini faollashtiramiz
                 if(selectedWorkerUsername === "total_sarkor_summary") {
                     document.getElementById('btn-total-sarkor').className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex justify-between items-center bg-slate-900 text-white cursor-pointer";
                 } else {
@@ -439,28 +444,47 @@
         }
 
         function selectWorker(username) {
-            selectedWorkerUsername = username; document.getElementById('sarkor-placeholder').classList.add('hidden'); document.getElementById('sarkor-main-panel').classList.remove('hidden');
+            selectedWorkerUsername = username; 
+            rangeStartDateStr = null; rangeEndDateStr = null; selectedDateStr = null;
+            document.getElementById('sarkor-placeholder').classList.add('hidden'); document.getElementById('sarkor-main-panel').classList.remove('hidden');
+            document.getElementById('calendar-hint').innerText = "Kunlik rejim: Kunni bosing";
             loadSarkorWorkersList(); buildCalendar(); resetSarkorFormFields("Kun tanlang...");
         }
 
-        // JAMI SARKOR BOSILGANDA ISHLAYDIGAN FUNKSIYA
         async function selectTotalSarkor() {
             selectedWorkerUsername = "total_sarkor_summary"; 
+            rangeStartDateStr = null; rangeEndDateStr = null; selectedDateStr = null;
             document.getElementById('sarkor-placeholder').classList.add('hidden'); 
             document.getElementById('sarkor-main-panel').classList.remove('hidden');
+            document.getElementById('calendar-hint').innerText = "Diapazon rejimi: Boshlanish va tugash kunini bosing";
             loadSarkorWorkersList(); 
             buildCalendar(); 
-            resetSarkorFormFields("Kun tanlang...");
+            resetSarkorFormFields("Kun yoki Diapazon tanlang...");
         }
 
         function buildCalendar() {
             document.getElementById('calendar-month-title').innerText = `${monthNames[currentCalMonth]} ${currentCalYear}`; const grid = document.getElementById('calendar-days-grid'); grid.innerHTML = '';
             const firstDayIndex = new Date(currentCalYear, currentCalMonth, 1).getDay(); const startOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1; const totalDays = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
             for (let i = 0; i < startOffset; i++) grid.appendChild(document.createElement('div'));
+            
             for (let day = 1; day <= totalDays; day++) {
                 const dayBtn = document.createElement('button'); const mStr = String(currentCalMonth + 1).padStart(2, '0'); const dStr = String(day).padStart(2, '0'); const loopDateStr = `${currentCalYear}-${mStr}-${dStr}`;
-                dayBtn.innerText = day; dayBtn.className = `calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border ${selectedDateStr === loopDateStr ? 'bg-blue-600 border-blue-600 text-white shadow-md' : 'bg-gray-50 border-gray-100 text-gray-800 hover:bg-gray-200'}`;
-                dayBtn.onclick = () => selectSarkorDate(loopDateStr, dayBtn); grid.appendChild(dayBtn);
+                dayBtn.innerText = day;
+                
+                let btnStyle = "bg-gray-50 border-gray-100 text-gray-800 hover:bg-gray-200";
+                
+                if (selectedWorkerUsername === "total_sarkor_summary" && rangeStartDateStr) {
+                    if (loopDateStr === rangeStartDateStr || loopDateStr === rangeEndDateStr) {
+                        btnStyle = "bg-blue-600 border-blue-600 text-white shadow-md font-extrabold";
+                    } else if (rangeEndDateStr && loopDateStr > rangeStartDateStr && loopDateStr < rangeEndDateStr) {
+                        btnStyle = "bg-blue-100 border-blue-200 text-blue-800 font-semibold";
+                    }
+                } else if (selectedDateStr === loopDateStr) {
+                    btnStyle = "bg-blue-600 border-blue-600 text-white shadow-md";
+                }
+                
+                dayBtn.className = `calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border ${btnStyle}`;
+                dayBtn.onclick = () => handleDateClick(loopDateStr); grid.appendChild(dayBtn);
             }
         }
 
@@ -468,78 +492,108 @@
             currentCalMonth += direction; if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; } if (currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; } buildCalendar();
         }
 
-        async function selectSarkorDate(dateStr, element) {
-            selectedDateStr = dateStr;
-            document.querySelectorAll('.calendar-day').forEach(b => { b.className = "calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border bg-gray-50 border-gray-100 text-gray-800 hover:bg-gray-200"; });
-            element.className = "calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border bg-blue-600 border-blue-600 text-white shadow-md";
-            
+        // KUN BOSILGANDA (RANGE YOKI ODDIY REJIM)
+        function handleDateClick(dateStr) {
             if (selectedWorkerUsername === "total_sarkor_summary") {
-                document.getElementById('sarkor-form-title').innerText = `📊 Jami Sana: ${dateStr}`;
-                // Jami bo'limida inputlarni block qilamiz va saqlash tugmasini yashiramiz
-                document.getElementById('sarkor-attempts').disabled = true; 
-                document.getElementById('sarkor-success').disabled = true; 
-                document.getElementById('sarkor-hours').disabled = true; 
-                document.getElementById('sarkor-minutes').disabled = true;
-                document.getElementById('sarkor-save-btn-container').classList.add('hidden');
-
-                // Barcha xodimlarning shu kungi ma'lumotlarini hisoblaymiz
-                const res = await fetch(`${baseUrl}sarkor.json`); 
-                const allSarkorData = await res.json();
-                
-                let totalAttempts = 0, totalSuccess = 0, totalHours = 0, totalMinutes = 0;
-                
-                if (allSarkorData) {
-                    Object.keys(allSarkorData).forEach(wKey => {
-                        if (allSarkorData[wKey] && allSarkorData[wKey][dateStr]) {
-                            const dayData = allSarkorData[wKey][dateStr];
-                            totalAttempts += parseInt(dayData.attempts) || 0;
-                            totalSuccess += parseInt(dayData.success) || 0;
-                            totalHours += parseInt(dayData.hours) || 0;
-                            totalMinutes += parseInt(dayData.minutes) || 0;
-                        }
-                    });
+                // DIAPAZON TANLASH MANTIQLARI
+                if (!rangeStartDateStr || (rangeStartDateStr && rangeEndDateStr)) {
+                    rangeStartDateStr = dateStr;
+                    rangeEndDateStr = null;
+                    selectedDateStr = null;
+                    document.getElementById('sarkor-form-title').innerText = `Boshlanish: ${dateStr}`;
+                    buildCalendar();
+                } else if (rangeStartDateStr && !rangeEndDateStr) {
+                    if (dateStr < rangeStartDateStr) {
+                        rangeStartDateStr = dateStr;
+                        buildCalendar();
+                    } else {
+                        rangeEndDateStr = dateStr;
+                        buildCalendar();
+                        calculateSarkorRangeData();
+                    }
                 }
-                
-                // Daqiqalarni soatga o'girish mantiqi (Masalan 70 daqiqa = 1 soat 10 daqiqa)
-                if (totalMinutes >= 60) {
-                    totalHours += Math.floor(totalMinutes / 60);
-                    totalMinutes = totalMinutes % 60;
-                }
-
-                document.getElementById('sarkor-attempts').value = totalAttempts; 
-                document.getElementById('sarkor-success').value = totalSuccess; 
-                document.getElementById('sarkor-hours').value = totalHours; 
-                document.getElementById('sarkor-minutes').value = totalMinutes;
-                
-                updateSarkorMiniChart(totalAttempts, totalSuccess);
-
             } else {
-                document.getElementById('sarkor-form-title').innerText = `📅 Sana: ${dateStr}`;
-                const isEditable = (currentUser.role === 'superboss' || currentUser.username === selectedWorkerUsername);
-                document.getElementById('sarkor-attempts').disabled = !isEditable; document.getElementById('sarkor-success').disabled = !isEditable; document.getElementById('sarkor-hours').disabled = !isEditable; document.getElementById('sarkor-minutes').disabled = !isEditable;
-                if(isEditable) document.getElementById('sarkor-save-btn-container').classList.remove('hidden');
-                else document.getElementById('sarkor-save-btn-container').classList.add('hidden');
-
-                const res = await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${dateStr}.json`); const data = await res.json();
-                if (data) {
-                    document.getElementById('sarkor-attempts').value = data.attempts || 0; document.getElementById('sarkor-success').value = data.success || 0; document.getElementById('sarkor-hours').value = data.hours || 0; document.getElementById('sarkor-minutes').value = data.minutes || 0;
-                    updateSarkorMiniChart(data.attempts || 0, data.success || 0);
-                } else {
-                    document.getElementById('sarkor-attempts').value = ''; document.getElementById('sarkor-success').value = ''; document.getElementById('sarkor-hours').value = ''; document.getElementById('sarkor-minutes').value = '';
-                    updateSarkorMiniChart(0, 0);
-                }
+                // ODDIY XODIM UCHUN KUNLIK REJIM
+                selectedDateStr = dateStr;
+                rangeStartDateStr = null; rangeEndDateStr = null;
+                loadSingleDayData(dateStr);
             }
         }
 
+        // ODDIY KUNLIK MA'LUMOTLARNI YUKLASH
+        async function loadSingleDayData(dateStr) {
+            document.getElementById('sarkor-form-title').innerText = `📅 Sana: ${dateStr}`;
+            const isEditable = (currentUser.role === 'superboss' || currentUser.username === selectedWorkerUsername);
+            document.getElementById('sarkor-attempts').disabled = !isEditable; document.getElementById('sarkor-success').disabled = !isEditable; document.getElementById('sarkor-hours').disabled = !isEditable; document.getElementById('sarkor-minutes').disabled = !isEditable;
+            if(isEditable) document.getElementById('sarkor-save-btn-container').classList.remove('hidden');
+            else document.getElementById('sarkor-save-btn-container').classList.add('hidden');
+
+            const res = await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${dateStr}.json`); const data = await res.json();
+            if (data) {
+                document.getElementById('sarkor-attempts').value = data.attempts || 0; document.getElementById('sarkor-success').value = data.success || 0; document.getElementById('sarkor-hours').value = data.hours || 0; document.getElementById('sarkor-minutes').value = data.minutes || 0;
+                updateSarkorMiniChart(data.attempts || 0, data.success || 0);
+            } else {
+                document.getElementById('sarkor-attempts').value = ''; document.getElementById('sarkor-success').value = ''; document.getElementById('sarkor-hours').value = ''; document.getElementById('sarkor-minutes').value = '';
+                updateSarkorMiniChart(0, 0);
+            }
+            buildCalendar();
+        }
+
+        // DIAPAZON MA'LUMOTLARINI JAMLAB HISOBLASH
+        async function calculateSarkorRangeData() {
+            document.getElementById('sarkor-form-title').innerText = `📊 Jami Davr: ${rangeStartDateStr} dan ${rangeEndDateStr} gacha`;
+            
+            document.getElementById('sarkor-attempts').disabled = true; 
+            document.getElementById('sarkor-success').disabled = true; 
+            document.getElementById('sarkor-hours').disabled = true; 
+            document.getElementById('sarkor-minutes').disabled = true;
+            document.getElementById('sarkor-save-btn-container').classList.add('hidden');
+
+            const res = await fetch(`${baseUrl}sarkor.json`); 
+            const allSarkorData = await res.json();
+            
+            let totalAttempts = 0, totalSuccess = 0, totalHours = 0, totalMinutes = 0;
+            
+            if (allSarkorData) {
+                Object.keys(allSarkorData).forEach(wKey => {
+                    const workerData = allSarkorData[wKey];
+                    if (workerData) {
+                        Object.keys(workerData).forEach(dateKey => {
+                            // Agar sana tanlangan diapazon ichida bo'lsa
+                            if (dateKey >= rangeStartDateStr && dateKey <= rangeEndDateStr) {
+                                const dayData = workerData[dateKey];
+                                totalAttempts += parseInt(dayData.attempts) || 0;
+                                totalSuccess += parseInt(dayData.success) || 0;
+                                totalHours += parseInt(dayData.hours) || 0;
+                                totalMinutes += parseInt(dayData.minutes) || 0;
+                            }
+                        });
+                    }
+                });
+            }
+            
+            if (totalMinutes >= 60) {
+                totalHours += Math.floor(totalMinutes / 60);
+                totalMinutes = totalMinutes % 60;
+            }
+
+            document.getElementById('sarkor-attempts').value = totalAttempts; 
+            document.getElementById('sarkor-success').value = totalSuccess; 
+            document.getElementById('sarkor-hours').value = totalHours; 
+            document.getElementById('sarkor-minutes').value = totalMinutes;
+            
+            updateSarkorMiniChart(totalAttempts, totalSuccess);
+        }
+
         function resetSarkorFormFields(title) {
-            document.getElementById('sarkor-form-title').innerText = title; document.getElementById('sarkor-data-form').reset(); document.getElementById('sarkor-save-btn-container').classList.add('hidden'); selectedDateStr = null; updateSarkorMiniChart(0, 0);
+            document.getElementById('sarkor-form-title').innerText = title; document.getElementById('sarkor-data-form').reset(); document.getElementById('sarkor-save-btn-container').classList.add('hidden'); updateSarkorMiniChart(0, 0);
         }
 
         function updateSarkorMiniChart(attempts, success) {
             const ctx = document.getElementById('sarkorMiniChart').getContext('2d'); const fail = (attempts - success) < 0 ? 0 : (attempts - success);
             if (sarkorChartObj) { sarkorChartObj.data.datasets[0].data = [success, fail]; sarkorChartObj.update(); } 
             else {
-                sarkorChartObj = new Chart(ctx, { type: 'doughnut', data: { labels: ['Muvaffaqiyatli qo\'ng\'iroq', 'Urinishlar (Natijasiz)'], datasets: [{ data: [success, fail], backgroundColor: ['#22c55e', '#e2e8f0'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } } });
+                sarkorChartObj = new Chart(ctx, { type: 'doughnut', data: { labels: ['Muvaffaqiyatli', 'Natijasiz'], datasets: [{ data: [success, fail], backgroundColor: ['#22c55e', '#e2e8f0'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } } });
             }
         }
 
