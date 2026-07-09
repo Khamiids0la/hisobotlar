@@ -50,10 +50,13 @@
                 </div>
                 <nav class="space-y-1">
                     <button id="menu-users" onclick="switchView('users-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white">
-                        <span>👤</span> Hisob Yaratish (Users)
+                        <span>👤</span> Hisob Yaratish
                     </button>
                     <button id="menu-rop" onclick="switchView('rop-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white">
                         <span>📉</span> ROP Kunlik Hisobot
+                    </button>
+                    <button id="menu-target" onclick="switchView('target-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white">
+                        <span>🎯</span> Target Bo'limi
                     </button>
                     <button id="menu-crm" onclick="switchView('crm-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white">
                         <span>⚡</span> CRM Live
@@ -206,7 +209,7 @@
                     </div>
 
                     <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 xl:col-span-2 overflow-x-auto">
-                        <h3 class="text-base font-bold text-gray-800 mb-4">Kunlik Operatorlar Ro'yxati Kalendari</h3>
+                        <h3 class="text-base font-bold text-gray-800 mb-4">Kunlik Operatorlar Ro'yxati</h3>
                         <table class="w-full text-left text-xs whitespace-nowrap">
                             <thead>
                                 <tr class="border-b border-gray-100 text-gray-400 font-bold uppercase tracking-wider">
@@ -221,6 +224,119 @@
                             </thead>
                             <tbody id="rop-table-body" class="text-gray-600 divide-y divide-gray-50"></tbody>
                         </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="target-view" class="sub-view space-y-6 w-full hidden animate-fade-in">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 border-b border-gray-200">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">🎯 Target Bo'limi</h2>
+                        <p class="text-sm text-gray-500">Filiallar kesimida xarajat va lidlar tahlili</p>
+                    </div>
+                    <div class="flex items-center gap-3 bg-white p-2 rounded-xl border border-gray-200 shadow-xs">
+                        <span class="text-xs font-semibold text-gray-500 pl-2">Sana:</span>
+                        <input type="date" id="target-date" onchange="loadTargetReports()" class="border-0 bg-transparent text-sm font-bold text-gray-800 outline-none p-1 cursor-pointer">
+                        <span class="text-xs font-semibold text-gray-500">-</span>
+                        <input type="date" id="target-date-end" onchange="loadTargetReports()" class="border-0 bg-transparent text-sm font-bold text-gray-800 outline-none p-1 cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-purple-600">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Jami Xarajat</p>
+                        <p id="target-total-cost" class="text-2xl font-black text-gray-800 mt-1">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-cyan-500">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Jami Lidlar</p>
+                        <p id="target-total-leads" class="text-2xl font-black text-gray-800 mt-1">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-pink-500">
+                        <p class="text-xs font-bold text-gray-400 uppercase">O'rtacha Cost/Lead</p>
+                        <p id="target-avg-cost" class="text-2xl font-black text-gray-800 mt-1">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-green-600">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Filiallar Soni</p>
+                        <p id="target-branches-count" class="text-2xl font-black text-gray-800 mt-1">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-orange-500">
+                        <p class="text-xs font-bold text-gray-400 uppercase">Top Filial</p>
+                        <p id="target-top-branch" class="text-sm font-bold text-gray-800 mt-1">-</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+                    <div id="target-form-card" class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-4">
+                        <div class="border-b border-gray-100 pb-2">
+                            <h3 class="text-base font-bold text-gray-800">Hisobot Kiritish</h3>
+                            <p class="text-xs text-gray-400 mt-0.5" id="target-form-subtitle">Filial tanlang va ma'lumotlarni kiriting</p>
+                        </div>
+                        <form id="target-data-form" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1">Filial nomi</label>
+                                <select id="target-branch-select" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Filial tanlang...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1">Sarflangan Pul</label>
+                                <input type="number" id="target-in-cost" min="0" step="0.01" required oninput="calcTargetForm()" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1">Olingan Lidlar Soni</label>
+                                <input type="number" id="target-in-leads" min="0" required oninput="calcTargetForm()" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1">O'rtacha Hisob (Auto)</label>
+                                <input type="number" id="target-in-avg" min="0" step="0.01" disabled class="w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-gray-50 outline-none">
+                            </div>
+                            <div id="target-submit-container" class="pt-2">
+                                <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-semibold py-2.5 rounded-xl text-sm shadow-md transition cursor-pointer">Saqlash</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 xl:col-span-2 overflow-x-auto">
+                        <h3 class="text-base font-bold text-gray-800 mb-4">Filiallar Statistikasi</h3>
+                        <table class="w-full text-left text-xs whitespace-nowrap">
+                            <thead>
+                                <tr class="border-b border-gray-100 text-gray-400 font-bold uppercase tracking-wider">
+                                    <th class="pb-3">Filial</th>
+                                    <th class="pb-3">Xarajat</th>
+                                    <th class="pb-3">Lidlar</th>
+                                    <th class="pb-3">Cost/Lead</th>
+                                    <th class="pb-3 text-right">Amal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="target-table-body" class="text-gray-600 divide-y divide-gray-50"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
+                    <h3 class="text-base font-bold text-gray-800 mb-4">📅 Filial Kesimida Kunlik Tahlil</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-2">Filial tanlang:</label>
+                            <select id="target-calendar-branch" onchange="loadTargetBranchCalendar()" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500 mb-4">
+                                <option value="">Barcha filiallar</option>
+                            </select>
+                            <div class="bg-gray-50 p-4 rounded-xl">
+                                <table class="w-full text-xs">
+                                    <thead>
+                                        <tr class="border-b border-gray-200 text-gray-600 font-bold">
+                                            <th class="pb-2 text-left">Sana</th>
+                                            <th class="pb-2 text-right">Xarajat</th>
+                                            <th class="pb-2 text-right">Lidlar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="target-calendar-body" class="divide-y divide-gray-200"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="w-full relative" style="height: 300px;"><canvas id="targetChart"></canvas></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -356,6 +472,7 @@
         let currentUser = null;
         let selectedFunnelId = null;
         let myChart = null;
+        let targetChart = null;
 
         let selectedWorkerUsername = null;
         let currentCalYear = 2026;
@@ -365,6 +482,8 @@
 
         let selectedRopWorker = null; 
         let allRegisteredUsers = {}; 
+        let allBranches = [];
+        let targetSelectedBranch = null;
 
         const stageColors = ['rgba(14, 165, 233, 0.75)', 'rgba(245, 158, 11, 0.75)', 'rgba(249, 115, 22, 0.75)', 'rgba(99, 102, 241, 0.75)', 'rgba(168, 85, 247, 0.75)', 'rgba(16, 185, 129, 0.75)', 'rgba(20, 184, 166, 0.75)', 'rgba(34, 197, 94, 0.75)', 'rgba(244, 63, 94, 0.75)'];
         const stageBorderColors = ['#0ea5e9', '#f59e0b', '#f97316', '#6366f1', '#a855f7', '#10b981', '#14b8a6', '#22c55e', '#f43f5e'];
@@ -376,11 +495,13 @@
             
             document.getElementById('menu-users').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white";
             document.getElementById('menu-rop').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white";
+            document.getElementById('menu-target').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white";
             document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white";
             document.getElementById('menu-sarkor').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white";
 
             if (viewId === 'users-view') document.getElementById('menu-users').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white";
             else if (viewId === 'rop-view') { document.getElementById('menu-rop').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white"; initRopView(); }
+            else if (viewId === 'target-view') { document.getElementById('menu-target').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white"; initTargetView(); }
             else if (viewId === 'crm-view') { document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white"; loadFunnelsList(); }
             else if (viewId === 'sarkor-view') { document.getElementById('menu-sarkor').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white"; loadSarkorWorkersList(); }
         }
@@ -420,9 +541,10 @@
         }
 
         function logout() {
-            currentUser = null; selectedFunnelId = null; selectedWorkerUsername = null; selectedDateStr = null; selectedRopWorker = null;
+            currentUser = null; selectedFunnelId = null; selectedWorkerUsername = null; selectedDateStr = null; selectedRopWorker = null; targetSelectedBranch = null;
             if(myChart) { myChart.destroy(); myChart = null; }
             if(sarkorChartObj) { sarkorChartObj.destroy(); sarkorChartObj = null; }
+            if(targetChart) { targetChart.destroy(); targetChart = null; }
             document.getElementById('login-form').reset();
             document.getElementById('app-section').className = "view-section min-h-screen flex-col md:flex-row w-full hidden!";
             document.getElementById('login-section').style.display = 'flex';
@@ -460,6 +582,237 @@
         window.deleteUser = async function(id) { if (confirm("O'chirilsinmi?")) { await fetch(`${baseUrl}users/${id}.json`, { method: 'DELETE' }); loadUsersList(); } };
         document.getElementById('cancel-btn').addEventListener('click', resetUserForm);
         function resetUserForm() { document.getElementById('user-form').reset(); document.getElementById('edit-id').value = ''; document.getElementById('username').disabled = false; document.getElementById('form-title').innerText = 'Yangi foydalanuvchi qo\'shish'; document.getElementById('submit-btn').innerText = 'Saqlash'; document.getElementById('cancel-btn').classList.add('hidden'); }
+
+        // TARGET BO'LIMI
+        async function initTargetView() {
+            const dateInput = document.getElementById('target-date');
+            const dateEndInput = document.getElementById('target-date-end');
+            if(!dateInput.value) {
+                const today = new Date();
+                dateInput.value = today.toISOString().split('T')[0];
+                dateEndInput.value = today.toISOString().split('T')[0];
+            }
+            await loadTargetBranches();
+            loadTargetReports();
+        }
+
+        async function loadTargetBranches() {
+            try {
+                const res = await fetch(`${baseUrl}target_branches.json`);
+                const data = await res.json() || {};
+                allBranches = Object.keys(data).map(key => ({ id: key, name: data[key].name || key }));
+                
+                const select = document.getElementById('target-branch-select');
+                const select2 = document.getElementById('target-calendar-branch');
+                select.innerHTML = '<option value="">Filial tanlang...</option>';
+                select2.innerHTML = '<option value="">Barcha filiallar</option>';
+                
+                allBranches.forEach(b => {
+                    select.innerHTML += `<option value="${b.id}">${b.name}</option>`;
+                    select2.innerHTML += `<option value="${b.id}">${b.name}</option>`;
+                });
+            } catch(e) {
+                allBranches = [];
+            }
+        }
+
+        function calcTargetForm() {
+            const cost = parseFloat(document.getElementById('target-in-cost').value) || 0;
+            const leads = parseInt(document.getElementById('target-in-leads').value) || 0;
+            const avg = leads > 0 ? (cost / leads).toFixed(2) : 0;
+            document.getElementById('target-in-avg').value = avg;
+        }
+
+        async function loadTargetReports() {
+            const dateStart = document.getElementById('target-date').value;
+            const dateEnd = document.getElementById('target-date-end').value;
+            if(!dateStart || !dateEnd) return;
+
+            try {
+                const res = await fetch(`${baseUrl}target_reports.json`);
+                const allData = await res.json() || {};
+                const filtered = {};
+                
+                Object.keys(allData).forEach(date => {
+                    if (date >= dateStart && date <= dateEnd) {
+                        Object.keys(allData[date]).forEach(branchId => {
+                            if (!filtered[branchId]) filtered[branchId] = { cost: 0, leads: 0 };
+                            filtered[branchId].cost += allData[date][branchId].cost || 0;
+                            filtered[branchId].leads += allData[date][branchId].leads || 0;
+                        });
+                    }
+                });
+
+                renderTargetTable(filtered);
+                loadTargetBranchCalendar();
+            } catch(e) {
+                renderTargetTable({});
+            }
+        }
+
+        function renderTargetTable(filtered) {
+            const tbody = document.getElementById('target-table-body');
+            tbody.innerHTML = '';
+            
+            let totalCost = 0, totalLeads = 0;
+            let topBranch = { name: '-', cost: 0 };
+
+            const branches = allBranches.map(b => ({
+                ...b,
+                cost: filtered[b.id]?.cost || 0,
+                leads: filtered[b.id]?.leads || 0
+            }));
+
+            branches.sort((a, b) => b.cost - a.cost);
+
+            branches.forEach(branch => {
+                if (branch.cost > 0 || branch.leads > 0) {
+                    totalCost += branch.cost;
+                    totalLeads += branch.leads;
+                    if (branch.cost > topBranch.cost) topBranch = { name: branch.name, cost: branch.cost };
+
+                    const avgCost = branch.leads > 0 ? (branch.cost / branch.leads).toFixed(2) : 0;
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition font-medium text-gray-700";
+                    tr.innerHTML = `
+                        <td class="py-3 font-bold text-gray-900">${branch.name}</td>
+                        <td class="text-purple-600">${branch.cost.toFixed(2)} so'm</td>
+                        <td class="text-cyan-600">${branch.leads}</td>
+                        <td class="text-pink-600">${avgCost}</td>
+                        <td class="text-right"><button onclick="editTargetData('${branch.id}', ${branch.cost}, ${branch.leads})" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-md text-[11px] font-bold cursor-pointer hover:bg-blue-100">✏️</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            const avgCostTotal = totalLeads > 0 ? (totalCost / totalLeads).toFixed(2) : 0;
+            document.getElementById('target-total-cost').innerText = totalCost.toFixed(2);
+            document.getElementById('target-total-leads').innerText = totalLeads;
+            document.getElementById('target-avg-cost').innerText = avgCostTotal;
+            document.getElementById('target-branches-count').innerText = branches.filter(b => b.cost > 0 || b.leads > 0).length;
+            document.getElementById('target-top-branch').innerText = topBranch.name;
+        }
+
+        function editTargetData(branchId, cost, leads) {
+            document.getElementById('target-branch-select').value = branchId;
+            document.getElementById('target-in-cost').value = cost;
+            document.getElementById('target-in-leads').value = leads;
+            calcTargetForm();
+        }
+
+        document.getElementById('target-data-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const branchId = document.getElementById('target-branch-select').value;
+            const dateStart = document.getElementById('target-date').value;
+            if (!branchId || !dateStart) return;
+
+            const cost = parseFloat(document.getElementById('target-in-cost').value) || 0;
+            const leads = parseInt(document.getElementById('target-in-leads').value) || 0;
+
+            try {
+                await fetch(`${baseUrl}target_reports/${dateStart}/${branchId}.json`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ cost, leads })
+                });
+                alert("Target hisoboti saqlandi! ✅");
+                document.getElementById('target-data-form').reset();
+                loadTargetReports();
+            } catch(e) {
+                alert("Xatolik yuz berdi!");
+            }
+        });
+
+        async function loadTargetBranchCalendar() {
+            const branchId = document.getElementById('target-calendar-branch').value;
+            const dateStart = document.getElementById('target-date').value;
+            const dateEnd = document.getElementById('target-date-end').value;
+
+            try {
+                const res = await fetch(`${baseUrl}target_reports.json`);
+                const allData = await res.json() || {};
+                const calendarData = [];
+                const chartDates = [];
+                const chartCosts = [];
+                const chartLeads = [];
+
+                Object.keys(allData).sort().forEach(date => {
+                    if (date >= dateStart && date <= dateEnd) {
+                        if (branchId) {
+                            const data = allData[date][branchId];
+                            if (data) {
+                                calendarData.push({ date, cost: data.cost || 0, leads: data.leads || 0 });
+                                chartDates.push(date);
+                                chartCosts.push(data.cost || 0);
+                                chartLeads.push(data.leads || 0);
+                            }
+                        } else {
+                            let totalCost = 0, totalLeads = 0;
+                            Object.keys(allData[date]).forEach(bid => {
+                                totalCost += allData[date][bid].cost || 0;
+                                totalLeads += allData[date][bid].leads || 0;
+                            });
+                            calendarData.push({ date, cost: totalCost, leads: totalLeads });
+                            chartDates.push(date);
+                            chartCosts.push(totalCost);
+                            chartLeads.push(totalLeads);
+                        }
+                    }
+                });
+
+                const tbody = document.getElementById('target-calendar-body');
+                tbody.innerHTML = calendarData.map(d => `
+                    <tr>
+                        <td class="py-2">${d.date}</td>
+                        <td class="text-right text-purple-600 font-bold">${d.cost.toFixed(2)}</td>
+                        <td class="text-right text-cyan-600 font-bold">${d.leads}</td>
+                    </tr>
+                `).join('');
+
+                updateTargetChart(chartDates, chartCosts, chartLeads);
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function updateTargetChart(dates, costs, leads) {
+            const ctx = document.getElementById('targetChart').getContext('2d');
+            if (targetChart) targetChart.destroy();
+            
+            targetChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Xarajat (so\'m)',
+                            data: costs,
+                            borderColor: '#a855f7',
+                            backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Lidlar soni',
+                            data: leads,
+                            borderColor: '#06b6d4',
+                            backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
 
         // CRM LIVE
         async function loadFunnelsList() {
