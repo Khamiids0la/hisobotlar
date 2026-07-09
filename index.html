@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hisobotchi by khamiid</title>
+    <!-- Tailwind CSS interfeys dizayni uchun -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js vizual diagrammalar va chiroyli animatsiyalar uchun -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .view-section { display: none; }
@@ -13,6 +15,7 @@
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
+    <!-- 1. LOGIN SOHASI (EKRAN MARKAZIDA) -->
     <div id="login-section" class="view-section active min-h-screen items-center justify-center p-4 bg-slate-900">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
@@ -34,8 +37,10 @@
         </div>
     </div>
 
+    <!-- 2. ASOSIY TIZIM TUZILMASI (SIDEBAR + MAIN CONTENT) -->
     <div id="app-section" class="view-section min-h-screen flex-col md:flex-row w-full hidden!">
         
+        <!-- CHAP TOMONDAGI MENYU (SIDEBAR) -->
         <aside class="w-full md:w-64 bg-slate-900 text-white flex flex-col justify-between p-4 shrink-0">
             <div>
                 <div class="mb-8 p-2 border-b border-slate-800">
@@ -66,8 +71,10 @@
             </div>
         </aside>
 
+        <!-- O'NG TOMONDAGI KONTENT REYSI -->
         <main class="flex-1 p-6 md:p-8 overflow-y-auto bg-gray-50">
             
+            <!-- VIEW 1: HISOB YARATISH BO'LIMI -->
             <div id="users-view" class="sub-view space-y-6 w-full hidden">
                 <div class="flex justify-between items-center pb-4 border-b border-gray-200">
                     <div>
@@ -101,8 +108,8 @@
                                 </select>
                             </div>
                             <div class="flex gap-2 pt-2">
-                                <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl text-sm transition cursor-pointer">Saqlash</button>
-                                <button type="button" id="cancel-btn" class="hidden w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2.5 rounded-xl text-sm transition cursor-pointer">Bekor qilish</button>
+                                <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-sm transition cursor-pointer">Saqlash</button>
+                                <button type="button" id="cancel-btn" class="hidden w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2.5 rounded-xl text-sm transition cursor-pointer">Bekor qilish</button>
                             </div>
                         </form>
                     </div>
@@ -126,6 +133,7 @@
                 </div>
             </div>
 
+            <!-- VIEW 2: CRM LIVE BO'LIMI -->
             <div id="crm-view" class="sub-view space-y-6 w-full hidden">
                 <div class="flex justify-between items-center pb-4 border-b border-gray-200">
                     <div>
@@ -135,10 +143,20 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- VORONKALAR RO'YXATI -->
                     <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-4">
                         <h3 class="text-base font-bold text-gray-700">Voronkalar (Linyalar)</h3>
+                        
+                        <!-- JAMI VORONKALAR TUGMASI (AVTOMATIK ENTIRE SUMMARY) -->
+                        <div class="pb-2 border-b border-gray-100">
+                            <button id="btn-total-funnel" onclick="selectTotalFunnel()" class="w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition flex justify-between items-center cursor-pointer bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100">
+                                <span>🗂️ Jami voronkalar</span> <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-md">Yig'indi</span>
+                            </button>
+                        </div>
+
                         <div id="funnel-list" class="space-y-2"></div>
                         
+                        <!-- Faqat khamiidga ko'rinadigan voronka qo'shish paneli -->
                         <div id="add-funnel-container" class="pt-4 border-t border-gray-100 hidden">
                             <label class="block text-xs font-medium text-gray-500 mb-1">Yangi voronka nomi</label>
                             <div class="flex gap-2">
@@ -148,7 +166,9 @@
                         </div>
                     </div>
 
+                    <!-- DETALLAR VA DIAGRAMMA -->
                     <div id="funnel-details-card" class="lg:col-span-2 space-y-6 hidden">
+                        <!-- DIAGRAMMA BLOKI -->
                         <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
                             <h3 class="text-base font-bold text-gray-700 mb-2">Voronka statistikasi (Vizual diagramma)</h3>
                             <div class="w-full relative" style="height: 250px;">
@@ -156,6 +176,7 @@
                             </div>
                         </div>
 
+                        <!-- 9 TA BOSQICH INPUTLARI -->
                         <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
                             <div class="flex justify-between items-center mb-6">
                                 <h3 id="selected-funnel-title" class="text-lg font-bold text-gray-800">Oyna yuklanmoqda...</h3>
@@ -200,6 +221,7 @@
                                     <input type="number" id="stage-9" min="0" class="w-full bg-white border border-rose-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-rose-500 text-sm font-medium">
                                 </div>
 
+                                <!-- Saqlash tugmasi -->
                                 <div id="crm-save-container" class="md:col-span-2 pt-2 flex justify-end hidden">
                                     <button type="submit" class="bg-slate-900 hover:bg-black text-white font-semibold px-6 py-3 rounded-xl text-sm transition cursor-pointer shadow-lg">Saqlash va Grafikni yangilash</button>
                                 </div>
@@ -207,6 +229,7 @@
                         </div>
                     </div>
 
+                    <!-- PLACEHOLDER -->
                     <div id="funnel-placeholder" class="bg-gray-100/50 border border-dashed border-gray-200 p-12 rounded-2xl lg:col-span-2 flex flex-col items-center justify-center text-center text-gray-400">
                         <span class="text-4xl mb-2">📊</span>
                         <p class="text-sm font-medium">Diagramma va bosqichlarni ko'rish uchun biror voronkani tanlang</p>
@@ -217,6 +240,7 @@
         </main>
     </div>
 
+    <!-- SCRIPT MATNTIQI -->
     <script>
         const baseUrl = "https://hisotb-46af8-default-rtdb.firebaseio.com/";
         let currentUser = null;
@@ -284,28 +308,21 @@
             document.getElementById('user-display-name').innerText = currentUser.fullName;
             const badge = document.getElementById('user-badge');
 
-            // DOSTUP VA HUQUQLAR FILTRATSIYASI
             if (currentUser.role === 'superboss') {
                 badge.innerText = 'Super Boss';
                 badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-red-500 text-white';
-                
-                // Khamiid uchun hamma narsa ochiq
                 document.getElementById('menu-users').classList.remove('hidden'); 
                 document.getElementById('add-funnel-container').classList.remove('hidden');
                 document.getElementById('crm-save-container').classList.remove('hidden');
-                
                 loadUsersList();
                 switchView('users-view');
             } else {
                 badge.innerText = currentUser.role === 'boss' ? 'Boss' : 'Worker';
                 badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-purple-600 text-white';
-                
-                // Qolganlar uchun "Hisob Yaratish" yopiq va ko'rinmaydi
                 document.getElementById('menu-users').classList.add('hidden');
                 document.getElementById('add-funnel-container').classList.add('hidden');
                 document.getElementById('crm-save-container').classList.add('hidden');
-                
-                switchView('crm-view'); // To'g'ridan-to'g'ri CRM oynasiga yo'naltirish
+                switchView('crm-view');
             }
         }
 
@@ -320,7 +337,7 @@
             document.getElementById('funnel-placeholder').classList.remove('hidden');
         }
 
-        // USER CRUD (FAQAT KHAMIID ISHLATA OLADI)
+        // USER LIST LOGIC
         async function loadUsersList() {
             const res = await fetch(`${baseUrl}users.json`);
             const data = await res.json();
@@ -437,17 +454,69 @@
             loadFunnelsList();
         }
 
-        // SELECTION & VIEW MODE FOR WORKERS/BOSS
+        // 1. JAMI VORONKALAR (UMUMIY STATISTIKA) MANTIQLARI
+        async function selectTotalFunnel() {
+            selectedFunnelId = "total_summary";
+            document.getElementById('funnel-placeholder').classList.add('hidden');
+            document.getElementById('funnel-details-card').classList.remove('hidden');
+            document.getElementById('selected-funnel-title').innerText = "Jami Voronkalar (Barcha Linyalar Yig'indisi)";
+
+            // Aktiv tugma dizaynini belgilash
+            document.getElementById('btn-total-funnel').className = "w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition flex justify-between items-center cursor-pointer bg-blue-600 text-white border border-blue-700";
+            // Qolgan tugmalarni o'chirish
+            document.querySelectorAll('#funnel-list button').forEach(btn => {
+                btn.className = "w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex justify-between items-center cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-700";
+            });
+
+            // Status burchak badg'i
+            const badge = document.getElementById('crm-mode-badge');
+            badge.innerText = "Umumiy Hisobot (Faqat Ko'rish)";
+            badge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800";
+
+            // Saqlash tugmasini yashirish (Chunki yig'indini tahrirlab bo'lmaydi)
+            document.getElementById('crm-save-container').classList.add('hidden');
+
+            // Barcha inputlarni bloklash
+            for (let i = 1; i <= 9; i++) {
+                document.getElementById(`stage-${i}`).disabled = true;
+            }
+
+            // Firebase'dan crm_live ichidagi hamma ma'lumotlarni tortish
+            const res = await fetch(`${baseUrl}crm_live.json`);
+            const allLiveSummary = await res.json();
+
+            const totals = [0, 0, 0, 0, 0, 0, 0, 0, 0]; // 9 ta bosqich yig'indisi uchun massiv
+
+            if (allLiveSummary) {
+                Object.keys(allLiveSummary).forEach(funnelKey => {
+                    const funnelData = allLiveSummary[funnelKey];
+                    for (let i = 1; i <= 9; i++) {
+                        const score = funnelData[`stage_${i}`] ? parseInt(funnelData[`stage_${i}`]) : 0;
+                        totals[i - 1] += score; // indeks 0 dan boshlangani uchun i-1
+                    }
+                });
+            }
+
+            // Inputlarga yig'indi qiymatlarni kiritib chiqish
+            for (let i = 1; i <= 9; i++) {
+                document.getElementById(`stage-${i}`).value = totals[i - 1];
+            }
+
+            // Jamlangan ma'lumotlar bilan diagrammani chizish
+            updateChartAnimation(totals);
+        }
+
+        // ALOHIDA VORONKANI TANLASH
         async function selectFunnel(id, name) {
             selectedFunnelId = id;
             document.getElementById('funnel-placeholder').classList.add('hidden');
             document.getElementById('funnel-details-card').classList.remove('hidden');
             document.getElementById('selected-funnel-title').innerText = name;
 
-            const badge = document.getElementById('crm-mode-badge');
+            // Jami tugmasini default rangiga qaytarish
+            document.getElementById('btn-total-funnel').className = "w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition flex justify-between items-center cursor-pointer bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100";
 
-            // Chap menyuni renderlash
-            loadFunnelsList();
+            const badge = document.getElementById('crm-mode-badge');
 
             const res = await fetch(`${baseUrl}crm_live/${id}.json`);
             const data = await res.json();
@@ -459,21 +528,23 @@
                 inputEl.value = val;
                 values.push(val);
                 
-                // AGAR SUPERBOSS BO'LMASA INPUTLAR BLOKLANADI (FAQAT TOMOSHA)
                 if (currentUser && currentUser.role === 'superboss') {
                     inputEl.disabled = false;
                     badge.innerText = "Tahrirlash Rejimi (Admin)";
                     badge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-800";
+                    document.getElementById('crm-save-container').classList.remove('hidden');
                 } else {
                     inputEl.disabled = true;
                     badge.innerText = "Faqat Ko'rish (Cheklangan)";
                     badge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800";
+                    document.getElementById('crm-save-container').classList.add('hidden');
                 }
             }
 
             updateChartAnimation(values);
         }
 
+        // DIAGRAMMA OBYEKTI VA ANIMATSIYA
         function updateChartAnimation(chartData) {
             const ctx = document.getElementById('funnelChart').getContext('2d');
             const labels = [
@@ -513,9 +584,11 @@
             }
         }
 
+        // MA'LUMOTLARNI SAQLASH
         document.getElementById('crm-stages-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!selectedFunnelId || currentUser.role !== 'superboss') return; // Admin bo'lmasa saqlamaydi
+            // Agar jami hisobot rejimi bo'lsa yoki admin bo'lmasa saqlash ishlamaydi
+            if (!selectedFunnelId || selectedFunnelId === "total_summary" || currentUser.role !== 'superboss') return; 
 
             const updateData = {};
             const newValues = [];
