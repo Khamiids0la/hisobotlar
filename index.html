@@ -4,18 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hisobotchi by khamiid</title>
-    <!-- Tailwind CSS interfeys va silliq dizayn uchun -->
+    <!-- Tailwind CSS interfeys dizayni uchun -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Chart.js vizual diagrammalar va chiroyli animatsiyalar uchun -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .view-section { display: none; }
-        .view-section.active { display: flex; } /* Login markazda bo'lishi uchun flex qilindi */
+        .view-section.active { display: flex; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
     <!-- 1. LOGIN SOHASI (EKRAN MARKAZIDA) -->
     <div id="login-section" class="view-section active min-h-screen items-center justify-center p-4 bg-slate-900">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100 transform transition-all">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-extrabold text-gray-800 tracking-tight">Hisobotchi</h2>
                 <p class="text-gray-400 mt-2 text-sm">by khamiid | Tizimga kirish</p>
@@ -46,7 +48,6 @@
                     <p class="text-xs text-slate-400 mt-1">by khamiid</p>
                 </div>
                 
-                <!-- Navigatsiya tugmalari -->
                 <nav class="space-y-1">
                     <button id="menu-users" onclick="switchView('users-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
                         <span>👤</span> Hisob Yaratish (Users)
@@ -57,7 +58,6 @@
                 </nav>
             </div>
 
-            <!-- Profil va Chiqish qismi -->
             <div class="mt-auto pt-4 border-t border-slate-800">
                 <div class="flex items-center justify-between mb-4 px-2">
                     <div class="truncate mr-2">
@@ -84,26 +84,25 @@
                 </div>
 
                 <div id="admin-crud-container" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Form -->
                     <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 h-fit">
                         <h3 id="form-title" class="text-base font-bold text-gray-700 mb-4">Yangi foydalanuvchi qo'shish</h3>
                         <form id="user-form" class="space-y-4">
                             <input type="hidden" id="edit-id">
                             <div>
                                 <label class="block text-xs font-medium text-gray-500 mb-1">Login (Kichik harflarda)</label>
-                                <input type="text" id="username" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition">
+                                <input type="text" id="username" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-500 mb-1">Parol</label>
-                                <input type="password" id="password" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition">
+                                <input type="password" id="password" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-500 mb-1">To'liq ismi (F.I.SH)</label>
-                                <input type="text" id="fullname" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition">
+                                <input type="text" id="fullname" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-500 mb-1">Tizimdagi roli</label>
-                                <select id="role" class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white transition">
+                                <select id="role" class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
                                     <option value="worker">Worker (Operator)</option>
                                     <option value="boss">Boss (Faqat ma'lumotlarni ko'ruvchi)</option>
                                 </select>
@@ -115,7 +114,6 @@
                         </form>
                     </div>
 
-                    <!-- Jadvallar -->
                     <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 lg:col-span-2">
                         <h3 class="text-base font-bold text-gray-700 mb-4">Mavjud foydalanuvchilar ro'yxati</h3>
                         <div class="overflow-x-auto">
@@ -139,89 +137,96 @@
                 </div>
             </div>
 
-            <!-- VIEW 2: CRM LIVE BO'LIMI (VORONKALAR BILAN) -->
+            <!-- VIEW 2: CRM LIVE BO'LIMI -->
             <div id="crm-view" class="sub-view space-y-6 w-full hidden">
                 <div class="flex justify-between items-center pb-4 border-b border-gray-200">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">CRM Live Voronkalar</h2>
-                        <p class="text-sm text-gray-500">Linyalar va voronkalardagi lidlar sonini real vaqtda kiriting va kuzating</p>
+                        <p class="text-sm text-gray-500">Linyalar va voronkalardagi lidlar holatini vizual tahlil qiling</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- VORONKALAR RO'YXATI (CHAP UP-USTUN) -->
+                    <!-- VORONKALAR RO'YXATI -->
                     <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-4">
                         <h3 class="text-base font-bold text-gray-700">Voronkalar (Linyalar)</h3>
-                        <div id="funnel-list" class="space-y-2">
-                            <!-- Dinamik voronkalar yuklanadi -->
-                        </div>
+                        <div id="funnel-list" class="space-y-2"></div>
                         
-                        <!-- Faqat Khamid yangi voronka qo'sha oladi -->
                         <div id="add-funnel-container" class="pt-4 border-t border-gray-100 hidden">
                             <label class="block text-xs font-medium text-gray-500 mb-1">Yangi voronka nomi</label>
                             <div class="flex gap-2">
-                                <input type="text" id="new-funnel-name" placeholder="Masalan: Linya 1" class="flex-1 border border-gray-200 rounded-xl p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                <input type="text" id="new-funnel-name" placeholder="Masalan: Linya 4" class="flex-1 border border-gray-200 rounded-xl p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500">
                                 <button onclick="addNewFunnel()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 rounded-xl text-sm font-medium cursor-pointer">+</button>
                             </div>
                         </div>
                     </div>
 
-                    <!-- VORONKA BOSQICHLARI/INPUTLARI -->
-                    <div id="funnel-details-card" class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 lg:col-span-2 hidden">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 id="selected-funnel-title" class="text-lg font-bold text-gray-800">Oyna yuklanmoqda...</h3>
-                            <span class="text-xs bg-green-100 text-green-800 font-medium px-2 py-1 rounded-full">Tanlangan</span>
+                    <!-- DETALLAR VA DIAGRAMMA -->
+                    <div id="funnel-details-card" class="lg:col-span-2 space-y-6 hidden">
+                        <!-- DINAMIK CHUQQUR DIAGRAMMA BLOKI -->
+                        <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
+                            <h3 class="text-base font-bold text-gray-700 mb-2">Voronka statistikasi (Vizual diagramma)</h3>
+                            <div class="w-full relative" style="height: 250px;">
+                                <canvas id="funnelChart"></canvas>
+                            </div>
                         </div>
 
                         <!-- 9 TA BOSQICH INPUTLARI -->
-                        <form id="crm-stages-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">1. Yangi lid</label>
-                                <input type="number" id="stage-1" min="0" default="0" class="w-full border border-gray-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">2. O'tkazib yuborilgan qo'ng'iroq</label>
-                                <input type="number" id="stage-2" min="0" default="0" class="w-full border border-gray-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">3. Bog'lanib bo'lmadi</label>
-                                <input type="number" id="stage-3" min="0" default="0" class="w-full border border-gray-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">4. Qayta aloqa</label>
-                                <input type="number" id="stage-4" min="0" default="0" class="w-full border border-gray-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">5. Offisga chaqirildi</label>
-                                <input type="number" id="stage-5" min="0" default="0" class="w-full border border-gray-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">6. Offisga keldi</label>
-                                <input type="number" id="stage-6" min="0" default="0" class="w-full border border-gray-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">7. Keldi sotib olmadi</label>
-                                <input type="number" id="stage-7" min="0" default="0" class="w-full border border-gray-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">8. Keldi</label>
-                                <input type="number" id="stage-8" min="0" default="0" class="w-full border border-gray-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-gray-600 mb-1">9. Sifatsiz lid</label>
-                                <input type="number" id="stage-9" min="0" default="0" class="w-full border border-gray-200 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                        <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 id="selected-funnel-title" class="text-lg font-bold text-gray-800">Oyna yuklanmoqda...</h3>
+                                <span class="text-xs bg-blue-100 text-blue-800 font-semibold px-2.5 py-1 rounded-full">Live Rejim</span>
                             </div>
 
-                            <div id="crm-save-container" class="md:col-span-2 pt-4 flex justify-end">
-                                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2.5 rounded-xl text-sm shadow-md shadow-green-100 transition cursor-pointer">Lidlar sonini yangilash</button>
-                            </div>
-                        </form>
+                            <form id="crm-stages-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="p-3 rounded-xl bg-sky-50 border border-sky-100">
+                                    <label class="block text-xs font-bold text-sky-900 mb-1">1. Yangi lid</label>
+                                    <input type="number" id="stage-1" min="0" class="w-full bg-white border border-sky-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-sky-500 text-sm font-medium">
+                                </div>
+                                <div class="p-3 rounded-xl bg-amber-50 border border-amber-100">
+                                    <label class="block text-xs font-bold text-amber-900 mb-1">2. O'tkazib yuborilgan qo'ng'iroq</label>
+                                    <input type="number" id="stage-2" min="0" class="w-full bg-white border border-amber-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-500 text-sm font-medium">
+                                </div>
+                                <div class="p-3 rounded-xl bg-orange-50 border border-orange-100">
+                                    <label class="block text-xs font-bold text-orange-900 mb-1">3. Bog'lanib bo'lmadi</label>
+                                    <input type="number" id="stage-3" min="0" class="w-full bg-white border border-orange-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-orange-500 text-sm font-medium">
+                                </div>
+                                <div class="p-3 rounded-xl bg-indigo-50 border border-indigo-100">
+                                    <label class="block text-xs font-bold text-indigo-900 mb-1">4. Qayta aloqa</label>
+                                    <input type="number" id="stage-4" min="0" class="w-full bg-white border border-indigo-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-medium">
+                                </div>
+                                <div class="p-3 rounded-xl bg-purple-50 border border-purple-100">
+                                    <label class="block text-xs font-bold text-purple-900 mb-1">5. Offisga chaqirildi</label>
+                                    <input type="number" id="stage-5" min="0" class="w-full bg-white border border-purple-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-purple-500 text-sm font-medium">
+                                </div>
+                                <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+                                    <label class="block text-xs font-bold text-emerald-900 mb-1">6. Offisga keldi</label>
+                                    <input type="number" id="stage-6" min="0" class="w-full bg-white border border-emerald-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-emerald-500 text-sm font-medium">
+                                </div>
+                                <div class="p-3 rounded-xl bg-teal-50 border border-teal-100">
+                                    <label class="block text-xs font-bold text-teal-900 mb-1">7. Keldi sotib olmadi</label>
+                                    <input type="number" id="stage-7" min="0" class="w-full bg-white border border-teal-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-teal-500 text-sm font-medium">
+                                </div>
+                                <div class="p-3 rounded-xl bg-green-50 border border-green-100">
+                                    <label class="block text-xs font-bold text-green-900 mb-1">8. Keldi</label>
+                                    <input type="number" id="stage-8" min="0" class="w-full bg-white border border-green-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium">
+                                </div>
+                                <div class="p-3 rounded-xl bg-rose-50 border border-rose-100 md:col-span-2">
+                                    <label class="block text-xs font-bold text-rose-900 mb-1">9. Sifatsiz lid</label>
+                                    <input type="number" id="stage-9" min="0" class="w-full bg-white border border-rose-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-rose-500 text-sm font-medium">
+                                </div>
+
+                                <div id="crm-save-container" class="md:col-span-2 pt-2 flex justify-end">
+                                    <button type="submit" class="bg-slate-900 hover:bg-black text-white font-semibold px-6 py-3 rounded-xl text-sm transition cursor-pointer shadow-lg">Saqlash va Grafikni yangilash</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
 
-                    <!-- Tanlanmagan holat uchun ogohlantirish -->
-                    <div id="funnel-placeholder" class="bg-gray-100/50 border border-dashed border-gray-200 p-8 rounded-2xl lg:col-span-2 flex flex-col items-center justify-center text-center text-gray-400">
-                        <span class="text-4xl mb-2">👈</span>
-                        <p class="text-sm font-medium">Lidlarni kiritish yoki ko'rish uchun chapdan biror voronkani tanlang</p>
+                    <!-- PLACEHOLDER -->
+                    <div id="funnel-placeholder" class="bg-gray-100/50 border border-dashed border-gray-200 p-12 rounded-2xl lg:col-span-2 flex flex-col items-center justify-center text-center text-gray-400">
+                        <span class="text-4xl mb-2">📊</span>
+                        <p class="text-sm font-medium">Diagramma va bosqichlarni ko'rish uchun biror voronkani tanlang</p>
                     </div>
                 </div>
             </div>
@@ -234,8 +239,25 @@
         const baseUrl = "https://hisotb-46af8-default-rtdb.firebaseio.com/";
         let currentUser = null;
         let selectedFunnelId = null;
+        let myChart = null; // Chart nusxasi
 
-        // Oynalarni almashtirish (Sidebar bosilganda)
+        // Ranglar palitrasi (Har bir bo'lim uchun o'ziga xos chiroyli gradientlar)
+        const stageColors = [
+            'rgba(14, 165, 233, 0.75)',  // 1. Yangi lid (Sky Blue)
+            'rgba(245, 158, 11, 0.75)',  // 2. O'tkazib yuborilgan (Amber)
+            'rgba(249, 115, 22, 0.75)',  // 3. Bog'lanib bo'lmadi (Orange)
+            'rgba(99, 102, 241, 0.75)',  // 4. Qayta aloqa (Indigo)
+            'rgba(168, 85, 247, 0.75)',  // 5. Offisga chaqirildi (Purple)
+            'rgba(16, 185, 129, 0.75)',  // 6. Offisga keldi (Emerald)
+            'rgba(20, 184, 166, 0.75)',  // 7. Keldi sotib olmadi (Teal)
+            'rgba(34, 197, 94, 0.75)',   // 8. Keldi (Green)
+            'rgba(244, 63, 94, 0.75)'    // 9. Sifatsiz lid (Rose)
+        ];
+        
+        const stageBorderColors = [
+            '#0ea5e9', '#f59e0b', '#f97316', '#6366f1', '#a855f7', '#10b981', '#14b8a6', '#22c55e', '#f43f5e'
+        ];
+
         function switchView(viewId) {
             document.querySelectorAll('.sub-view').forEach(view => view.classList.add('hidden'));
             document.getElementById(viewId).classList.remove('hidden');
@@ -247,11 +269,11 @@
                 document.getElementById('menu-users').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white";
             } else {
                 document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white";
-                loadFunnelsList(); // CRM ga o'tganda voronkalarni yangilash
+                loadFunnelsList();
             }
         }
 
-        // TIZIMGA KIRISH (AUTH)
+        // AUTH
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const user = document.getElementById('login-username').value.trim().toLowerCase();
@@ -285,42 +307,38 @@
         function initApp() {
             document.getElementById('login-section').style.display = 'none';
             document.getElementById('app-section').className = "min-h-screen flex flex-col md:flex-row w-full";
-            
             document.getElementById('user-display-name').innerText = currentUser.fullName;
             const badge = document.getElementById('user-badge');
 
             if (currentUser.role === 'superboss') {
                 badge.innerText = 'Super Boss';
                 badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-red-500 text-white';
-                
                 document.getElementById('admin-crud-container').classList.remove('hidden');
                 document.getElementById('access-restricted-msg').classList.add('hidden');
-                document.getElementById('add-funnel-container').classList.remove('hidden'); // Voronka qo'shish paneli ochiq
-                document.getElementById('crm-save-container').classList.remove('hidden'); // Saqlash huquqi bor
+                document.getElementById('add-funnel-container').classList.remove('hidden');
+                document.getElementById('crm-save-container').classList.remove('hidden');
                 loadUsersList(true);
             } else {
                 badge.innerText = currentUser.role === 'boss' ? 'Boss (View Only)' : 'Worker';
                 badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-purple-600 text-white';
-                
                 document.getElementById('admin-crud-container').classList.add('hidden');
                 document.getElementById('access-restricted-msg').classList.remove('hidden');
-                document.getElementById('add-funnel-container').classList.add('hidden'); // Voronka qo'shish yopiq
+                document.getElementById('add-funnel-container').classList.add('hidden');
                 
-                // Agar rolining huquqi cheklangan bo'lsa faqat ko'radi (Saqlash tugmasini yashirish)
                 if (currentUser.role === 'boss') {
                     document.getElementById('crm-save-container').classList.add('hidden');
                 } else {
-                    document.getElementById('crm-save-container').classList.remove('hidden'); // Workerlar kiritishi mumkin
+                    document.getElementById('crm-save-container').classList.remove('hidden');
                 }
                 loadUsersList(false);
             }
-            
             switchView('users-view');
         }
 
         function logout() {
             currentUser = null;
             selectedFunnelId = null;
+            if(myChart) { myChart.destroy(); myChart = null; }
             document.getElementById('login-form').reset();
             document.getElementById('app-section').className = "view-section min-h-screen flex-col md:flex-row w-full hidden!";
             document.getElementById('login-section').style.display = 'flex';
@@ -328,9 +346,7 @@
             document.getElementById('funnel-placeholder').classList.remove('hidden');
         }
 
-        // ==========================================
-        // 👤 FOYDALANUVCHILARNI BOSHQARISH (CRUD)
-        // ==========================================
+        // USER CRUD
         const userForm = document.getElementById('user-form');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
@@ -345,9 +361,6 @@
             const res = await fetch(`${baseUrl}users.json`);
             const data = await res.json();
             tableBody.innerHTML = '';
-            
-            const actionHeaders = document.querySelectorAll('.id-actions-header');
-            actionHeaders.forEach(el => el.style.style = hasAccess ? '' : 'none');
 
             let trAdmin = document.createElement('tr');
             trAdmin.className = "hover:bg-gray-50 transition";
@@ -391,7 +404,6 @@
             const fullName = fullnameInput.value;
             const role = roleSelect.value;
             const editId = editIdInput.value;
-
             const userData = { password, fullName, role };
 
             if (editId) {
@@ -410,7 +422,6 @@
             passwordInput.value = password;
             fullnameInput.value = fullName;
             roleSelect.value = role;
-            
             document.getElementById('form-title').innerText = "Foydalanuvchini tahrirlash";
             submitBtn.innerText = "Yangilash";
             cancelBtn.classList.remove('hidden');
@@ -433,16 +444,13 @@
             cancelBtn.classList.add('hidden');
         }
 
-        // ==========================================
-        // ⚡ CRM LIVE VORONKALAR MATNTIQI
-        // ==========================================
+        // VORONKALAR RO'YXATI
         async function loadFunnelsList() {
             const res = await fetch(`${baseUrl}funnels.json`);
             const data = await res.json();
             const container = document.getElementById('funnel-list');
             container.innerHTML = '';
 
-            // Baza bo'sh bo'lsa default 3 ta linyani yaratish (Siz uchun qulaylik)
             if (!data) {
                 const defaultFunnels = {
                     "linya_1": { name: "Linya 1 (Asosiy)" },
@@ -457,8 +465,8 @@
             Object.keys(data).forEach(key => {
                 const funnel = data[key];
                 const btn = document.createElement('button');
-                btn.className = `w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex justify-between items-center cursor-pointer ${selectedFunnelId === key ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-gray-50 hover:bg-gray-100 text-gray-700 border border-transparent'}`;
-                btn.innerHTML = `<span>📂 ${funnel.name}</span> <span class="text-xs text-gray-400">→</span>`;
+                btn.className = `w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex justify-between items-center cursor-pointer ${selectedFunnelId === key ? 'bg-slate-900 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'}`;
+                btn.innerHTML = `<span>📂 ${funnel.name}</span> <span class="text-xs opacity-50">→</span>`;
                 btn.onclick = () => selectFunnel(key, funnel.name);
                 container.appendChild(btn);
             });
@@ -468,49 +476,116 @@
             const input = document.getElementById('new-funnel-name');
             const name = input.value.trim();
             if (!name) return;
-
             const id = name.toLowerCase().replace(/[^a-z0-9_]/g, '_') + '_' + Math.floor(Math.random() * 1000);
             await fetch(`${baseUrl}funnels/${id}.json`, { method: 'PUT', body: JSON.stringify({ name: name }) });
             input.value = '';
             loadFunnelsList();
         }
 
+        // VORONKANI TANLASH VA GRAFIKNI CHIZISH
         async function selectFunnel(id, name) {
             selectedFunnelId = id;
             document.getElementById('funnel-placeholder').classList.add('hidden');
-            const card = document.getElementById('funnel-details-card');
-            card.classList.remove('hidden');
+            document.getElementById('funnel-details-card').classList.remove('hidden');
             document.getElementById('selected-funnel-title').innerText = name;
 
-            // Aktiv tugmani bo'yash uchun ro'yxatni qayta chizamiz
-            loadFunnelsList();
+            // Chap menyudagi aktivlikni renderlash
+            document.querySelectorAll('#funnel-list button').forEach(btn => {
+                if(btn.innerHTML.includes(name)) {
+                    btn.className = "w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex justify-between items-center cursor-pointer bg-slate-900 text-white";
+                } else {
+                    btn.className = "w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex justify-between items-center cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-700";
+                }
+            });
 
-            // Voronkadagi mavjud lidlar sonini yuklash
+            // Firebase'dan ma'lumotni olish
             const res = await fetch(`${baseUrl}crm_live/${id}.json`);
             const data = await res.json();
 
-            // Inputlarni tozalash yoki to'ldirish
+            const values = [];
             for (let i = 1; i <= 9; i++) {
-                document.getElementById(`stage-${i}`).value = (data && data[`stage_${i}`]) ? data[`stage_${i}`] : 0;
+                const val = (data && data[`stage_${i}`]) ? data[`stage_${i}`] : 0;
+                document.getElementById(`stage-${i}`).value = val;
+                values.push(val);
+                
+                if (currentUser && currentUser.role === 'boss') {
+                    document.getElementById(`stage-${i}`).disabled = true;
+                } else {
+                    document.getElementById(`stage-${i}`).disabled = false;
+                }
             }
 
-            // Agar u faqat tomoshabin (boss) bo'lsa, inputlarni o'qish rejimiga o'tkazish
-            if (currentUser && currentUser.role === 'boss') {
-                for (let i = 1; i <= 9; i++) document.getElementById(`stage-${i}`).disabled = true;
+            // ANIMATSIYALI DIAGRAMMANI YANGILASH YOKI QAYTA QURISH
+            updateChartAnimation(values);
+        }
+
+        // CHART.JS ANIMATSIYA FUNKSIYASI
+        function updateChartAnimation(chartData) {
+            const ctx = document.getElementById('funnelChart').getContext('2d');
+            const labels = [
+                'Yangi lid', 'O\'tkazib yuborilgan', 'Bog\'lanilmadi', 
+                'Qayta aloqa', 'Ofisga chaqirildi', 'Ofisga keldi', 
+                'Keldi sotib olmadi', 'Keldi', 'Sifatsiz lid'
+            ];
+
+            if (myChart) {
+                // Agar grafik mavjud bo'lsa raqamlarni yangilab animatsiya beramiz
+                myChart.data.datasets[0].data = chartData;
+                myChart.update();
             } else {
-                for (let i = 1; i <= 9; i++) document.getElementById(`stage-${i}`).disabled = false;
+                // Yangi grafik obyektini yaratish
+                myChart = new Chart(ctx, {
+                    type: 'bar', // Ustunli diagramma ko'rinishi
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Lidlar soni',
+                            data: chartData,
+                            backgroundColor: stageColors,
+                            borderColor: stageBorderColors,
+                            borderWidth: 1.5,
+                            borderRadius: 8,
+                            borderSkipped: false,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false } // Ortqacha yozuvlarni olib tashlaymiz
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: { color: '#f3f4f6' },
+                                ticks: { font: { family: 'sans-serif', size: 11 } }
+                            },
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { family: 'sans-serif', size: 10, weight: 'bold' } }
+                            }
+                        },
+                        animation: {
+                            duration: 1200,
+                            easing: 'easeOutQuart' // Silliq va qiziqarli animatsiya turi
+                        }
+                    }
+                });
             }
         }
 
-        // 9 TA BOSQICHNING MA'LUMOTLARINI SAQLASH
+        // INPUTLAR ORQALI BAZANI YANGILASH VA GRAFIKKA UZATISH
         document.getElementById('crm-stages-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!selectedFunnelId) return;
 
             const updateData = {};
+            const newValues = [];
             for (let i = 1; i <= 9; i++) {
                 const val = parseInt(document.getElementById(`stage-${i}`).value);
-                updateData[`stage_${i}`] = isNaN(val) ? 0 : val;
+                const finalVal = isNaN(val) ? 0 : val;
+                updateData[`stage_${i}`] = finalVal;
+                newValues.push(finalVal);
             }
 
             await fetch(`${baseUrl}crm_live/${selectedFunnelId}.json`, {
@@ -518,7 +593,9 @@
                 body: JSON.stringify(updateData)
             });
 
-            alert("Lidlar soni muvaffaqiyatli yangilandi! (CRM Live)");
+            // Grafikni darhol yangilash (Jonli effekt)
+            updateChartAnimation(newValues);
+            alert("Lidlar yangilandi va diagramma harakatga keldi! ⚡");
         });
     </script>
 </body>
