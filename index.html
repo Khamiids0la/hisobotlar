@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hisobotchi by khamiid</title>
+    <!-- Tailwind CSS interfeys va silliq dizayn uchun -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
-        .page-section { display: none; }
-        .page-section.active { display: block; }
+        .view-section { display: none; }
+        .view-section.active { display: block; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
-    <div id="login-section" class="page-section active min-h-screen flex items-center justify-center p-4">
+    <!-- 1. LOGIN SOHASI -->
+    <div id="login-section" class="view-section active min-h-screen flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
                 <h2 class="text-3xl font-extrabold text-gray-800">Hisobotchi</h2>
@@ -34,69 +35,78 @@
         </div>
     </div>
 
-    <div id="app-section" class="page-section min-h-screen flex flex-col">
-        <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-            <div class="flex items-center gap-3">
-                <h1 class="text-xl font-bold text-gray-800">Hisobotchi <span class="text-blue-600 font-medium text-sm">by khamiid</span></h1>
-                <span id="user-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full"></span>
+    <!-- 2. ASOSIY TIZIM TUZILMASI (SIDEBAR + MAIN CONTENT) -->
+    <div id="app-section" class="view-section min-h-screen flex flex-col md:flex-row">
+        
+        <!-- CHAP TOMONDAGI MENYU (SIDEBAR) -->
+        <aside class="w-full md:w-64 bg-slate-900 text-white flex flex-col justify-between p-4 shrink-0">
+            <div>
+                <div class="mb-8 p-2 border-b border-slate-800">
+                    <h1 class="text-xl font-bold tracking-tight">Hisobotchi</h1>
+                    <p class="text-xs text-slate-400 mt-1">by khamiid</p>
+                </div>
+                
+                <!-- Navigatsiya tugmalari -->
+                <nav class="space-y-1">
+                    <button id="menu-users" onclick="switchView('users-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white">
+                        <span>👤</span> Hisob Yaratish (Users)
+                    </button>
+                    <button id="menu-crm" onclick="switchView('crm-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition">
+                        <span>⚡</span> CRM Live
+                    </button>
+                </nav>
             </div>
-            <div class="flex items-center gap-4">
-                <span id="user-display-name" class="font-medium text-gray-700 hidden sm:inline"></span>
-                <button onclick="logout()" class="text-sm font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl transition">Chiqish</button>
-            </div>
-        </header>
 
-        <main class="flex-1 p-6 max-w-7xl w-full mx-auto">
+            <!-- Profil va Chiqish qismi -->
+            <div class="mt-auto pt-4 border-t border-slate-800">
+                <div class="flex items-center justify-between mb-4 px-2">
+                    <div class="truncate mr-2">
+                        <p id="user-display-name" class="text-sm font-semibold truncate"></p>
+                        <span id="user-badge" class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md"></span>
+                    </div>
+                </div>
+                <button onclick="logout()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white text-sm font-medium py-2.5 rounded-xl transition text-center block">
+                    Chiqish
+                </button>
+            </div>
+        </aside>
+
+        <!-- O'NG TOMONDAGI KONTENT REYSI -->
+        <main class="flex-1 p-6 md:p-8 overflow-y-auto">
             
-            <div id="dashboard-panel" class="space-y-6 hidden">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Jami Savdo</p>
-                        <h3 id="kpi-total-sales" class="text-3xl font-bold text-gray-800 mt-2">0 UZS</h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Muvaffaqiyatli Bitimlar</p>
-                        <h3 id="kpi-success-count" class="text-3xl font-bold text-green-600 mt-2">0</h3>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Rad Etilganlar (Unqualified)</p>
-                        <h3 id="kpi-failed-count" class="text-3xl font-bold text-red-500 mt-2">0</h3>
+            <!-- VIEW 1: HISOB YARATISH BO'LIMI -->
+            <div id="users-view" class="sub-view space-y-6">
+                <div class="flex justify-between items-center pb-4 border-b border-gray-200">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Tizim Foydalanuvchilari</h2>
+                        <p class="text-sm text-gray-500">Yangi hisoblar yarating, tahrirlang yoki o'chiring</p>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h4 class="text-lg font-semibold text-gray-700 mb-4">Savdo Dinamikasi</h4>
-                        <div id="sales-chart"></div>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h4 class="text-lg font-semibold text-gray-700 mb-4">Statuslar Taqsimoti</h4>
-                        <div id="status-chart"></div>
-                    </div>
-                </div>
-
-                <div id="admin-management-section" class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 hidden">
+                <!-- Admin boshqaruv bloklari (Khamiid uchun ochiq) -->
+                <div id="admin-crud-container" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Form -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
-                        <h3 id="form-title" class="text-lg font-semibold text-gray-700 mb-4">Foydalanuvchi Yaratish</h3>
+                        <h3 id="form-title" class="text-base font-bold text-gray-700 mb-4">Yangi foydalanuvchi qo'shish</h3>
                         <form id="user-form" class="space-y-4">
                             <input type="hidden" id="edit-id">
                             <div>
                                 <label class="block text-xs font-medium text-gray-500 mb-1">Login (Kichik harflarda)</label>
-                                <input type="text" id="username" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                                <input type="text" id="username" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition">
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-500 mb-1">Parol</label>
-                                <input type="password" id="password" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                                <input type="password" id="password" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">F.I.SH (To'liq ismi)</label>
-                                <input type="text" id="fullname" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                                <label class="block text-xs font-medium text-gray-500 mb-1">To'liq ismi (F.I.SH)</label>
+                                <input type="text" id="fullname" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm transition">
                             </div>
                             <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Roli</label>
-                                <select id="role" class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Tizimdagi roli</label>
+                                <select id="role" class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white transition">
                                     <option value="worker">Worker (Operator)</option>
-                                    <option value="boss">Boss (Boshliq - Faqat ko'rish)</option>
+                                    <option value="boss">Boss (Faqat ma'lumotlarni ko'ruvchi)</option>
                                 </select>
                             </div>
                             <div class="flex gap-2 pt-2">
@@ -106,8 +116,9 @@
                         </form>
                     </div>
 
+                    <!-- Jadvallar -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
-                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Tizim Foydalanuvchilari (CRUD)</h3>
+                        <h3 class="text-base font-bold text-gray-700 mb-4">Mavjud foydalanuvchilar ro'yxati</h3>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse text-sm">
                                 <thead>
@@ -115,68 +126,102 @@
                                         <th class="pb-3">Login</th>
                                         <th class="pb-3">Ismi</th>
                                         <th class="pb-3">Roli</th>
-                                        <th class="pb-3 text-right">Amallar</th>
+                                        <th class="pb-3 id-actions-header text-right">Amallar</th>
                                     </tr>
                                 </thead>
                                 <tbody id="users-table-body" class="text-gray-600 divide-y divide-gray-50">
-                                    </tbody>
+                                    <!-- Dinamik xodimlar keladi -->
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+
+                <!-- Boss xodimlar uchun ruxsat cheklanganligi haqida xabar (Agar khamiid bo'lmasa) -->
+                <div id="access-restricted-msg" class="hidden bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-xl text-sm">
+                    ⚠️ Sizda foydalanuvchilar hisobini boshqarish huquqi yo'q. Ma'lumotlarni faqat <b>khamiid</b> tahrirlay oladi.
+                </div>
             </div>
 
-            <div id="worker-panel" class="max-w-xl mx-auto hidden">
-                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
-                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                        <span>📝 Kunlik Hisobot Yo'llash</span>
-                    </h3>
-                    <form id="report-form" class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Mijoz / Qo'ng'iroq Statusi</label>
-                            <select id="report-status" class="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition">
-                                <option value="success">Muvaffaqiyatli (Sotuv bo'ldi)</option>
-                                <option value="warm">O'ylab ko'radi (Iliq mijoz)</option>
-                                <option value="unqualified">Unqualified (Sotuv bo'lmadi / Rad etdi)</option>
-                            </select>
+            <!-- VIEW 2: CRM LIVE BO'LIMI (YANGI OYNA) -->
+            <div id="crm-view" class="sub-view space-y-6 hidden">
+                <div class="flex justify-between items-center pb-4 border-b border-gray-200">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">CRM Live Monitor</h2>
+                        <p class="text-sm text-gray-500">Real vaqt rejimidagi jonli jarayonlar oqimi</p>
+                    </div>
+                </div>
+
+                <!-- Jonli CRM Monitor oynasi uchun karta ko'rinishi -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Statuslar ustunlari (Masalan: Yangi, Iliq, Yakunlangan) -->
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-dashed border-gray-200">
+                        <h4 class="font-bold text-gray-700 mb-3 text-sm flex justify-between"><span>📥 Yangi Kelganlar</span> <span class="bg-gray-200 text-gray-700 text-xs px-2 py-0.5 rounded-full">Live</span></h4>
+                        <div class="space-y-3" id="crm-live-new">
+                            <div class="bg-white p-3 rounded-xl shadow-xs border border-gray-100 text-xs">
+                                <p class="font-semibold text-gray-800">Mijoz ID #8721</p>
+                                <p class="text-gray-400 mt-1">YouTube Traffic -> Bot</p>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Savdo Summasi (so'mda)</label>
-                            <input type="number" id="report-amount" value="0" class="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    </div>
+
+                    <div class="bg-amber-50/50 p-4 rounded-2xl border border-dashed border-amber-200">
+                        <h4 class="font-bold text-amber-800 mb-3 text-sm flex justify-between"><span>📞 Aloqada (Iliq)</span> <span class="bg-amber-200 text-amber-800 text-xs px-2 py-0.5 rounded-full">Live</span></h4>
+                        <div class="space-y-3" id="crm-live-warm">
+                            <div class="bg-white p-3 rounded-xl shadow-xs border border-gray-100 text-xs">
+                                <p class="font-semibold text-gray-800">Mijoz ID #8690</p>
+                                <p class="text-amber-600 font-medium mt-1">O'ylab ko'radi (Narxi)</p>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Hudud / Filial</label>
-                            <select id="report-region" class="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition">
-                                <option value="Toshkent">Tashkent</option>
-                                <option value="Farg'ona">Fergana</option>
-                                <option value="Namangan">Namangan</option>
-                                <option value="Andijon">Andijon</option>
-                            </select>
+                    </div>
+
+                    <div class="bg-green-50/50 p-4 rounded-2xl border border-dashed border-green-200">
+                        <h4 class="font-bold text-green-800 mb-3 text-sm flex justify-between"><span>✅ Sotuv Bo'ldi</span> <span class="bg-green-200 text-green-800 text-xs px-2 py-0.5 rounded-full">Live</span></h4>
+                        <div class="space-y-3" id="crm-live-success">
+                            <div class="bg-white p-3 rounded-xl shadow-xs border border-gray-100 text-xs">
+                                <p class="font-semibold text-gray-800">Mijoz ID #8641</p>
+                                <p class="text-green-600 font-medium mt-1">1,200,000 UZS</p>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600 mb-1">Izoh</label>
-                            <textarea id="report-comment" rows="3" placeholder="Mijoz haqida batafsil..." class="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition"></textarea>
+                    </div>
+
+                    <div class="bg-red-50/50 p-4 rounded-2xl border border-dashed border-red-200">
+                        <h4 class="font-bold text-red-800 mb-3 text-sm flex justify-between"><span>❌ Rad Etilganlar</span> <span class="bg-red-200 text-red-800 text-xs px-2 py-0.5 rounded-full">Live</span></h4>
+                        <div class="space-y-3" id="crm-live-unqualified">
+                            <div class="bg-white p-3 rounded-xl shadow-xs border border-gray-100 text-xs">
+                                <p class="font-semibold text-gray-800">Mijoz ID #8611</p>
+                                <p class="text-red-500 font-medium mt-1">Unqualified (Aloqa yo'q)</p>
+                            </div>
                         </div>
-                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-green-100 transition">Hisobotni Jo'natish</button>
-                    </form>
+                    </div>
                 </div>
             </div>
 
         </main>
     </div>
 
+    <!-- SCRIPT MATNTIQI -->
     <script>
         const baseUrl = "https://hisotb-46af8-default-rtdb.firebaseio.com/";
         let currentUser = null;
-        let salesChart = null;
-        let statusChart = null;
 
-        function switchPage(sectionId) {
-            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
+        // Oynalarni almashtirish (Sidebar bosilganda)
+        function switchView(viewId) {
+            document.querySelectorAll('.sub-view').forEach(view => view.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+
+            // Aktiv menyuni bo'yash
+            document.getElementById('menu-users').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white";
+            document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white";
+
+            if (viewId === 'users-view') {
+                document.getElementById('menu-users').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white";
+            } else {
+                document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white";
+            }
         }
 
-        // TIZIMGA KIRISH (AUTH) & ROLLAR TAQSIMOTI
+        // TIZIMGA KIRISH (AUTH)
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const user = document.getElementById('login-username').value.trim().toLowerCase();
@@ -184,14 +229,14 @@
             const errorDiv = document.getElementById('login-error');
             errorDiv.classList.add('hidden');
 
-            // 1. Asosiy Super Admin Nazorati (khamiid : 2236) -> TO'LIQ DOSTUP
+            // khamiid / 2236 tekshiruvi -> FULL ACCESS (SUPER BOSS)
             if (user === 'khamiid' && pass === '2236') {
                 currentUser = { username: 'khamiid', role: 'superboss', fullName: 'Khamid' };
                 initApp();
                 return;
             }
 
-            // 2. Oddiy foydalanuvchilarni bazadan tekshirish
+            // Boshqa xodimlarni bazadan tekshirish
             try {
                 const res = await fetch(`${baseUrl}users/${user}.json`);
                 const userData = await res.json();
@@ -204,55 +249,51 @@
                     errorDiv.classList.remove('hidden');
                 }
             } catch (err) {
-                errorDiv.innerText = "Firebase bilan ulanishda xatolik.";
+                errorDiv.innerText = "Baza bilan bog'lanishda xatolik.";
                 errorDiv.classList.remove('hidden');
             }
         });
 
-        // ILOVANI DINAMIK ISHGA TUSHIRISH
+        // ILOVANI ISHGA TUSHIRISH VA ROLGA KO'RA DOSTUP BERISH
         function initApp() {
-            switchPage('app-section');
+            document.getElementById('login-section').classList.remove('active');
+            document.getElementById('app-section').classList.add('active');
+            
             document.getElementById('user-display-name').innerText = currentUser.fullName;
-            
             const badge = document.getElementById('user-badge');
-            
-            // Panellarni yopib turish
-            document.getElementById('dashboard-panel').classList.add('hidden');
-            document.getElementById('admin-management-section').classList.add('hidden');
-            document.getElementById('worker-panel').classList.add('hidden');
 
+            // Ruxsatlarni sozlash
             if (currentUser.role === 'superboss') {
-                // KHAMIID: Full dostup (Dashboard + CRUD boshqaruv)
-                badge.innerText = 'SUPER BOSS';
-                badge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-700';
-                document.getElementById('dashboard-panel').classList.remove('hidden');
-                document.getElementById('admin-management-section').classList.remove('hidden'); // Admin bo'lim ochiladi
-                loadUsersList();
-                loadDashboardData();
-            } 
-            else if (currentUser.role === 'boss') {
-                // BOSS: Faqat ma'lumotlarni ko'rish (CRUD berkitilgan)
-                badge.innerText = 'BOSS (FAKАТ KO\'RISH)';
-                badge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-100 text-purple-700';
-                document.getElementById('dashboard-panel').classList.remove('hidden');
-                loadDashboardData(); // Grafiklar yuklanadi, lekin boshqaruv paneli yopiq qoladi
-            } 
-            else {
-                // WORKER: Faqat hisobot yozish
-                badge.innerText = 'WORKER';
-                badge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700';
-                document.getElementById('worker-panel').classList.remove('hidden');
+                badge.innerText = 'Super Boss';
+                badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-red-500 text-white';
+                
+                document.getElementById('admin-crud-container').classList.remove('hidden');
+                document.getElementById('access-restricted-msg').classList.add('hidden');
+                loadUsersList(true); // Amallar bilan birga yuklash
+            } else {
+                // Boss yoki Worker rolidagilar faqat ro'yxatni ko'radi, o'zgartira olmaydi
+                badge.innerText = currentUser.role === 'boss' ? 'Boss (View Only)' : 'Worker';
+                badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-purple-600 text-white';
+                
+                document.getElementById('admin-crud-container').classList.add('hidden'); // Formani yashirish
+                document.getElementById('access-restricted-msg').classList.remove('hidden'); // Ogohlantirish ko'rsatish
+                
+                // Ro'yxatni faqat o'qish uchun chiqarish
+                loadUsersList(false);
             }
+            
+            switchView('users-view'); // Default ochiladigan oyna
         }
 
-        window.logout = function() {
+        function logout() {
             currentUser = null;
             document.getElementById('login-form').reset();
-            switchPage('login-section');
+            document.getElementById('app-section').classList.remove('active');
+            document.getElementById('login-section').classList.add('active');
         }
 
         // ==========================================
-        // 🛠️ ADMIN (KHAMIID): USER CRUD
+        // 👤 USER MANAGEMENT (CRUD FOR KHAMIID)
         // ==========================================
         const userForm = document.getElementById('user-form');
         const usernameInput = document.getElementById('username');
@@ -264,18 +305,33 @@
         const cancelBtn = document.getElementById('cancel-btn');
         const tableBody = document.getElementById('users-table-body');
 
-        async function loadUsersList() {
+        async function loadUsersList(hasAccess) {
             const res = await fetch(`${baseUrl}users.json`);
             const data = await res.json();
             tableBody.innerHTML = '';
             
+            // Jadvallar sarlavhasidagi "Amallar" qismini boshqarish
+            const actionHeaders = document.querySelectorAll('.id-actions-header');
+            actionHeaders.forEach(el => el.style.display = hasAccess ? '' : 'none');
+
+            // Asosiy admin har doim jadval boshida turadi
+            let trAdmin = document.createElement('tr');
+            trAdmin.className = "hover:bg-gray-50 transition";
+            trAdmin.innerHTML = `
+                <td class="py-3 font-semibold text-gray-900">khamiid</td>
+                <td class="py-3">Khamid</td>
+                <td class="py-3"><span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-md font-medium">Super Boss</span></td>
+                ${hasAccess ? '<td class="py-3 text-right text-gray-400 text-xs italic">Tizim Egasi</td>' : ''}
+            `;
+            tableBody.appendChild(trAdmin);
+
             if (!data) return;
 
             Object.keys(data).forEach(key => {
+                if(key === 'khamiid') return; // Takrorlanmaslik uchun
                 const user = data[key];
-                const isBoss = user.role === 'boss';
-                const roleBadge = isBoss 
-                    ? '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-md font-medium">Boss (Read)</span>' 
+                const roleBadge = user.role === 'boss' 
+                    ? '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-md font-medium">Boss</span>' 
                     : '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-md font-medium">Worker</span>';
 
                 const tr = document.createElement('tr');
@@ -284,10 +340,11 @@
                     <td class="py-3 font-medium text-gray-900">${key}</td>
                     <td class="py-3">${user.fullName}</td>
                     <td class="py-3">${roleBadge}</td>
+                    ${hasAccess ? `
                     <td class="py-3 text-right space-x-2">
                         <button onclick="editUser('${key}', '${user.fullName}', '${user.role}', '${user.password}')" class="text-blue-600 hover:text-blue-800 font-medium cursor-pointer">Tahrirlash</button>
                         <button onclick="deleteUser('${key}')" class="text-red-600 hover:text-red-800 font-medium cursor-pointer">O'chirish</button>
-                    </td>
+                    </td>` : ''}
                 `;
                 tableBody.appendChild(tr);
             });
@@ -309,7 +366,7 @@
                 await fetch(`${baseUrl}users/${username}.json`, { method: 'PUT', body: JSON.stringify(userData) });
             }
             resetUserForm();
-            loadUsersList();
+            loadUsersList(true);
         });
 
         window.editUser = function(id, fullName, role, password) {
@@ -320,15 +377,15 @@
             fullnameInput.value = fullName;
             roleSelect.value = role;
             
-            document.getElementById('form-title').innerText = "Foydalanuvchini Tahrirlash";
+            document.getElementById('form-title').innerText = "Foydalanuvchini tahrirlash";
             submitBtn.innerText = "Yangilash";
             cancelBtn.classList.remove('hidden');
         };
 
         window.deleteUser = async function(id) {
-            if (confirm(`Haqiqatdan ham "${id}" foydalanuvchisini o'chirmoqchisiz?`)) {
+            if (confirm(`"${id}" foydalanuvchisini o'chirmoqchisiz?`)) {
                 await fetch(`${baseUrl}users/${id}.json`, { method: 'DELETE' });
-                loadUsersList();
+                loadUsersList(true);
             }
         };
 
@@ -337,98 +394,9 @@
             userForm.reset();
             editIdInput.value = '';
             usernameInput.disabled = false;
-            document.getElementById('form-title').innerText = "Foydalanuvchi Yaratish";
+            document.getElementById('form-title').innerText = "Yangi foydalanuvchi qo'shish";
             submitBtn.innerText = "Saqlash";
             cancelBtn.classList.add('hidden');
-        }
-
-        // ==========================================
-        // 📝 WORKER: HISOBOT YUBORISH
-        // ==========================================
-        document.getElementById('report-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const status = document.getElementById('report-status').value;
-            const amount = parseFloat(document.getElementById('report-amount').value) || 0;
-            const region = document.getElementById('report-region').value;
-            const comment = document.getElementById('report-comment').value;
-
-            const reportData = {
-                operator: currentUser.username,
-                operatorName: currentUser.fullName,
-                status: status,
-                amount: status === 'success' ? amount : 0,
-                region: region,
-                comment: comment,
-                date: new Date().toISOString()
-            };
-
-            try {
-                await fetch(`${baseUrl}reports.json`, { method: 'POST', body: JSON.stringify(reportData) });
-                alert("Hisobot muvaffaqiyatli saqlandi!");
-                document.getElementById('report-form').reset();
-                document.getElementById('report-amount').value = 0;
-            } catch (err) {
-                alert("Xatolik yuz berdi.");
-            }
-        });
-
-        // ==========================================
-        // 📊 DASHBOARD & APEXCHARTS (KHAMIID & BOSS)
-        // ==========================================
-        async function loadDashboardData() {
-            const res = await fetch(`${baseUrl}reports.json`);
-            const data = await res.json();
-
-            let totalSales = 0; let successCount = 0; let failedCount = 0; let warmCount = 0;
-            let regionSales = { "Toshkent": 0, "Farg'ona": 0, "Namangan": 0, "Andijon": 0 };
-
-            if (data) {
-                Object.keys(data).forEach(key => {
-                    const r = data[key];
-                    if (r.status === 'success') {
-                        successCount++;
-                        totalSales += (r.amount || 0);
-                        if (regionSales[r.region] !== undefined) regionSales[r.region] += (r.amount || 0);
-                    } else if (r.status === 'unqualified') {
-                        failedCount++;
-                    } else if (r.status === 'warm') {
-                        warmCount++;
-                    }
-                });
-            }
-
-            document.getElementById('kpi-total-sales').innerText = totalSales.toLocaleString('uz-UZ') + " UZS";
-            document.getElementById('kpi-success-count').innerText = successCount;
-            document.getElementById('kpi-failed-count').innerText = failedCount;
-
-            renderCharts(regionSales, successCount, warmCount, failedCount);
-        }
-
-        function renderCharts(regionSales, success, warm, failed) {
-            const salesOptions = {
-                chart: { type: 'bar', height: 300, toolbar: { show: false } },
-                series: [{ name: 'Savdo Summasi', data: Object.values(regionSales) }],
-                xaxis: { categories: Object.keys(regionSales) },
-                colors: ['#3B82F6'],
-                plotOptions: { bar: { borderRadius: 6, columnName: '45%' } },
-                dataLabels: { enabled: false }
-            };
-
-            if (salesChart) salesChart.destroy();
-            salesChart = new ApexCharts(document.querySelector("#sales-chart"), salesOptions);
-            salesChart.render();
-
-            const statusOptions = {
-                chart: { type: 'donut', height: 300 },
-                series: [success, warm, failed],
-                labels: ['Muvaffaqiyatli', 'Iliq', 'Rad etilgan'],
-                colors: ['#10B981', '#F59E0B', '#EF4444'],
-                legend: { position: 'bottom' }
-            };
-
-            if (statusChart) statusChart.destroy();
-            statusChart = new ApexCharts(document.querySelector("#status-chart"), statusOptions);
-            statusChart.render();
         }
     </script>
 </body>
