@@ -1,640 +1,434 @@
 <!DOCTYPE html>
-<html lang="uz" class="dark">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-Control — Professional ERP v2</title>
+    <title>Hisobotchi by khamiid</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
-        .fade-in { animation: fadeIn 0.25s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-        .active-tab { background-color: #10b981 !important; color: white !important; }
-        .active-user { border-color: #10b981 !important; background-color: rgba(6, 78, 59, 0.3) !important; }
+        .page-section { display: none; }
+        .page-section.active { display: block; }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
+<body class="bg-gray-100 font-sans antialiased">
 
-    <!-- 1. LOGIN SCREEN -->
-    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 px-4">
-        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
-            <div class="text-center mb-6">
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-indigo-400 bg-clip-text text-transparent">X-Control ERP</h1>
-                <p class="text-slate-400 text-xs mt-1">Avtomatlashtirilgan Ishchi va Analitika Tizimi</p>
+    <div id="login-section" class="page-section active min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-extrabold text-gray-800">Hisobotchi</h2>
+                <p class="text-gray-400 mt-2 text-sm">by khamiid | Tizimga kirish</p>
             </div>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
+            <form id="login-form" class="space-y-5">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Login</label>
-                    <input type="text" id="username" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Foydalanuvchi nomi</label>
+                    <input type="text" id="login-username" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Parol</label>
-                    <input type="password" id="password" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">Parol</label>
+                    <input type="password" id="login-password" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
                 </div>
-                <div id="loginError" class="text-rose-400 text-xs hidden text-center font-medium">❌ Login yoki parol xato!</div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl transition-all cursor-pointer">Kirish</button>
+                <div id="login-error" class="text-red-500 text-sm hidden text-center font-medium"></div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-200 transition">Kirish</button>
             </form>
         </div>
     </div>
 
-    <!-- 2. MAIN DASHBOARD -->
-    <div id="dashboardScreen" class="hidden min-h-screen flex flex-col fade-in">
-        <header class="border-b border-slate-900 bg-slate-900/80 sticky top-0 z-40 px-4">
-            <div class="max-w-7xl mx-auto h-14 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="font-bold text-base tracking-wide text-emerald-400">X-Control</span>
-                    <select id="globalProjectSelect" onchange="onProjectChange()" class="bg-slate-950 border border-slate-800 text-xs rounded-md p-1 font-semibold text-slate-300"></select>
-                    
-                    <!-- HUDUD FILTRI FAQAT TARGET BO'LIMIDAGINA PAYDO BO'LADI -->
-                    <div id="targetFilterPart" class="hidden flex items-center gap-1 text-xs">
-                        <span class="text-slate-500 ml-2">| Target Hududi:</span>
-                        <select id="globalBranchSelect" onchange="onBranchFilterChange()" class="bg-slate-950 border border-slate-800 text-slate-300 rounded p-1 font-semibold"></select>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3 text-xs">
-                    <span id="roleBadge" class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase font-mono"></span>
-                    <button onclick="location.reload()" class="text-slate-400 hover:text-rose-400 transition-colors cursor-pointer">Chiqish</button>
-                </div>
+    <div id="app-section" class="page-section min-h-screen flex flex-col">
+        <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+            <div class="flex items-center gap-3">
+                <h1 class="text-xl font-bold text-gray-800">Hisobotchi <span class="text-blue-600 font-medium text-sm">by khamiid</span></h1>
+                <span id="user-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full"></span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span id="user-display-name" class="font-medium text-gray-700 hidden sm:inline"></span>
+                <button onclick="logout()" class="text-sm font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl transition">Chiqish</button>
             </div>
         </header>
 
-        <div class="max-w-7xl w-full mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-4 gap-4 flex-1">
+        <main class="flex-1 p-6 max-w-7xl w-full mx-auto">
             
-            <!-- CHAP APANEL -->
-            <div class="space-y-4 lg:col-span-1">
-                <div class="bg-slate-900 border border-slate-900 rounded-xl p-3 space-y-1">
-                    <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-2 mb-1">Bo'limlar</h3>
-                    <button onclick="selectCategory('crm')" id="btn-cat-crm" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-slate-950 text-slate-300 font-medium transition-all cursor-pointer">📊 CRM Live Voronka</button>
-                    <button onclick="selectCategory('sarkor')" id="btn-cat-sarkor" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-slate-950 text-slate-300 font-medium transition-all cursor-pointer">📞 Sarkor (Call log)</button>
-                    <button onclick="selectCategory('rop')" id="btn-cat-rop" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-slate-950 text-slate-300 font-medium transition-all cursor-pointer">📈 ROP Analitika</button>
-                    <button onclick="selectCategory('target')" id="btn-cat-target" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-slate-950 text-slate-300 font-medium transition-all cursor-pointer">🎯 Target & Marketing</button>
-                    <button onclick="selectCategory('davomat')" id="btn-cat-davomat" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-slate-950 text-slate-300 font-medium transition-all cursor-pointer">📅 Xodimlar Davomati</button>
-                    <button onclick="selectCategory('oylik')" id="btn-cat-oylik" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-slate-950 text-slate-300 font-medium transition-all cursor-pointer">💰 Oylik / KPI</button>
-                    
-                    <!-- ADMIN TUGMASI -->
-                    <button onclick="selectCategory('admin')" id="btn-cat-admin" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-indigo-950/40 text-indigo-400 border border-indigo-950 hidden font-medium transition-all cursor-pointer">⚙️ Admin Panel</button>
-                </div>
-
-                <!-- ISHCHILAR RO'YXATI -->
-                <div id="workersListSection" class="bg-slate-900 border border-slate-900 rounded-xl p-3">
-                    <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-2 mb-2">Loyiha Xodimlari</h3>
-                    <div id="workersListContainer" class="space-y-1.5"></div>
-                </div>
-            </div>
-
-            <!-- O'NG APANEL -->
-            <div class="lg:col-span-3 space-y-4">
-                
-                <!-- KALENDAR SECTION -->
-                <div id="calendarSection" class="hidden bg-slate-900 border border-slate-900 rounded-xl p-4 shadow-xl fade-in space-y-3">
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                        <div>
-                            <h2 class="text-sm font-bold text-slate-200" id="calendarTitle">Loyiha Kalendari</h2>
-                            <p class="text-[11px] text-slate-400" id="calendarSubtitle">Sana tanlang</p>
-                        </div>
-                        <div class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded">Iyul 2026</div>
+            <div id="dashboard-panel" class="space-y-6 hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Jami Savdo</p>
+                        <h3 id="kpi-total-sales" class="text-3xl font-bold text-gray-800 mt-2">0 UZS</h3>
                     </div>
-                    <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-slate-500">
-                        <div>Du</div><div>Se</div><div>Ch</div><div>Pa</div><div>Ju</div><div>Sh</div><div>Ya</div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Muvaffaqiyatli Bitimlar</p>
+                        <h3 id="kpi-success-count" class="text-3xl font-bold text-green-600 mt-2">0</h3>
                     </div>
-                    <div id="calendarGrid" class="grid grid-cols-7 gap-1.5"></div>
-                </div>
-
-                <!-- AQLLI FORMA OYNASI -->
-                <div id="inputFormSection" class="hidden bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4 fade-in">
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                        <h3 class="text-sm font-bold text-emerald-400" id="formTitleDate">Sana: OOOO-AA-KK</h3>
-                        <button onclick="closeForm()" class="text-slate-500 hover:text-slate-300 text-xs cursor-pointer">✕ Yopish</button>
-                    </div>
-
-                    <!-- DINAMIK INPUT ELEMENTLARI -->
-                    <div id="dynamicFormFields" class="space-y-4"></div>
-
-                    <!-- SAQLASH TUGMALARI BLOCKI -->
-                    <div class="flex items-center justify-end gap-2 pt-2" id="formActionButtons">
-                        <button onclick="deleteDataFromFirebase()" id="deleteDataBtn" class="bg-rose-950/40 hover:bg-rose-900 border border-rose-900 text-rose-300 font-medium px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer">🗑 O'chirish</button>
-                        <button onclick="saveDataToFirebase()" id="saveDataBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2 rounded-lg text-xs transition-all cursor-pointer">⚡ Saqlash Hisobotni</button>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Rad Etilganlar (Unqualified)</p>
+                        <h3 id="kpi-failed-count" class="text-3xl font-bold text-red-500 mt-2">0</h3>
                     </div>
                 </div>
 
-                <!-- ADMIN VIEW -->
-                <div id="adminView" class="hidden space-y-4 fade-in">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-850 space-y-2">
-                            <h3 class="text-xs font-bold text-emerald-400">🆕 Yangi Loyiha</h3>
-                            <input type="text" id="adm_proj_name" placeholder="Masalan: SMSMED" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-emerald-500">
-                            <button onclick="addProject()" class="bg-emerald-600 text-white text-[11px] px-3 py-1.5 rounded cursor-pointer">Qo'shish</button>
-                        </div>
-                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-850 space-y-2">
-                            <h3 class="text-xs font-bold text-indigo-400">🆕 Target Hududlarini (Filial) Qo'shish</h3>
-                            <select id="adm_proj_select" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300"></select>
-                            <input type="text" id="adm_branch_name" placeholder="Masalan: Namangan, Toshkent" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-500">
-                            <button onclick="addBranch()" class="bg-indigo-600 text-white text-[11px] px-3 py-1.5 rounded cursor-pointer">Qo'shish</button>
-                        </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h4 class="text-lg font-semibold text-gray-700 mb-4">Savdo Dinamikasi</h4>
+                        <div id="sales-chart"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h4 class="text-lg font-semibold text-gray-700 mb-4">Statuslar Taqsimoti</h4>
+                        <div id="status-chart"></div>
+                    </div>
+                </div>
+
+                <div id="admin-management-section" class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4 hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-fit">
+                        <h3 id="form-title" class="text-lg font-semibold text-gray-700 mb-4">Foydalanuvchi Yaratish</h3>
+                        <form id="user-form" class="space-y-4">
+                            <input type="hidden" id="edit-id">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Login (Kichik harflarda)</label>
+                                <input type="text" id="username" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Parol</label>
+                                <input type="password" id="password" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">F.I.SH (To'liq ismi)</label>
+                                <input type="text" id="fullname" required class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Roli</label>
+                                <select id="role" class="w-full border border-gray-200 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                                    <option value="worker">Worker (Operator)</option>
+                                    <option value="boss">Boss (Boshliq - Faqat ko'rish)</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2 pt-2">
+                                <button type="submit" id="submit-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl text-sm transition">Saqlash</button>
+                                <button type="button" id="cancel-btn" class="hidden w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2.5 rounded-xl text-sm transition">Bekor qilish</button>
+                            </div>
+                        </form>
                     </div>
 
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-850 space-y-3">
-                        <h3 class="text-xs font-bold text-sky-400">👤 Loyiha Bo'yicha Operator Yaratish</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
-                            <input type="text" id="adm_user_login" placeholder="Login" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-sky-500">
-                            <input type="text" id="adm_user_pass" placeholder="Parol" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:border-sky-500">
-                            <select id="adm_user_role" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300">
-                                <option value="worker">Worker (Operator)</option>
-                                <option value="boss">Boss (Boshliq — Read Only)</option>
-                                <option value="admin">Admin (To'liq Huquq)</option>
-                            </select>
-                            <select id="adm_user_project_ctx" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300"></select>
-                        </div>
-                        <button onclick="createUser()" class="bg-sky-600 text-white text-[11px] px-4 py-2 rounded cursor-pointer">Xodimni Saqlash</button>
-                        
-                        <div class="overflow-x-auto pt-2">
-                            <table class="w-full text-left text-xs text-slate-400 border-t border-slate-800 mt-2">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-4">Tizim Foydalanuvchilari (CRUD)</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse text-sm">
                                 <thead>
-                                    <tr class="text-slate-500">
-                                        <th class="py-2">Login</th><th class="py-2">Parol</th><th class="py-2">Roli</th><th class="py-2">Loyiha</th><th class="py-2 text-right">Amal</th>
+                                    <tr class="border-b border-gray-100 text-gray-400 font-medium">
+                                        <th class="pb-3">Login</th>
+                                        <th class="pb-3">Ismi</th>
+                                        <th class="pb-3">Roli</th>
+                                        <th class="pb-3 text-right">Amallar</th>
                                     </tr>
                                 </thead>
-                                <tbody id="adminUsersTableBody"></tbody>
+                                <tbody id="users-table-body" class="text-gray-600 divide-y divide-gray-50">
+                                    </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-
             </div>
-        </div>
+
+            <div id="worker-panel" class="max-w-xl mx-auto hidden">
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                        <span>📝 Kunlik Hisobot Yo'llash</span>
+                    </h3>
+                    <form id="report-form" class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Mijoz / Qo'ng'iroq Statusi</label>
+                            <select id="report-status" class="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition">
+                                <option value="success">Muvaffaqiyatli (Sotuv bo'ldi)</option>
+                                <option value="warm">O'ylab ko'radi (Iliq mijoz)</option>
+                                <option value="unqualified">Unqualified (Sotuv bo'lmadi / Rad etdi)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Savdo Summasi (so'mda)</label>
+                            <input type="number" id="report-amount" value="0" class="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Hudud / Filial</label>
+                            <select id="report-region" class="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none bg-white transition">
+                                <option value="Toshkent">Tashkent</option>
+                                <option value="Farg'ona">Fergana</option>
+                                <option value="Namangan">Namangan</option>
+                                <option value="Andijon">Andijon</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Izoh</label>
+                            <textarea id="report-comment" rows="3" placeholder="Mijoz haqida batafsil..." class="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-green-100 transition">Hisobotni Jo'natish</button>
+                    </form>
+                </div>
+            </div>
+
+        </main>
     </div>
 
-    <!-- DB MODULE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getDatabase, ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+    <script>
+        const baseUrl = "https://hisotb-46af8-default-rtdb.firebaseio.com/";
+        let currentUser = null;
+        let salesChart = null;
+        let statusChart = null;
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyA1-SizningApiKeyNiQoyasiz", 
-            authDomain: "hisotb-46af8.firebaseapp.com",
-            projectId: "hisotb-46af8",
-            databaseURL: "https://hisotb-46af8-default-rtdb.firebaseio.com/"
-        };
+        function switchPage(sectionId) {
+            document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        // TIZIMGA KIRISH (AUTH) & ROLLAR TAQSIMOTI
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = document.getElementById('login-username').value.trim().toLowerCase();
+            const pass = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+            errorDiv.classList.add('hidden');
 
-        let uRole = "", uName = "", uProjectCtx = "";
-        let selectedCategory = "crm"; 
-        let selectedDate = "2026-07-09";
-        let activeBranches = [];
-        let activeSelectedWorker = ""; 
-
-        window.handleLogin = async function(event) {
-            event.preventDefault();
-            const inpUser = document.getElementById("username").value.trim();
-            const inpPass = document.getElementById("password").value.trim();
-            const err = document.getElementById("loginError");
-
-            if(inpUser === "khamiid" && inpPass === "2236") {
-                uRole = "admin"; uName = "khamiid"; 
-                document.getElementById("btn-cat-admin").classList.remove("hidden");
-                initApp(); return;
+            // 1. Asosiy Super Admin Nazorati (khamiid : 2236) -> TO'LIQ DOSTUP
+            if (user === 'khamiid' && pass === '2236') {
+                currentUser = { username: 'khamiid', role: 'superboss', fullName: 'Khamid' };
+                initApp();
+                return;
             }
 
+            // 2. Oddiy foydalanuvchilarni bazadan tekshirish
             try {
-                const snap = await get(child(ref(db), `users/${inpUser}`));
-                if(snap.exists() && snap.val().password === inpPass) {
-                    uRole = snap.val().role; uName = inpUser; uProjectCtx = snap.val().project || "";
-                    if(uRole === "admin") {
-                        document.getElementById("btn-cat-admin").classList.remove("hidden");
-                    }
+                const res = await fetch(`${baseUrl}users/${user}.json`);
+                const userData = await res.json();
+
+                if (userData && userData.password === pass) {
+                    currentUser = { username: user, ...userData };
                     initApp();
-                } else { err.classList.remove("hidden"); }
-            } catch(e) { err.classList.remove("hidden"); }
-        };
-
-        async function initApp() {
-            document.getElementById("loginScreen").classList.add("hidden");
-            document.getElementById("dashboardScreen").classList.remove("hidden");
-            document.getElementById("roleBadge").innerText = `${uName} (${uRole})`;
-
-            await loadProjectsDropdown();
-            await onProjectChange();
-            loadAllUsersForAdmin();
-            selectCategory("crm"); 
-        }
-
-        async function loadProjectsDropdown() {
-            const snap = await get(child(ref(db), "projects"));
-            const pSel = document.getElementById("globalProjectSelect");
-            const admPSel = document.getElementById("adm_proj_select");
-            pSel.innerHTML = ""; admPSel.innerHTML = "";
-
-            if(snap.exists()) {
-                Object.keys(snap.val()).forEach(p => {
-                    if(uRole !== "admin" && uProjectCtx !== p) return; 
-                    pSel.innerHTML += `<option value="${p}">${p}</option>`;
-                    admPSel.innerHTML += `<option value="${p}">${p}</option>`;
-                });
-            }
-        }
-
-        window.onProjectChange = async function() {
-            const proj = document.getElementById("globalProjectSelect").value;
-            if(!proj) return;
-            const bSel = document.getElementById("globalBranchSelect");
-            
-            bSel.innerHTML = `<option value="JAMLANGAN">📊 JAMI (JAMLANGAN)</option>`;
-            activeBranches = [];
-
-            const snap = await get(child(ref(db), `projects/${proj}/branches`));
-            if(snap.exists()) {
-                Object.keys(snap.val()).forEach(b => {
-                    activeBranches.push(b);
-                    bSel.innerHTML += `<option value="${b}">${b} filiali</option>`;
-                });
-            }
-            
-            // 🔥 TUZATILDI: Admin kirganda xodim tanlash qulfini ochamiz
-            if (uRole !== "admin") {
-                activeSelectedWorker = "";
-                document.getElementById("calendarSection").classList.add("hidden");
-            }
-            closeForm();
-            loadWorkersForProject();
-        };
-
-        window.onBranchFilterChange = function() {
-            closeForm();
-            if(selectedCategory === "target") renderCalendar();
-        };
-
-        window.selectCategory = function(cat) {
-            selectedCategory = cat;
-            document.querySelectorAll("[id^='btn-cat-']").forEach(b => b.classList.remove("bg-emerald-600", "text-white"));
-            document.getElementById(`btn-cat-${cat}`).classList.add("bg-emerald-600", "text-white");
-
-            const filterDiv = document.getElementById("targetFilterPart");
-            if(cat === "target") {
-                filterDiv.classList.remove("hidden");
-            } else {
-                filterDiv.classList.add("hidden");
-            }
-
-            if(cat === "admin") {
-                document.getElementById("calendarSection").classList.add("hidden");
-                document.getElementById("workersListSection").classList.add("hidden");
-                document.getElementById("inputFormSection").classList.add("hidden");
-                document.getElementById("adminView").classList.remove("hidden");
-            } else {
-                document.getElementById("adminView").classList.add("hidden");
-                document.getElementById("workersListSection").classList.remove("hidden");
-                
-                if(uRole === "worker") {
-                    selectWorker(uName);
-                } else if(uRole === "admin" && !activeSelectedWorker && cat !== "target") {
-                    // Admin uchun agar xodim tanlanmagan bo'lsa ogohlantirish texti qoldiramiz
-                    document.getElementById("calendarTitle").innerText = `⚠️ Xodim tanlanmagan`;
-                    document.getElementById("calendarSubtitle").innerText = `Chap paneldan biror operatorni tanlang`;
-                    document.getElementById("calendarSection").classList.remove("hidden");
-                    document.getElementById("calendarGrid").innerHTML = "";
-                    closeForm();
-                } else if(cat === "target") {
-                    document.getElementById("calendarTitle").innerText = `Loyiha Marketingi (Target)`;
-                    document.getElementById("calendarSubtitle").innerText = `Sana tanlang`;
-                    document.getElementById("calendarSection").classList.remove("hidden");
-                    renderCalendar();
-                    closeForm();
                 } else {
-                    renderCalendar();
-                    closeForm();
+                    errorDiv.innerText = "Login yoki parol noto'g'ri!";
+                    errorDiv.classList.remove('hidden');
                 }
+            } catch (err) {
+                errorDiv.innerText = "Firebase bilan ulanishda xatolik.";
+                errorDiv.classList.remove('hidden');
             }
-        };
+        });
 
-        async function loadWorkersForProject() {
-            const proj = document.getElementById("globalProjectSelect").value;
-            if(!proj) return;
-            const container = document.getElementById("workersListContainer");
-            container.innerHTML = "";
+        // ILOVANI DINAMIK ISHGA TUSHIRISH
+        function initApp() {
+            switchPage('app-section');
+            document.getElementById('user-display-name').innerText = currentUser.fullName;
             
-            const snap = await get(child(ref(db), "users"));
-            if(snap.exists()) {
-                Object.keys(snap.val()).forEach(u => {
-                    if(snap.val()[u].project === proj && snap.val()[u].role === "worker") {
-                        const isSelected = (activeSelectedWorker === u) ? 'border-emerald-500 bg-emerald-950/20' : '';
-                        // 🔥 TUZATILDI: Admin istalgan xodimni to'liq bosa oladi, bloklash mutloq olib tashlandi!
-                        const isDisabled = (uRole === "worker" && uName !== u) ? 'disabled pointer-events-none opacity-40' : '';
-                        
-                        container.innerHTML += `
-                            <button onclick="selectWorker('${u}')" id="user-card-${u}" class="w-full text-left p-2 rounded-lg border border-slate-800 bg-slate-950/40 text-xs flex justify-between items-center transition-all cursor-pointer ${isSelected} ${isDisabled}">
-                                <span class="font-medium text-slate-200">👤 ${u}</span>
-                                <span class="text-[10px] text-emerald-400 uppercase font-mono">Online</span>
-                            </button>
-                        `;
-                    }
-                });
+            const badge = document.getElementById('user-badge');
+            
+            // Panellarni yopib turish
+            document.getElementById('dashboard-panel').classList.add('hidden');
+            document.getElementById('admin-management-section').classList.add('hidden');
+            document.getElementById('worker-panel').classList.add('hidden');
+
+            if (currentUser.role === 'superboss') {
+                // KHAMIID: Full dostup (Dashboard + CRUD boshqaruv)
+                badge.innerText = 'SUPER BOSS';
+                badge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-red-100 text-red-700';
+                document.getElementById('dashboard-panel').classList.remove('hidden');
+                document.getElementById('admin-management-section').classList.remove('hidden'); // Admin bo'lim ochiladi
+                loadUsersList();
+                loadDashboardData();
+            } 
+            else if (currentUser.role === 'boss') {
+                // BOSS: Faqat ma'lumotlarni ko'rish (CRUD berkitilgan)
+                badge.innerText = 'BOSS (FAKАТ KO\'RISH)';
+                badge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-purple-100 text-purple-700';
+                document.getElementById('dashboard-panel').classList.remove('hidden');
+                loadDashboardData(); // Grafiklar yuklanadi, lekin boshqaruv paneli yopiq qoladi
+            } 
+            else {
+                // WORKER: Faqat hisobot yozish
+                badge.innerText = 'WORKER';
+                badge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-700';
+                document.getElementById('worker-panel').classList.remove('hidden');
             }
         }
 
-        window.selectWorker = function(workerName) {
-            activeSelectedWorker = workerName;
-            document.querySelectorAll("[id^='user-card-']").forEach(b => b.classList.remove("border-emerald-500", "bg-emerald-950/20"));
-            const targetCard = document.getElementById(`user-card-${workerName}`);
-            if(targetCard) targetCard.classList.add("border-emerald-500", "bg-emerald-950/20");
+        window.logout = function() {
+            currentUser = null;
+            document.getElementById('login-form').reset();
+            switchPage('login-section');
+        }
 
-            document.getElementById("calendarTitle").innerText = `Xodim: ${workerName}`;
-            document.getElementById("calendarSubtitle").innerText = `Sana tanlang`;
-            document.getElementById("calendarSection").classList.remove("hidden");
-            closeForm();
-            renderCalendar();
-        };
+        // ==========================================
+        // 🛠️ ADMIN (KHAMIID): USER CRUD
+        // ==========================================
+        const userForm = document.getElementById('user-form');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const fullnameInput = document.getElementById('fullname');
+        const roleSelect = document.getElementById('role');
+        const editIdInput = document.getElementById('edit-id');
+        const submitBtn = document.getElementById('submit-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const tableBody = document.getElementById('users-table-body');
 
-        function renderCalendar() {
-            const grid = document.getElementById("calendarGrid");
-            if (!grid) return;
-            grid.innerHTML = "";
-            for(let i=1; i<=2; i++) { grid.innerHTML += `<div></div>`; } 
+        async function loadUsersList() {
+            const res = await fetch(`${baseUrl}users.json`);
+            const data = await res.json();
+            tableBody.innerHTML = '';
+            
+            if (!data) return;
 
-            for(let day=1; day<=31; day++) {
-                const dayStr = day < 10 ? "0" + day : day;
-                const fullDate = `2026-07-${dayStr}`;
+            Object.keys(data).forEach(key => {
+                const user = data[key];
+                const isBoss = user.role === 'boss';
+                const roleBadge = isBoss 
+                    ? '<span class="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-md font-medium">Boss (Read)</span>' 
+                    : '<span class="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-md font-medium">Worker</span>';
 
-                grid.innerHTML += `
-                    <button onclick="openFormForDate('${fullDate}')" class="bg-slate-950 hover:bg-slate-800 border border-slate-850 p-2 rounded-lg text-xs font-mono flex flex-col items-center justify-between min-h-[46px] transition-all cursor-pointer">
-                        <span class="text-slate-400 font-bold">${day}</span>
-                        <span id="dot-${fullDate}" class="w-1.5 h-1.5 rounded-full bg-transparent"></span>
-                    </button>
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition";
+                tr.innerHTML = `
+                    <td class="py-3 font-medium text-gray-900">${key}</td>
+                    <td class="py-3">${user.fullName}</td>
+                    <td class="py-3">${roleBadge}</td>
+                    <td class="py-3 text-right space-x-2">
+                        <button onclick="editUser('${key}', '${user.fullName}', '${user.role}', '${user.password}')" class="text-blue-600 hover:text-blue-800 font-medium cursor-pointer">Tahrirlash</button>
+                        <button onclick="deleteUser('${key}')" class="text-red-600 hover:text-red-800 font-medium cursor-pointer">O'chirish</button>
+                    </td>
                 `;
-                checkDataPresence(fullDate);
-            }
+                tableBody.appendChild(tr);
+            });
         }
 
-        async function checkDataPresence(date) {
-            const p = document.getElementById("globalProjectSelect").value;
-            const targetBranch = document.getElementById("globalBranchSelect").value;
-            const dot = document.getElementById(`dot-${date}`);
-            if(!dot) return;
+        userForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = usernameInput.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            const password = passwordInput.value;
+            const fullName = fullnameInput.value;
+            const role = roleSelect.value;
+            const editId = editIdInput.value;
 
-            if(selectedCategory === "target") {
-                if(targetBranch === "JAMLANGAN") {
-                    const snap = await get(child(ref(db), `stats/${p}/TARGET_DEPT/target/${date}/TOTAL`));
-                    if(snap.exists()) dot.classList.add("bg-sky-400");
-                } else {
-                    const snap = await get(child(ref(db), `stats/${p}/TARGET_DEPT/target/${date}/${targetBranch}`));
-                    if(snap.exists()) dot.classList.add("bg-indigo-400");
-                }
-                return;
-            }
+            const userData = { password, fullName, role };
 
-            if(!activeSelectedWorker) return;
-            const snap = await get(child(ref(db), `stats/${p}/UMUMIY/${selectedCategory}/${date}/${activeSelectedWorker}`));
-            if(snap.exists()) { dot.classList.add("bg-emerald-400"); }
-        }
-
-        window.openFormForDate = async function(date) {
-            selectedDate = date;
-            const proj = document.getElementById("globalProjectSelect").value;
-            const targetBranch = document.getElementById("globalBranchSelect").value;
-            
-            if (selectedCategory !== "target" && !activeSelectedWorker) {
-                alert("Iltimos, avval chap paneldan xodimni tanlang!");
-                return;
-            }
-
-            document.getElementById("formTitleDate").innerText = `Sana: ${date} | Oqim: ${activeSelectedWorker || 'Umumiy'} | Bo'lim: ${selectedCategory.toUpperCase()}`;
-            document.getElementById("inputFormSection").classList.remove("hidden");
-            document.getElementById("inputFormSection").scrollIntoView({ behavior: 'smooth' });
-
-            const fieldsContainer = document.getElementById("dynamicFormFields");
-            fieldsContainer.innerHTML = "";
-
-            // 🔥 TUZATILDI: Admin bo'lganda formadagi yashirish yoki disabled qilish qoidalari butkul o'chirildi.
-            if(uRole === "boss") {
-                document.getElementById("formActionButtons").classList.add("hidden");
+            if (editId) {
+                await fetch(`${baseUrl}users/${editId}.json`, { method: 'PATCH', body: JSON.stringify(userData) });
             } else {
-                document.getElementById("formActionButtons").classList.remove("hidden");
+                await fetch(`${baseUrl}users/${username}.json`, { method: 'PUT', body: JSON.stringify(userData) });
             }
+            resetUserForm();
+            loadUsersList();
+        });
 
-            if(selectedCategory === "target") {
-                if(targetBranch === "JAMLANGAN") {
-                    fieldsContainer.innerHTML = `
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-2">
-                            <h4 class="text-xs font-bold text-sky-400">📊 Jami Target Xarajatlari (Jamlangan)</h4>
-                            ${getFormFieldsHTML("target", "TARGET_TOTAL")}
-                        </div>`;
-                    
-                    const snap = await get(child(ref(db), `stats/${proj}/TARGET_DEPT/target/${date}/TOTAL`));
-                    if(snap.exists()) {
-                        Object.keys(snap.val()).forEach(k => {
-                            const el = document.getElementById(`inp_TARGET_TOTAL_${k}`);
-                            if(el) el.value = snap.val()[k];
-                        });
-                    }
-                } else {
-                    fieldsContainer.innerHTML = `
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-2">
-                            <h4 class="text-xs font-bold text-indigo-400">📍 ${targetBranch} Hududi Targeti</h4>
-                            ${getFormFieldsHTML("target", "TARGET_" + targetBranch)}
-                        </div>`;
+        window.editUser = function(id, fullName, role, password) {
+            editIdInput.value = id;
+            usernameInput.value = id;
+            usernameInput.disabled = true;
+            passwordInput.value = password;
+            fullnameInput.value = fullName;
+            roleSelect.value = role;
+            
+            document.getElementById('form-title').innerText = "Foydalanuvchini Tahrirlash";
+            submitBtn.innerText = "Yangilash";
+            cancelBtn.classList.remove('hidden');
+        };
 
-                    const snap = await get(child(ref(db), `stats/${proj}/TARGET_DEPT/target/${date}/${targetBranch}`));
-                    if(snap.exists()) {
-                        Object.keys(snap.val()).forEach(k => {
-                            const el = document.getElementById(`inp_TARGET_${targetBranch}_${k}`);
-                            if(el) el.value = snap.val()[k];
-                        });
-                    }
-                }
-                return; 
-            }
-
-            fieldsContainer.innerHTML = `
-                <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3">
-                    <h4 class="text-xs font-bold text-emerald-400">📝 Kunlik Call Center Ma'lumotlari</h4>
-                    ${getFormFieldsHTML(selectedCategory, "UMUMIY")}
-                </div>`;
-
-            const snap = await get(child(ref(db), `stats/${proj}/UMUMIY/${selectedCategory}/${date}/${activeSelectedWorker}`));
-            if(snap.exists()) {
-                Object.keys(snap.val()).forEach(k => {
-                    const el = document.getElementById(`inp_UMUMIY_${k}`);
-                    if(el) el.value = snap.val()[k]; 
-                });
+        window.deleteUser = async function(id) {
+            if (confirm(`Haqiqatdan ham "${id}" foydalanuvchisini o'chirmoqchisiz?`)) {
+                await fetch(`${baseUrl}users/${id}.json`, { method: 'DELETE' });
+                loadUsersList();
             }
         };
 
-        window.closeForm = function() { document.getElementById("inputFormSection").classList.add("hidden"); };
-
-        function getFormFieldsHTML(cat, prefix) {
-            if(cat === "crm") {
-                return `<div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-                    <div><label class="text-slate-400 block mb-1">Yangi Lid</label><input type="number" id="inp_${prefix}_yangi" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 font-bold text-sky-400 focus:outline-none focus:border-sky-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Otkazib yuborilgan</label><input type="number" id="inp_${prefix}_otkaz" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 font-bold text-rose-400 focus:outline-none focus:border-rose-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Bog'lanib bo'lmadi</label><input type="number" id="inp_${prefix}_nocall" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 font-bold text-amber-400 focus:outline-none focus:border-amber-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Ofisga chaqirildi</label><input type="number" id="inp_${prefix}_invite" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 font-bold text-purple-400 focus:outline-none focus:border-purple-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Keldi (Sotildi)</label><input type="number" id="inp_${prefix}_sold" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 font-bold text-emerald-400 focus:outline-none focus:border-emerald-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Sifatsiz Lead</label><input type="number" id="inp_${prefix}_bad" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 font-bold text-slate-500 focus:outline-none focus:border-slate-600"></div>
-                </div>`;
-            }
-            if(cat === "sarkor") {
-                return `<div class="grid grid-cols-3 gap-3 text-xs">
-                    <div><label class="text-slate-400 block mb-1">Urinishlar (Call Try)</label><input type="number" id="inp_${prefix}_try" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 focus:outline-none focus:border-emerald-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Bog'lanildi (Success)</label><input type="number" id="inp_${prefix}_ok" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 focus:outline-none focus:border-emerald-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Jami Daqiqa</label><input type="number" id="inp_${prefix}_min" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 focus:outline-none focus:border-emerald-500"></div>
-                </div>`;
-            }
-            if(cat === "rop") {
-                return `<div class="grid grid-cols-4 gap-3 text-xs">
-                    <div><label class="text-slate-400 block mb-1">Obrobotka</label><input type="number" id="inp_${prefix}_total" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 focus:outline-none focus:border-emerald-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Aktiv Lid</label><input type="number" id="inp_${prefix}_active" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 focus:outline-none focus:border-emerald-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Brak Lid</label><input type="number" id="inp_${prefix}_brak" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 focus:outline-none focus:border-emerald-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Zakazlar</label><input type="number" id="inp_${prefix}_zakaz" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 focus:outline-none focus:border-emerald-500"></div>
-                </div>`;
-            }
-            if(cat === "target") {
-                return `<div class="grid grid-cols-2 gap-3 text-xs">
-                    <div><label class="text-slate-400 block mb-1">Xarajat ($)</label><input type="number" step="0.01" id="inp_${prefix}_spend" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-sky-400 focus:outline-none focus:border-sky-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Lidlar soni</label><input type="number" id="inp_${prefix}_leads" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 text-emerald-400 focus:outline-none focus:border-emerald-500"></div>
-                </div>`;
-            }
-            if(cat === "davomat") {
-                return `<div class="flex gap-3 text-xs items-center">
-                    <select id="inp_${prefix}_status" class="bg-slate-900 border border-slate-800 p-2 rounded-lg focus:outline-none focus:border-emerald-500"><option value="Keldi">Keldi</option><option value="Ketdi">Ketdi</option></select>
-                    <input type="time" id="inp_${prefix}_time" class="bg-slate-900 border border-slate-800 p-2 rounded-lg focus:outline-none focus:border-emerald-500">
-                </div>`;
-            }
-            if(cat === "oylik") {
-                return `<div class="grid grid-cols-3 gap-3 text-xs">
-                    <div><label class="text-slate-400 block mb-1">Kunlik Fix</label><input type="number" id="inp_${prefix}_fix" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 focus:outline-none focus:border-emerald-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Bonus</label><input type="number" id="inp_${prefix}_bonus" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 focus:outline-none focus:border-emerald-500"></div>
-                    <div><label class="text-slate-400 block mb-1">Shtraf</label><input type="number" id="inp_${prefix}_penalty" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-2 focus:outline-none focus:border-emerald-500"></div>
-                </div>`;
-            }
+        cancelBtn.addEventListener('click', resetUserForm);
+        function resetUserForm() {
+            userForm.reset();
+            editIdInput.value = '';
+            usernameInput.disabled = false;
+            document.getElementById('form-title').innerText = "Foydalanuvchi Yaratish";
+            submitBtn.innerText = "Saqlash";
+            cancelBtn.classList.add('hidden');
         }
 
-        window.saveDataToFirebase = async function() {
-            const proj = document.getElementById("globalProjectSelect").value;
-            const targetBranch = document.getElementById("globalBranchSelect").value;
+        // ==========================================
+        // 📝 WORKER: HISOBOT YUBORISH
+        // ==========================================
+        document.getElementById('report-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const status = document.getElementById('report-status').value;
+            const amount = parseFloat(document.getElementById('report-amount').value) || 0;
+            const region = document.getElementById('report-region').value;
+            const comment = document.getElementById('report-comment').value;
 
-            if (selectedCategory !== "target" && !activeSelectedWorker) {
-                alert("Iltimos, avval xodimni tanlang!");
-                return;
+            const reportData = {
+                operator: currentUser.username,
+                operatorName: currentUser.fullName,
+                status: status,
+                amount: status === 'success' ? amount : 0,
+                region: region,
+                comment: comment,
+                date: new Date().toISOString()
+            };
+
+            try {
+                await fetch(`${baseUrl}reports.json`, { method: 'POST', body: JSON.stringify(reportData) });
+                alert("Hisobot muvaffaqiyatli saqlandi!");
+                document.getElementById('report-form').reset();
+                document.getElementById('report-amount').value = 0;
+            } catch (err) {
+                alert("Xatolik yuz berdi.");
             }
+        });
 
-            try {
-                if(selectedCategory === "target") {
-                    if(targetBranch === "JAMLANGAN") {
-                        let data = {};
-                        document.querySelectorAll("[id^='inp_TARGET_TOTAL_']").forEach(el => {
-                            const key = el.id.replace("inp_TARGET_TOTAL_", "");
-                            data[key] = parseFloat(el.value) || 0;
-                        });
-                        await set(ref(db, `stats/${proj}/TARGET_DEPT/target/${selectedDate}/TOTAL`), data);
-                    } else {
-                        let data = {};
-                        document.querySelectorAll(`[id^='inp_TARGET_${targetBranch}_']`).forEach(el => {
-                            const key = el.id.replace(`inp_TARGET_${targetBranch}_`, "");
-                            data[key] = parseFloat(el.value) || 0;
-                        });
-                        await set(ref(db, `stats/${proj}/TARGET_DEPT/target/${selectedDate}/${targetBranch}`), data);
+        // ==========================================
+        // 📊 DASHBOARD & APEXCHARTS (KHAMIID & BOSS)
+        // ==========================================
+        async function loadDashboardData() {
+            const res = await fetch(`${baseUrl}reports.json`);
+            const data = await res.json();
+
+            let totalSales = 0; let successCount = 0; let failedCount = 0; let warmCount = 0;
+            let regionSales = { "Toshkent": 0, "Farg'ona": 0, "Namangan": 0, "Andijon": 0 };
+
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const r = data[key];
+                    if (r.status === 'success') {
+                        successCount++;
+                        totalSales += (r.amount || 0);
+                        if (regionSales[r.region] !== undefined) regionSales[r.region] += (r.amount || 0);
+                    } else if (r.status === 'unqualified') {
+                        failedCount++;
+                    } else if (r.status === 'warm') {
+                        warmCount++;
                     }
-                } else {
-                    let generalData = {};
-                    document.querySelectorAll("[id^='inp_UMUMIY_']").forEach(el => {
-                        const key = el.id.replace("inp_UMUMIY_", "");
-                        generalData[key] = el.type === "number" ? (parseFloat(el.value) || 0) : el.value;
-                    });
-                    await set(ref(db, `stats/${proj}/UMUMIY/${selectedCategory}/${selectedDate}/${activeSelectedWorker}`), generalData);
-                }
-                alert("Ma'lumotlar muvaffaqiyatli saqlandi! ⚡");
-                closeForm(); renderCalendar();
-            } catch(e) { console.error(e); }
-        };
-
-        window.deleteDataFromFirebase = async function() {
-            if(!confirm("Ushbu kunga tegishli ma'lumotlarni o'chirmoqchimisiz?")) return;
-            const proj = document.getElementById("globalProjectSelect").value;
-            const targetBranch = document.getElementById("globalBranchSelect").value;
-
-            try {
-                if(selectedCategory === "target") {
-                    if(targetBranch === "JAMLANGAN") {
-                        await remove(ref(db, `stats/${proj}/TARGET_DEPT/target/${selectedDate}/TOTAL`));
-                    } else {
-                        await remove(ref(db, `stats/${proj}/TARGET_DEPT/target/${selectedDate}/${targetBranch}`));
-                    }
-                } else {
-                    await remove(ref(db, `stats/${proj}/UMUMIY/${selectedCategory}/${selectedDate}/${activeSelectedWorker}`));
-                }
-                alert("Ma'lumotlar o'chirildi.");
-                closeForm(); renderCalendar();
-            } catch(e) { console.error(e); }
-        };
-
-        window.addProject = async function() {
-            const name = document.getElementById("adm_proj_name").value.trim();
-            if(!name) return;
-            await set(ref(db, `projects/${name}/created`), true);
-            alert(`Loyiha qo'shildi: ${name}`);
-            document.getElementById("adm_proj_name").value = "";
-            await loadProjectsDropdown(); loadAllUsersForAdmin();
-        };
-
-        window.addBranch = async function() {
-            const proj = document.getElementById("adm_proj_select").value;
-            const branch = document.getElementById("adm_branch_name").value.trim();
-            if(!branch) return;
-            await set(ref(db, `projects/${proj}/branches/${branch}`), true);
-            alert(`Target hududi qo'shildi: ${branch}`);
-            document.getElementById("adm_branch_name").value = "";
-            onProjectChange();
-        };
-
-        window.createUser = async function() {
-            const u = document.getElementById("adm_user_login").value.trim();
-            const p = document.getElementById("adm_user_pass").value.trim();
-            const r = document.getElementById("adm_user_role").value;
-            const prj = document.getElementById("adm_user_project_ctx").value;
-
-            if(!u || !p) return;
-            await set(ref(db, `users/${u}`), { password: p, role: r, project: prj });
-            alert(`Xodim saqlandi: ${u}`);
-            document.getElementById("adm_user_login").value = "";
-            document.getElementById("adm_user_pass").value = "";
-            loadAllUsersForAdmin(); loadWorkersForProject();
-        };
-
-        window.deleteUser = async function(username) {
-            if(!confirm(`Haqiqatan ham ${username} xodimini o'chirmoqchimisiz?`)) return;
-            try {
-                await remove(ref(db, `users/${username}`));
-                alert("Xodim o'chirildi.");
-                loadAllUsersForAdmin(); loadWorkersForProject();
-            } catch(e) { console.error(e); }
-        };
-
-        async function loadAllUsersForAdmin() {
-            const snap = await get(child(ref(db), "users"));
-            const tbody = document.getElementById("adminUsersTableBody");
-            const prjSelect = document.getElementById("adm_user_project_ctx");
-            if(!tbody) return;
-            tbody.innerHTML = ""; prjSelect.innerHTML = "";
-
-            const pSnap = await get(child(ref(db), "projects"));
-            if(pSnap.exists()) {
-                Object.keys(pSnap.val()).forEach(p => {
-                    prjSelect.innerHTML += `<option value="${p}">${p}</option>`;
                 });
             }
-            if(snap.exists()) {
-                Object.keys(snap.val()).forEach(u => {
-                    tbody.innerHTML += `<tr class="border-b border-slate-900">
-                        <td class="py-1.5">${u}</td>
-                        <td class="py-1.5 font-mono">${snap.val()[u].password}</td>
-                        <td class="py-1.5 text-sky-400">${snap.val()[u].role}</td>
-                        <td class="py-1.5 text-emerald-400 font-bold">${snap.val()[u].project}</td>
-                        <td class="py-1.5 text-right">
-                            <button onclick="deleteUser('${u}')" class="text-rose-500 hover:text-rose-400 font-semibold px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 text-[10px] cursor-pointer">O'chirish</button>
-                        </td>
-                    </tr>`;
-                });
-            }
+
+            document.getElementById('kpi-total-sales').innerText = totalSales.toLocaleString('uz-UZ') + " UZS";
+            document.getElementById('kpi-success-count').innerText = successCount;
+            document.getElementById('kpi-failed-count').innerText = failedCount;
+
+            renderCharts(regionSales, successCount, warmCount, failedCount);
+        }
+
+        function renderCharts(regionSales, success, warm, failed) {
+            const salesOptions = {
+                chart: { type: 'bar', height: 300, toolbar: { show: false } },
+                series: [{ name: 'Savdo Summasi', data: Object.values(regionSales) }],
+                xaxis: { categories: Object.keys(regionSales) },
+                colors: ['#3B82F6'],
+                plotOptions: { bar: { borderRadius: 6, columnName: '45%' } },
+                dataLabels: { enabled: false }
+            };
+
+            if (salesChart) salesChart.destroy();
+            salesChart = new ApexCharts(document.querySelector("#sales-chart"), salesOptions);
+            salesChart.render();
+
+            const statusOptions = {
+                chart: { type: 'donut', height: 300 },
+                series: [success, warm, failed],
+                labels: ['Muvaffaqiyatli', 'Iliq', 'Rad etilgan'],
+                colors: ['#10B981', '#F59E0B', '#EF4444'],
+                legend: { position: 'bottom' }
+            };
+
+            if (statusChart) statusChart.destroy();
+            statusChart = new ApexCharts(document.querySelector("#status-chart"), statusOptions);
+            statusChart.render();
         }
     </script>
 </body>
