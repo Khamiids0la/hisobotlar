@@ -6,17 +6,11 @@
     <title>Hisobotchi by khamiid</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
         .view-section { display: none; }
         .view-section.active { display: flex; }
-        /* Kalendar va jadval kunlari uchun silliq effektlar */
-        .calendar-day { transition: all 0.2s ease-in-out; }
-        .calendar-day:hover:not(.disabled) { transform: scale(1.08); }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
@@ -54,9 +48,6 @@
                 <nav class="space-y-1">
                     <button id="menu-users" onclick="switchView('users-view')" class="w-full text-left hidden flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
                         <span>👤</span> Hisob Yaratish (Users)
-                    </button>
-                    <button id="menu-rop" onclick="switchView('rop-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
-                        <span>📉</span> ROP Kunlik Hisobot
                     </button>
                     <button id="menu-crm" onclick="switchView('crm-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
                         <span>⚡</span> CRM Live
@@ -130,107 +121,6 @@
                 </div>
             </div>
 
-            <div id="rop-view" class="sub-view space-y-6 w-full hidden animate-fade-in">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 border-b border-gray-200">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ROP Kunlik Hisobot Bo'limi</h2>
-                        <p class="text-sm text-gray-500">Workerlar hisoboti va foizli konversiyalarning avtomatik hisob-kitoblari</p>
-                    </div>
-                    <div class="flex items-center gap-2 bg-white p-2 rounded-xl border border-gray-200 shadow-xs">
-                        <span class="text-xs font-semibold text-gray-500 pl-2">Sana:</span>
-                        <input type="date" id="rop-date" onchange="loadRopReports()" class="border-0 bg-transparent text-sm font-bold text-gray-800 outline-none p-1 cursor-pointer">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-blue-600">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Jami Obrobotka</p>
-                        <p id="rop-total-ob" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-emerald-500">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Aktiv Sog'lom</p>
-                        <p id="rop-total-akt" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="rop-total-akt-pct" class="text-xs text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-rose-500">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Brak</p>
-                        <p id="rop-total-brak" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="rop-total-brak-pct" class="text-xs text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-amber-500">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Nedozvon</p>
-                        <p id="rop-total-ned" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="rop-total-ned-pct" class="text-xs text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-indigo-600 col-span-2 lg:col-span-1">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Zakaz (Konversiya)</p>
-                        <p id="rop-total-zakaz" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="rop-total-zakaz-pct" class="text-xs text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <div id="rop-form-card" class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-4">
-                        <div class="border-b border-gray-100 pb-2">
-                            <h3 id="rop-form-title" class="text-base font-bold text-gray-800">Hisobot Kiritish</h3>
-                            <p class="text-xs text-gray-400 mt-0.5" id="rop-form-subtitle"></p>
-                        </div>
-                        <form id="rop-data-form" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1">Jami obrobotka lid</label>
-                                <input type="number" id="rop-in-ob" min="0" required oninput="calcLiveRopForm()" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs font-bold text-emerald-700 mb-1">Aktiv sog'lom lid</label>
-                                    <input type="number" id="rop-in-akt" min="0" required oninput="calcLiveRopForm()" class="w-full border border-emerald-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500">
-                                    <span id="fc-akt" class="text-[11px] text-emerald-600 font-bold">0%</span>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-rose-700 mb-1">Brak lid</label>
-                                    <input type="number" id="rop-in-brak" min="0" required oninput="calcLiveRopForm()" class="w-full border border-rose-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-rose-500">
-                                    <span id="fc-brak" class="text-[11px] text-rose-600 font-bold">0%</span>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs font-bold text-amber-700 mb-1">Nedozvon</label>
-                                    <input type="number" id="rop-in-ned" min="0" required oninput="calcLiveRopForm()" class="w-full border border-amber-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500">
-                                    <span id="fc-ned" class="text-[11px] text-amber-600 font-bold">0%</span>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-indigo-700 mb-1">Zakaz soni</label>
-                                    <input type="number" id="rop-in-zakaz" min="0" required oninput="calcLiveRopForm()" class="w-full border border-indigo-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <span id="fc-zakaz" class="text-[11px] text-indigo-600 font-bold">0%</span>
-                                </div>
-                            </div>
-                            <div id="rop-submit-container" class="pt-2">
-                                <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-semibold py-2.5 rounded-xl text-sm shadow-md transition cursor-pointer">Hisobotni Saqlash 💾</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 xl:col-span-2 overflow-x-auto">
-                        <h3 class="text-base font-bold text-gray-800 mb-4">Kunlik Operatorlar Ro'yxati Kalendari</h3>
-                        <table class="w-full text-left text-xs whitespace-nowrap">
-                            <thead>
-                                <tr class="border-b border-gray-100 text-gray-400 font-bold uppercase tracking-wider">
-                                    <th class="pb-3">Worker</th>
-                                    <th class="pb-3">Obrobotka</th>
-                                    <th class="pb-3">Aktiv (%)</th>
-                                    <th class="pb-3">Brak (%)</th>
-                                    <th class="pb-3">Nedozvon (%)</th>
-                                    <th class="pb-3">Zakaz (Konv %)</th>
-                                    <th class="pb-3 text-right">Amal</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rop-table-body" class="text-gray-600 divide-y divide-gray-50">
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
             <div id="crm-view" class="sub-view space-y-6 w-full hidden">
                 <div class="flex justify-between items-center pb-4 border-b border-gray-200">
                     <div>
@@ -293,24 +183,29 @@
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-3">
                         <h3 class="text-base font-bold text-gray-700 border-b border-gray-100 pb-2">Xodimlar (Workers)</h3>
+                        <div id="sarkor-total-btn-container" class="pb-1">
+                            <button id="btn-sarkor-total" onclick="selectSarkorTotal()" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex justify-between items-center bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 cursor-pointer">
+                                <span>🗂️ Jami xodimlar</span> <span class="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded">Jamlama</span>
+                            </button>
+                        </div>
                         <div id="sarkor-workers-list" class="space-y-1.5"></div>
                     </div>
 
                     <div id="sarkor-main-panel" class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
                         
-                        <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 id="calendar-month-title" class="text-base font-bold text-gray-800">Iyul 2026</h3>
-                                <div class="flex gap-1">
-                                    <button onclick="changeMonth(-1)" class="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-xs font-bold cursor-pointer">◀</button>
-                                    <button onclick="changeMonth(1)" class="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-xs font-bold cursor-pointer">▶</button>
+                        <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200 flex flex-col justify-between">
+                            <div>
+                                <h3 class="text-base font-bold text-gray-800 mb-2">Kalendar (Sana tanlash)</h3>
+                                <p class="text-xs text-gray-400 mb-4">Kerakli kunni bitta bosing yoki sichqoncha bilan oraliqni (diapazonni) tanlang</p>
+                                <div class="mb-4">
+                                    <input type="text" id="sarkor-flatpickr" placeholder="Sanani tanlang..." class="w-full border border-gray-200 rounded-xl p-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
                                 </div>
                             </div>
                             
-                            <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-gray-400 mb-2">
-                                <div>Du</div><div>Se</div><div>Ch</div><div>Pa</div><div>Ju</div><div>Sh</div><div>Ya</div>
+                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mt-2">
+                                <span class="text-xs font-bold text-gray-400 block mb-1">Filtrlangan rejim:</span>
+                                <p id="calendar-filter-status" class="text-sm font-bold text-gray-700">Sana tanlanmagan</p>
                             </div>
-                            <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5"></div>
                         </div>
 
                         <div class="space-y-4">
@@ -334,7 +229,7 @@
                                     <div class="grid grid-cols-2 gap-3">
                                         <div>
                                             <label class="block text-xs font-semibold text-gray-500 mb-1">Sarflangan Soat</label>
-                                            <input type="number" id="sarkor-hours" min="0" max="24" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                            <input type="number" id="sarkor-hours" min="0" max="999" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
                                         </div>
                                         <div>
                                             <label class="block text-xs font-semibold text-gray-500 mb-1">Daqiqa</label>
@@ -364,31 +259,22 @@
         let selectedFunnelId = null;
         let myChart = null;
 
-        let selectedWorkerUsername = null;
-        let currentCalYear = 2026;
-        let currentCalMonth = 6; 
-        let selectedDateStr = null; 
+        let selectedWorkerUsername = null; // Agar "total_summary" bo'lsa jamlama hisoblanadi
+        let selectedDatesArray = []; 
         let sarkorChartObj = null;
-
-        // ROP Bo'limi uchun o'zgaruvchilar
-        let selectedRopWorker = null; 
-        let allRegisteredUsers = {}; 
+        let flatpickrInstance = null;
 
         const stageColors = ['rgba(14, 165, 233, 0.75)', 'rgba(245, 158, 11, 0.75)', 'rgba(249, 115, 22, 0.75)', 'rgba(99, 102, 241, 0.75)', 'rgba(168, 85, 247, 0.75)', 'rgba(16, 185, 129, 0.75)', 'rgba(20, 184, 166, 0.75)', 'rgba(34, 197, 94, 0.75)', 'rgba(244, 63, 94, 0.75)'];
         const stageBorderColors = ['#0ea5e9', '#f59e0b', '#f97316', '#6366f1', '#a855f7', '#10b981', '#14b8a6', '#22c55e', '#f43f5e'];
-        const monthNames = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"];
 
         function switchView(viewId) {
             document.querySelectorAll('.sub-view').forEach(view => view.classList.add('hidden'));
             document.getElementById(viewId).classList.remove('hidden');
-            
             document.getElementById('menu-users').className = "text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer " + (currentUser.role === 'superboss' ? 'w-full' : 'hidden!');
-            document.getElementById('menu-rop').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer";
             document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer";
             document.getElementById('menu-sarkor').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer";
 
             if (viewId === 'users-view') document.getElementById('menu-users').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white";
-            else if (viewId === 'rop-view') { document.getElementById('menu-rop').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white"; initRopView(); }
             else if (viewId === 'crm-view') { document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white"; loadFunnelsList(); }
             else if (viewId === 'sarkor-view') { document.getElementById('menu-sarkor').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white"; loadSarkorWorkersList(); }
         }
@@ -409,7 +295,7 @@
                 const userData = await res.json();
                 if (userData && userData.password === pass) { currentUser = { username: user, ...userData }; initApp(); }
                 else { errorDiv.innerText = "Login yoki parol noto'g'ri!"; errorDiv.classList.remove('hidden'); }
-            } catch (err) { errorDiv.innerText = "Xatolik ro'y berdi."; errorDiv.classList.remove('hidden'); }
+            } catch (err) { errorDiv.innerText = "Xatolik."; errorDiv.classList.remove('hidden'); }
         });
 
         function initApp() {
@@ -423,12 +309,12 @@
                 loadUsersList(); switchView('users-view');
             } else {
                 badge.innerText = currentUser.role === 'boss' ? 'Boss' : 'Worker'; badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-purple-600 text-white';
-                switchView('rop-view');
+                switchView('crm-view');
             }
         }
 
         function logout() {
-            currentUser = null; selectedFunnelId = null; selectedWorkerUsername = null; selectedDateStr = null; selectedRopWorker = null;
+            currentUser = null; selectedFunnelId = null; selectedWorkerUsername = null; selectedDatesArray = [];
             if(myChart) { myChart.destroy(); myChart = null; }
             if(sarkorChartObj) { sarkorChartObj.destroy(); sarkorChartObj = null; }
             document.getElementById('login-form').reset();
@@ -469,7 +355,6 @@
         document.getElementById('cancel-btn').addEventListener('click', resetUserForm);
         function resetUserForm() { document.getElementById('user-form').reset(); document.getElementById('edit-id').value = ''; document.getElementById('username').disabled = false; document.getElementById('cancel-btn').classList.add('hidden'); }
 
-        // ================= CRM LIVE MANTIQLARI =================
         async function loadFunnelsList() {
             const res = await fetch(`${baseUrl}funnels.json`); const data = await res.json();
             const container = document.getElementById('funnel-list'); container.innerHTML = ''; if (!data) return;
@@ -477,7 +362,6 @@
                 const btn = document.createElement('button'); btn.className = `w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex justify-between items-center cursor-pointer ${selectedFunnelId === key ? 'bg-slate-900 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'}`;
                 btn.innerHTML = `<span>📂 ${data[key].name}</span>`; btn.onclick = () => selectFunnel(key, data[key].name); container.appendChild(btn);
             });
-            if(currentUser.role === 'superboss') document.getElementById('add-funnel-container').classList.remove('hidden');
         }
         async function addNewFunnel() {
             const name = document.getElementById('new-funnel-name').value.trim(); if (!name) return;
@@ -524,10 +408,22 @@
         // ================= SARKOR MANTIQLARI =================
         async function loadSarkorWorkersList() {
             const container = document.getElementById('sarkor-workers-list'); container.innerHTML = '';
+            
+            // Faqat Worker bo'lmaganlar jami bo'limini ko'radi
             if (currentUser.role === 'worker') {
+                document.getElementById('sarkor-total-btn-container').classList.add('hidden!');
                 const btn = document.createElement('button'); btn.className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs";
                 btn.innerHTML = `🌟 ${currentUser.fullName} (Siz)`; btn.onclick = () => selectWorker(currentUser.username); container.appendChild(btn); selectWorker(currentUser.username); return;
             }
+            
+            document.getElementById('sarkor-total-btn-container').classList.remove('hidden!');
+            const totalBtn = document.getElementById('btn-sarkor-total');
+            if (selectedWorkerUsername === "total_summary") {
+                totalBtn.className = "w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition flex justify-between items-center bg-slate-900 text-white cursor-pointer border border-slate-900";
+            } else {
+                totalBtn.className = "w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition flex justify-between items-center bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 cursor-pointer";
+            }
+
             const res = await fetch(`${baseUrl}users.json`); const data = await res.json(); if(!data) return;
             Object.keys(data).forEach(key => {
                 if(data[key].role !== 'worker') return;
@@ -538,47 +434,135 @@
 
         function selectWorker(username) {
             selectedWorkerUsername = username; document.getElementById('sarkor-placeholder').classList.add('hidden'); document.getElementById('sarkor-main-panel').classList.remove('hidden');
-            loadSarkorWorkersList(); buildCalendar(); resetSarkorFormFields("Kun tanlang...");
+            loadSarkorWorkersList();
+            initFlatpickrCalendar();
+            resetSarkorFormFields("Sana belgilang...");
         }
 
-        function buildCalendar() {
-            document.getElementById('calendar-month-title').innerText = `${monthNames[currentCalMonth]} ${currentCalYear}`; const grid = document.getElementById('calendar-days-grid'); grid.innerHTML = '';
-            const firstDayIndex = new Date(currentCalYear, currentCalMonth, 1).getDay(); const startOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1; const totalDays = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
-            for (let i = 0; i < startOffset; i++) grid.appendChild(document.createElement('div'));
-            for (let day = 1; day <= totalDays; day++) {
-                const dayBtn = document.createElement('button'); const mStr = String(currentCalMonth + 1).padStart(2, '0'); const dStr = String(day).padStart(2, '0'); const loopDateStr = `${currentCalYear}-${mStr}-${dStr}`;
-                dayBtn.innerText = day; dayBtn.className = `calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border ${selectedDateStr === loopDateStr ? 'bg-blue-600 border-blue-600 text-white shadow-md' : 'bg-gray-50 border-gray-100 text-gray-800 hover:bg-gray-200'}`;
-                dayBtn.onclick = () => selectSarkorDate(loopDateStr, dayBtn); grid.appendChild(dayBtn);
-            }
+        function selectSarkorTotal() {
+            selectedWorkerUsername = "total_summary"; document.getElementById('sarkor-placeholder').classList.add('hidden'); document.getElementById('sarkor-main-panel').classList.remove('hidden');
+            loadSarkorWorkersList();
+            initFlatpickrCalendar();
+            resetSarkorFormFields("Sana belgilang (Jamlama)...");
         }
 
-        function changeMonth(direction) {
-            currentCalMonth += direction; if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; } if (currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; } buildCalendar();
+        // Flatpickr Kalendarni ishga tushirish (Single va Range tartibida)
+        function initFlatpickrCalendar() {
+            if (flatpickrInstance) { flatpickrInstance.destroy(); }
+            
+            flatpickrInstance = flatpickr("#sarkor-flatpickr", {
+                mode: "range",
+                dateFormat: "Y-m-d",
+                placeholder: "Sanani tanlang (Kunlik / Oraliq)...",
+                onClose: function(selectedDates, dateStr, instance) {
+                    if (selectedDates.length === 0) {
+                        document.getElementById('calendar-filter-status').innerText = "Sana tanlanmagan";
+                        resetSarkorFormFields(selectedWorkerUsername === "total_summary" ? "Jamlama rejim..." : "Kunni tanlang...");
+                        return;
+                    }
+
+                    selectedDatesArray = selectedDates.map(d => instance.formatDate(d, "Y-m-d"));
+                    
+                    if (selectedDatesArray.length === 1) {
+                        // Bitta kun tanlangan holat
+                        document.getElementById('calendar-filter-status').innerText = `Kunlik: ${selectedDatesArray[0]}`;
+                        fetchSarkorDataForDates(selectedDatesArray);
+                    } else if (selectedDatesArray.length === 2) {
+                        // Sana oralig'i (diapazon) tanlangan holat
+                        document.getElementById('calendar-filter-status').innerText = `Oraliq: ${selectedDatesArray[0]} dan ${selectedDatesArray[1]} gacha`;
+                        
+                        // Oraliqdagi barcha kunlar ro'yxatini shakllantirish
+                        let start = new Date(selectedDates[0]);
+                        let end = new Date(selectedDates[1]);
+                        let datesRangeList = [];
+                        while (start <= end) {
+                            datesRangeList.push(instance.formatDate(new Date(start), "Y-m-d"));
+                            start.setDate(start.getDate() + 1);
+                        }
+                        fetchSarkorDataForDates(datesRangeList);
+                    }
+                }
+            });
+            flatpickrInstance.clear();
         }
 
-        async function selectSarkorDate(dateStr, element) {
-            selectedDateStr = dateStr;
-            document.querySelectorAll('.calendar-day').forEach(b => { b.className = "calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border bg-gray-50 border-gray-100 text-gray-800 hover:bg-gray-200"; });
-            element.className = "calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border bg-blue-600 border-blue-600 text-white shadow-md";
-            document.getElementById('sarkor-form-title').innerText = `📅 Sana: ${dateStr}`;
+        // Tanlangan sanalar bo'yicha Firebase ma'lumotlarini hisoblash
+        async function fetchSarkorDataForDates(datesList) {
+            let totalAttempts = 0, totalSuccess = 0, totalHours = 0, totalMinutes = 0;
+            let isRange = datesList.length > 1;
 
-            const isEditable = (currentUser.role === 'superboss' || currentUser.username === selectedWorkerUsername);
-            document.getElementById('sarkor-attempts').disabled = !isEditable; document.getElementById('sarkor-success').disabled = !isEditable; document.getElementById('sarkor-hours').disabled = !isEditable; document.getElementById('sarkor-minutes').disabled = !isEditable;
-            if(isEditable) document.getElementById('sarkor-save-btn-container').classList.remove('hidden');
-            else document.getElementById('sarkor-save-btn-container').classList.add('hidden');
+            if (selectedWorkerUsername === "total_summary") {
+                // JAMI XODIMLAR JAMLAMASI
+                document.getElementById('sarkor-form-title').innerText = isRange ? "📊 Jami Jamoa Jamlamasi (Oraliq)" : `📊 Jami Jamoa: ${datesList[0]}`;
+                
+                // Saqlash tugmasini yashirish (Jamlama rejimda saqlab bo'lmaydi)
+                document.getElementById('sarkor-save-btn-container').classList.add('hidden');
+                setFieldsDisabled(true);
 
-            const res = await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${dateStr}.json`); const data = await res.json();
-            if (data) {
-                document.getElementById('sarkor-attempts').value = data.attempts || 0; document.getElementById('sarkor-success').value = data.success || 0; document.getElementById('sarkor-hours').value = data.hours || 0; document.getElementById('sarkor-minutes').value = data.minutes || 0;
-                updateSarkorMiniChart(data.attempts || 0, data.success || 0);
+                const res = await fetch(`${baseUrl}sarkor.json`); const allData = await res.json();
+                if (allData) {
+                    Object.keys(allData).forEach(wKey => {
+                        datesList.forEach(dStr => {
+                            if (allData[wKey] && allData[wKey][dStr]) {
+                                const dayData = allData[wKey][dStr];
+                                totalAttempts += parseInt(dayData.attempts) || 0;
+                                totalSuccess += parseInt(dayData.success) || 0;
+                                totalHours += parseInt(dayData.hours) || 0;
+                                totalMinutes += parseInt(dayData.minutes) || 0;
+                            }
+                        });
+                    });
+                }
             } else {
-                document.getElementById('sarkor-attempts').value = ''; document.getElementById('sarkor-success').value = ''; document.getElementById('sarkor-hours').value = ''; document.getElementById('sarkor-minutes').value = '';
-                updateSarkorMiniChart(0, 0);
+                // ANIQ BITTA XODIM REJIMI
+                document.getElementById('sarkor-form-title').innerText = isRange ? `📅 ${selectedWorkerUsername} (Oraliq hisobot)` : `📅 Sana: ${datesList[0]}`;
+                
+                // Agar bitta kun tanlangan bo'lsa va huquqi bo'lsa saqlashni ochamiz, diapazonda saqlash yopiq bo'ladi
+                const isEditable = !isRange && (currentUser.role === 'superboss' || currentUser.username === selectedWorkerUsername);
+                if (isEditable) document.getElementById('sarkor-save-btn-container').classList.remove('hidden');
+                else document.getElementById('sarkor-save-btn-container').classList.add('hidden');
+                setFieldsDisabled(!isEditable);
+
+                const res = await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}.json`); const workerData = await res.json();
+                if (workerData) {
+                    datesList.forEach(dStr => {
+                        if (workerData[dStr]) {
+                            totalAttempts += parseInt(workerData[dStr].attempts) || 0;
+                            totalSuccess += parseInt(workerData[dStr].success) || 0;
+                            totalHours += parseInt(workerData[dStr].hours) || 0;
+                            totalMinutes += parseInt(workerData[dStr].minutes) || 0;
+                        }
+                    });
+                }
             }
+
+            // Daqiqalarni soatga o'tkazish logikasi
+            if (totalMinutes >= 60) {
+                totalHours += Math.floor(totalMinutes / 60);
+                totalMinutes = totalMinutes % 60;
+            }
+
+            // Maydonlarni to'ldirish
+            document.getElementById('sarkor-attempts').value = totalAttempts || (isRange || selectedWorkerUsername==="total_summary" ? 0 : '');
+            document.getElementById('sarkor-success').value = totalSuccess || (isRange || selectedWorkerUsername==="total_summary" ? 0 : '');
+            document.getElementById('sarkor-hours').value = totalHours || (isRange || selectedWorkerUsername==="total_summary" ? 0 : '');
+            document.getElementById('sarkor-minutes').value = totalMinutes || (isRange || selectedWorkerUsername==="total_summary" ? 0 : '');
+            
+            updateSarkorMiniChart(totalAttempts, totalSuccess);
+        }
+
+        function setFieldsDisabled(status) {
+            document.getElementById('sarkor-attempts').disabled = status;
+            document.getElementById('sarkor-success').disabled = status;
+            document.getElementById('sarkor-hours').disabled = status;
+            document.getElementById('sarkor-minutes').disabled = status;
         }
 
         function resetSarkorFormFields(title) {
-            document.getElementById('sarkor-form-title').innerText = title; document.getElementById('sarkor-data-form').reset(); document.getElementById('sarkor-save-btn-container').classList.add('hidden'); selectedDateStr = null; updateSarkorMiniChart(0, 0);
+            document.getElementById('sarkor-form-title').innerText = title; 
+            document.getElementById('sarkor-data-form').reset(); 
+            document.getElementById('sarkor-save-btn-container').classList.add('hidden'); 
+            updateSarkorMiniChart(0, 0);
         }
 
         function updateSarkorMiniChart(attempts, success) {
@@ -590,213 +574,19 @@
         }
 
         document.getElementById('sarkor-data-form').addEventListener('submit', async (e) => {
-            e.preventDefault(); if (!selectedWorkerUsername || !selectedDateStr) return;
-            const attempts = parseInt(document.getElementById('sarkor-attempts').value) || 0; const success = parseInt(document.getElementById('sarkor-success').value) || 0; const hours = parseInt(document.getElementById('sarkor-hours').value) || 0; const minutes = parseInt(document.getElementById('sarkor-minutes').value) || 0;
+            e.preventDefault(); 
+            if (!selectedWorkerUsername || selectedWorkerUsername === "total_summary" || selectedDatesArray.length !== 1) return;
+            
+            const targetDateStr = selectedDatesArray[0];
+            const attempts = parseInt(document.getElementById('sarkor-attempts').value) || 0; 
+            const success = parseInt(document.getElementById('sarkor-success').value) || 0; 
+            const hours = parseInt(document.getElementById('sarkor-hours').value) || 0; 
+            const minutes = parseInt(document.getElementById('sarkor-minutes').value) || 0; 
+            
             if (success > attempts) { alert("Muvaffaqiyatli qo'ng'iroqlar urinishlardan ko'p bo'lishi mumkin emas!"); return; }
-            await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${selectedDateStr}.json`, { method: 'PUT', body: JSON.stringify({ attempts, success, hours, minutes }) });
+            
+            await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${targetDateStr}.json`, { method: 'PUT', body: JSON.stringify({ attempts, success, hours, minutes }) });
             updateSarkorMiniChart(attempts, success); alert("Sarkor hisoboti muvaffaqiyatli saqlandi! 👑⚡");
-        });
-
-
-        // ================= NEW: ROP KUNLIK HISOBOT LOGIC =================
-        async function initRopView() {
-            // Bugungi sanani o'rnatish (agar o'rnatilmagan bo'lsa)
-            const dateInput = document.getElementById('rop-date');
-            if(!dateInput.value) {
-                const today = new Date();
-                dateInput.value = today.toISOString().split('T')[0];
-            }
-            
-            // Foydalanuvchilarni bazadan yuklab olish (Ismlarni chiqarish uchun)
-            try {
-                const res = await fetch(`${baseUrl}users.json`);
-                allRegisteredUsers = await res.json() || {};
-            } catch(e) { allRegisteredUsers = {}; }
-
-            // Huquqqa qarab formani sozlash
-            setupRopFormPermissions();
-            loadRopReports();
-        }
-
-        function setupRopFormPermissions() {
-            const formCard = document.getElementById('rop-form-card');
-            const submitContainer = document.getElementById('rop-submit-container');
-            const title = document.getElementById('rop-form-title');
-            const subtitle = document.getElementById('rop-form-subtitle');
-
-            // Barcha inputlarni tozalash
-            document.getElementById('rop-data-form').reset();
-            calcLiveRopForm();
-
-            if (currentUser.role === 'boss') {
-                // Boss hech narsa kirita olmaydi, faqat kuzatadi
-                formCard.classList.add('hidden');
-            } else if (currentUser.role === 'worker') {
-                // Worker faqat o'zi uchun kiritadi
-                formCard.classList.remove('hidden');
-                submitContainer.classList.remove('hidden');
-                selectedRopWorker = currentUser.username;
-                title.innerText = "Hisobot Kiritish (Siz)";
-                subtitle.innerText = currentUser.fullName + " o'z kunlik hisobotingizni yozing";
-                setRopInputsDisabled(false);
-            } else if (currentUser.role === 'superboss') {
-                // Khamiid / 2236 istalgan workerga yoki tahrirlashga to'liq ega
-                formCard.classList.remove('hidden');
-                submitContainer.classList.remove('hidden');
-                title.innerText = "Hisobot boshqaruvi";
-                subtitle.innerText = "Jadvaldan xodimni tanlab tahrirlang yoki kiriting";
-                if(!selectedRopWorker) {
-                    setRopInputsDisabled(true);
-                    title.innerText = "Xodimni tanlang...";
-                    submitContainer.classList.add('hidden');
-                } else {
-                    setRopInputsDisabled(false);
-                    submitContainer.classList.remove('hidden');
-                    const name = allRegisteredUsers[selectedRopWorker] ? allRegisteredUsers[selectedRopWorker].fullName : selectedRopWorker;
-                    title.innerText = `Tahrirlash: ${name}`;
-                }
-            }
-        }
-
-        function setRopInputsDisabled(status) {
-            document.getElementById('rop-in-ob').disabled = status;
-            document.getElementById('rop-in-akt').disabled = status;
-            document.getElementById('rop-in-brak').disabled = status;
-            document.getElementById('rop-in-ned').disabled = status;
-            document.getElementById('rop-in-zakaz').disabled = status;
-        }
-
-        function calcLiveRopForm() {
-            const ob = parseFloat(document.getElementById('rop-in-ob').value) || 0;
-            const akt = parseFloat(document.getElementById('rop-in-akt').value) || 0;
-            const brak = parseFloat(document.getElementById('rop-in-brak').value) || 0;
-            const ned = parseFloat(document.getElementById('rop-in-ned').value) || 0;
-            const zakaz = parseFloat(document.getElementById('rop-in-zakaz').value) || 0;
-
-            document.getElementById('fc-akt').innerText = ob > 0 ? ((akt / ob) * 100).toFixed(1) + '%' : '0%';
-            document.getElementById('fc-brak').innerText = ob > 0 ? ((brak / ob) * 100).toFixed(1) + '%' : '0%';
-            document.getElementById('fc-ned').innerText = ob > 0 ? ((ned / ob) * 100).toFixed(1) + '%' : '0%';
-            document.getElementById('fc-zakaz').innerText = ob > 0 ? ((zakaz / ob) * 100).toFixed(1) + '%' : '0%';
-        }
-
-        async function loadRopReports() {
-            const date = document.getElementById('rop-date').value;
-            if(!date) return;
-
-            try {
-                const res = await fetch(`${baseUrl}rop_reports/${date}.json`);
-                const reportData = await res.json() || {};
-                renderRopTableAndTotals(reportData);
-            } catch(e) {
-                console.error("ROP yuklash xatosi:", e);
-            }
-        }
-
-        function renderRopTableAndTotals(reportData) {
-            const tbody = document.getElementById('rop-table-body');
-            tbody.innerHTML = '';
-
-            let totalOb = 0, totalAkt = 0, totalBrak = 0, totalNed = 0, totalZakaz = 0;
-
-            // Agar oddiy worker bo'lsa, faqat o'ziga tegishli ma'lumotni ko'radi
-            if (currentUser.role === 'worker') {
-                const wKey = currentUser.username;
-                const d = reportData[wKey] || { ob: 0, akt: 0, brak: 0, ned: 0, zakaz: 0 };
-                
-                totalOb = d.ob; totalAkt = d.akt; totalBrak = d.brak; totalNed = d.ned; totalZakaz = d.zakaz;
-                appendRopRow(tbody, wKey, currentUser.fullName, d, true);
-            } else {
-                // Superboss yoki Boss hamma workerni ko'radi
-                // Avval bazadagi barcha tizim foydalanuvchilarini tekshiramiz (faqat workerlarni chiqaramiz)
-                Object.keys(allRegisteredUsers).forEach(uKey => {
-                    if (allRegisteredUsers[uKey].role === 'worker') {
-                        const d = reportData[uKey] || { ob: 0, akt: 0, brak: 0, ned: 0, zakaz: 0 };
-                        totalOb += d.ob; totalAkt += d.akt; totalBrak += d.brak; totalNed += d.ned; totalZakaz += d.zakaz;
-                        appendRopRow(tbody, uKey, allRegisteredUsers[uKey].fullName, d, currentUser.role === 'superboss');
-                    }
-                });
-            }
-
-            // Kartalarga "Jami" qismini avtomatik hisoblab yozish
-            document.getElementById('rop-total-ob').innerText = totalOb;
-            document.getElementById('rop-total-akt').innerText = totalAkt;
-            document.getElementById('rop-total-brak').innerText = totalBrak;
-            document.getElementById('rop-total-ned').innerText = totalNed;
-            document.getElementById('rop-total-zakaz').innerText = totalZakaz;
-
-            document.getElementById('rop-total-akt-pct').innerText = totalOb > 0 ? ((totalAkt / totalOb) * 100).toFixed(1) + '%' : '0%';
-            document.getElementById('rop-total-brak-pct').innerText = totalOb > 0 ? ((totalBrak / totalOb) * 100).toFixed(1) + '%' : '0%';
-            document.getElementById('rop-total-ned-pct').innerText = totalOb > 0 ? ((totalNed / totalOb) * 100).toFixed(1) + '%' : '0%';
-            document.getElementById('rop-total-zakaz-pct').innerText = totalOb > 0 ? ((totalZakaz / totalOb) * 100).toFixed(1) + '%' : '0%';
-        }
-
-        function appendRopRow(tbody, username, fullName, d, editable) {
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-50 transition font-medium text-gray-700";
-
-            const aktP = d.ob > 0 ? ((d.akt / d.ob) * 100).toFixed(1) : 0;
-            const brakP = d.ob > 0 ? ((d.brak / d.ob) * 100).toFixed(1) : 0;
-            const nedP = d.ob > 0 ? ((d.ned / d.ob) * 100).toFixed(1) : 0;
-            const zakazP = d.ob > 0 ? ((d.zakaz / d.ob) * 100).toFixed(1) : 0;
-
-            let actionHtml = `<span class="text-gray-300">🔒</span>`;
-            if(editable) {
-                actionHtml = `<button onclick="editRopData('${username}', ${d.ob}, ${d.akt}, ${d.brak}, ${d.ned}, ${d.zakaz})" class="bg-blue-50 text-blue-600 px-2 py-1 rounded-md text-[11px] font-bold hover:bg-blue-600 hover:text-white transition cursor-pointer">✏️ Yoqish</button>`;
-            }
-
-            tr.innerHTML = `
-                <td class="py-3 font-bold text-gray-900">${fullName}</td>
-                <td>${d.ob}</td>
-                <td><span class="text-emerald-600">${d.akt}</span> <span class="text-[10px] bg-emerald-50 p-0.5 rounded text-emerald-700">${aktP}%</span></td>
-                <td><span class="text-rose-600">${d.brak}</span> <span class="text-[10px] bg-rose-50 p-0.5 rounded text-rose-700">${brakP}%</span></td>
-                <td><span class="text-amber-600">${d.ned}</span> <span class="text-[10px] bg-amber-50 p-0.5 rounded text-amber-700">${nedP}%</span></td>
-                <td><span class="text-indigo-600 font-bold">${d.zakaz}</span> <span class="text-[10px] bg-indigo-50 p-0.5 rounded text-indigo-700 font-bold">${zakazP}%</span></td>
-                <td class="text-right">${actionHtml}</td>
-            `;
-            tbody.appendChild(tr);
-        }
-
-        function editRopData(username, ob, akt, brak, ned, zakaz) {
-            selectedRopWorker = username;
-            setupRopFormPermissions();
-            
-            document.getElementById('rop-in-ob').value = ob || '';
-            document.getElementById('rop-in-akt').value = akt || '';
-            document.getElementById('rop-in-brak').value = brak || '';
-            document.getElementById('rop-in-ned').value = ned || '';
-            document.getElementById('rop-in-zakaz').value = zakaz || '';
-            calcLiveRopForm();
-        }
-
-        document.getElementById('rop-data-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const date = document.getElementById('rop-date').value;
-            if(!date || !selectedRopWorker) return;
-
-            const ob = parseInt(document.getElementById('rop-in-ob').value) || 0;
-            const akt = parseInt(document.getElementById('rop-in-akt').value) || 0;
-            const brak = parseInt(document.getElementById('rop-in-brak').value) || 0;
-            const ned = parseInt(document.getElementById('rop-in-ned').value) || 0;
-            const zakaz = parseInt(document.getElementById('rop-in-zakaz').value) || 0;
-
-            if((akt + brak + ned + zakaz) > ob) {
-                if(!confirm("Diqqat! Ichki lidlar yig'indisi Jami obrobotka liddan ko'p. Shunda ham saqlaymizmi?")) return;
-            }
-
-            const payload = { ob, akt, brak, ned, zakaz };
-            
-            try {
-                await fetch(`${baseUrl}rop_reports/${date}/${selectedRopWorker}.json`, {
-                    method: 'PUT',
-                    body: JSON.stringify(payload)
-                });
-                alert("ROP Kunlik hisoboti muvaffaqiyatli saqlandi! ⚡");
-                if(currentUser.role === 'superboss') selectedRopWorker = null; // shaklni reset qilish uchun
-                setupRopFormPermissions();
-                loadRopReports();
-            } catch(e) {
-                alert("Xatolik yuz berdi!");
-            }
         });
     </script>
 </body>
