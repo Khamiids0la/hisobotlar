@@ -140,6 +140,7 @@
                             <select id="adm_user_role" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300">
                                 <option value="worker">Worker (Operator)</option>
                                 <option value="boss">Boss (Boshliq — Read Only)</option>
+                                <option value="admin">Admin (To'liq Huquq)</option>
                             </select>
                             <select id="adm_user_project_ctx" class="bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300"></select>
                         </div>
@@ -189,7 +190,6 @@
             const inpPass = document.getElementById("password").value.trim();
             const err = document.getElementById("loginError");
 
-            // ⚠️ TO'G'RILANDI: khamiid kirganda admin panel tugmasi to'g'ridan-to'g'ri ko'rinadigan bo'ldi
             if(inpUser === "khamiid" && inpPass === "2236") {
                 uRole = "admin"; uName = "khamiid"; 
                 document.getElementById("btn-cat-admin").classList.remove("hidden");
@@ -250,8 +250,11 @@
                 });
             }
             
-            activeSelectedWorker = "";
-            document.getElementById("calendarSection").classList.add("hidden");
+            // Agar admin bo'lsa, xodimlarni cheklamaymiz, aks holda tozalaymiz
+            if (uRole !== "admin") {
+                activeSelectedWorker = "";
+                document.getElementById("calendarSection").classList.add("hidden");
+            }
             closeForm();
             loadWorkersForProject();
         };
@@ -284,6 +287,17 @@
                 
                 if(uRole === "worker") {
                     selectWorker(uName);
+                } else if(uRole === "admin" && !activeSelectedWorker && cat !== "target") {
+                    // Admin uchun agar xodim tanlanmagan bo'lsa kalendarni yashirib turamiz (Target bo'limidan tashqari)
+                    document.getElementById("calendarSection").classList.add("hidden");
+                    closeForm();
+                } else if(cat === "target") {
+                    // Target bo'limida xodim tanlash shart emas, to'g'ridan to'g'ri kalendar ochiladi
+                    document.getElementById("calendarTitle").innerText = `Loyiha Marketingi (Target)`;
+                    document.getElementById("calendarSubtitle").innerText = `Sana tanlang`;
+                    document.getElementById("calendarSection").classList.remove("hidden");
+                    renderCalendar();
+                    closeForm();
                 } else {
                     if(!activeSelectedWorker) {
                         document.getElementById("calendarSection").classList.add("hidden");
@@ -306,6 +320,7 @@
                 Object.keys(snap.val()).forEach(u => {
                     if(snap.val()[u].project === proj && snap.val()[u].role === "worker") {
                         const isSelected = (activeSelectedWorker === u) ? 'active-user' : '';
+                        // ⚠️ TO'G'RILANDI: Admin istalgan xodimni bosa oladi, bloklanmaydi
                         const isDisabled = (uRole === "worker" && uName !== u) ? 'disabled pointer-events-none opacity-40' : '';
                         
                         container.innerHTML += `
@@ -384,6 +399,7 @@
             const fieldsContainer = document.getElementById("dynamicFormFields");
             fieldsContainer.innerHTML = "";
 
+            // ⚠️ TO'G'RILANDI: Admin bo'lganda tugmalar hech qachon yashirinmaydi (Faqat Bossda yashirinadi)
             if(uRole === "boss") {
                 document.getElementById("formActionButtons").classList.add("hidden");
             } else {
@@ -425,7 +441,7 @@
 
             fieldsContainer.innerHTML = `
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3">
-                    <h4 class="text-xs font-bold text-emerald-400">📝 Kunlik Call Center Umumiy Ma'lumotlari (Filiallarsiz)</h4>
+                    <h4 class="text-xs font-bold text-emerald-400">📝 Kunlik Call Center Ma'lumotlari</h4>
                     ${getFormFieldsHTML(selectedCategory, "UMUMIY")}
                 </div>`;
 
@@ -497,6 +513,12 @@
         window.saveDataToFirebase = async function() {
             const proj = document.getElementById("globalProjectSelect").value;
             const targetBranch = document.getElementById("globalBranchSelect").value;
+
+            // ⚠️ TO'G'RILANDI: Agar admin bo'lsa va xodim tanlanmagan bo'lsa (Target bo'limidan tashqari), ogohlantirish beramiz
+            if (selectedCategory !== "target" && !activeSelectedWorker) {
+                alert("Iltimos, avval chap paneldan hisoboti kiritilayotgan xodimni tanlang!");
+                return;
+            }
 
             try {
                 if(selectedCategory === "target") {
