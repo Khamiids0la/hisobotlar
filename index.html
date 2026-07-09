@@ -184,6 +184,12 @@
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-3">
                         <h3 class="text-base font-bold text-gray-700 border-b border-gray-100 pb-2">Xodimlar (Workers)</h3>
+                        <!-- JAMI SARKOR TUGMASI (HUDDI CRM LIVE KABI) -->
+                        <div id="sarkor-total-btn-container" class="pb-2 border-b border-gray-100 hidden">
+                            <button id="btn-total-sarkor" onclick="selectTotalSarkor()" class="w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex justify-between items-center bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 cursor-pointer">
+                                <span>🗂️ Jami xodimlar</span> <span class="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded-md">Jamlama</span>
+                            </button>
+                        </div>
                         <div id="sarkor-workers-list" class="space-y-1.5"></div>
                     </div>
 
@@ -406,6 +412,20 @@
         // ================= SARKOR MANTIQLARI =================
         async function loadSarkorWorkersList() {
             const container = document.getElementById('sarkor-workers-list'); container.innerHTML = '';
+            
+            // Agar super-admin yoki shunchaki boss bo'lsa, Jami tugmasini ko'rsatamiz
+            if (currentUser.role === 'superboss' || currentUser.role === 'boss') {
+                document.getElementById('sarkor-total-btn-container').classList.remove('hidden');
+                // Agar Jami tanlangan bo'lsa tugma dizaynini faollashtiramiz
+                if(selectedWorkerUsername === "total_sarkor_summary") {
+                    document.getElementById('btn-total-sarkor').className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex justify-between items-center bg-slate-900 text-white cursor-pointer";
+                } else {
+                    document.getElementById('btn-total-sarkor').className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition flex justify-between items-center bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 cursor-pointer";
+                }
+            } else {
+                document.getElementById('sarkor-total-btn-container').classList.add('hidden');
+            }
+
             if (currentUser.role === 'worker') {
                 const btn = document.createElement('button'); btn.className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs";
                 btn.innerHTML = `🌟 ${currentUser.fullName} (Siz)`; btn.onclick = () => selectWorker(currentUser.username); container.appendChild(btn); selectWorker(currentUser.username); return;
@@ -421,6 +441,16 @@
         function selectWorker(username) {
             selectedWorkerUsername = username; document.getElementById('sarkor-placeholder').classList.add('hidden'); document.getElementById('sarkor-main-panel').classList.remove('hidden');
             loadSarkorWorkersList(); buildCalendar(); resetSarkorFormFields("Kun tanlang...");
+        }
+
+        // JAMI SARKOR BOSILGANDA ISHLAYDIGAN FUNKSIYA
+        async function selectTotalSarkor() {
+            selectedWorkerUsername = "total_sarkor_summary"; 
+            document.getElementById('sarkor-placeholder').classList.add('hidden'); 
+            document.getElementById('sarkor-main-panel').classList.remove('hidden');
+            loadSarkorWorkersList(); 
+            buildCalendar(); 
+            resetSarkorFormFields("Kun tanlang...");
         }
 
         function buildCalendar() {
@@ -442,20 +472,62 @@
             selectedDateStr = dateStr;
             document.querySelectorAll('.calendar-day').forEach(b => { b.className = "calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border bg-gray-50 border-gray-100 text-gray-800 hover:bg-gray-200"; });
             element.className = "calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border bg-blue-600 border-blue-600 text-white shadow-md";
-            document.getElementById('sarkor-form-title').innerText = `📅 Sana: ${dateStr}`;
+            
+            if (selectedWorkerUsername === "total_sarkor_summary") {
+                document.getElementById('sarkor-form-title').innerText = `📊 Jami Sana: ${dateStr}`;
+                // Jami bo'limida inputlarni block qilamiz va saqlash tugmasini yashiramiz
+                document.getElementById('sarkor-attempts').disabled = true; 
+                document.getElementById('sarkor-success').disabled = true; 
+                document.getElementById('sarkor-hours').disabled = true; 
+                document.getElementById('sarkor-minutes').disabled = true;
+                document.getElementById('sarkor-save-btn-container').classList.add('hidden');
 
-            const isEditable = (currentUser.role === 'superboss' || currentUser.username === selectedWorkerUsername);
-            document.getElementById('sarkor-attempts').disabled = !isEditable; document.getElementById('sarkor-success').disabled = !isEditable; document.getElementById('sarkor-hours').disabled = !isEditable; document.getElementById('sarkor-minutes').disabled = !isEditable;
-            if(isEditable) document.getElementById('sarkor-save-btn-container').classList.remove('hidden');
-            else document.getElementById('sarkor-save-btn-container').classList.add('hidden');
+                // Barcha xodimlarning shu kungi ma'lumotlarini hisoblaymiz
+                const res = await fetch(`${baseUrl}sarkor.json`); 
+                const allSarkorData = await res.json();
+                
+                let totalAttempts = 0, totalSuccess = 0, totalHours = 0, totalMinutes = 0;
+                
+                if (allSarkorData) {
+                    Object.keys(allSarkorData).forEach(wKey => {
+                        if (allSarkorData[wKey] && allSarkorData[wKey][dateStr]) {
+                            const dayData = allSarkorData[wKey][dateStr];
+                            totalAttempts += parseInt(dayData.attempts) || 0;
+                            totalSuccess += parseInt(dayData.success) || 0;
+                            totalHours += parseInt(dayData.hours) || 0;
+                            totalMinutes += parseInt(dayData.minutes) || 0;
+                        }
+                    });
+                }
+                
+                // Daqiqalarni soatga o'girish mantiqi (Masalan 70 daqiqa = 1 soat 10 daqiqa)
+                if (totalMinutes >= 60) {
+                    totalHours += Math.floor(totalMinutes / 60);
+                    totalMinutes = totalMinutes % 60;
+                }
 
-            const res = await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${dateStr}.json`); const data = await res.json();
-            if (data) {
-                document.getElementById('sarkor-attempts').value = data.attempts || 0; document.getElementById('sarkor-success').value = data.success || 0; document.getElementById('sarkor-hours').value = data.hours || 0; document.getElementById('sarkor-minutes').value = data.minutes || 0;
-                updateSarkorMiniChart(data.attempts || 0, data.success || 0);
+                document.getElementById('sarkor-attempts').value = totalAttempts; 
+                document.getElementById('sarkor-success').value = totalSuccess; 
+                document.getElementById('sarkor-hours').value = totalHours; 
+                document.getElementById('sarkor-minutes').value = totalMinutes;
+                
+                updateSarkorMiniChart(totalAttempts, totalSuccess);
+
             } else {
-                document.getElementById('sarkor-attempts').value = ''; document.getElementById('sarkor-success').value = ''; document.getElementById('sarkor-hours').value = ''; document.getElementById('sarkor-minutes').value = '';
-                updateSarkorMiniChart(0, 0);
+                document.getElementById('sarkor-form-title').innerText = `📅 Sana: ${dateStr}`;
+                const isEditable = (currentUser.role === 'superboss' || currentUser.username === selectedWorkerUsername);
+                document.getElementById('sarkor-attempts').disabled = !isEditable; document.getElementById('sarkor-success').disabled = !isEditable; document.getElementById('sarkor-hours').disabled = !isEditable; document.getElementById('sarkor-minutes').disabled = !isEditable;
+                if(isEditable) document.getElementById('sarkor-save-btn-container').classList.remove('hidden');
+                else document.getElementById('sarkor-save-btn-container').classList.add('hidden');
+
+                const res = await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${dateStr}.json`); const data = await res.json();
+                if (data) {
+                    document.getElementById('sarkor-attempts').value = data.attempts || 0; document.getElementById('sarkor-success').value = data.success || 0; document.getElementById('sarkor-hours').value = data.hours || 0; document.getElementById('sarkor-minutes').value = data.minutes || 0;
+                    updateSarkorMiniChart(data.attempts || 0, data.success || 0);
+                } else {
+                    document.getElementById('sarkor-attempts').value = ''; document.getElementById('sarkor-success').value = ''; document.getElementById('sarkor-hours').value = ''; document.getElementById('sarkor-minutes').value = '';
+                    updateSarkorMiniChart(0, 0);
+                }
             }
         }
 
@@ -472,7 +544,7 @@
         }
 
         document.getElementById('sarkor-data-form').addEventListener('submit', async (e) => {
-            e.preventDefault(); if (!selectedWorkerUsername || !selectedDateStr) return;
+            e.preventDefault(); if (!selectedWorkerUsername || !selectedDateStr || selectedWorkerUsername === "total_sarkor_summary") return;
             const attempts = parseInt(document.getElementById('sarkor-attempts').value) || 0; const success = parseInt(document.getElementById('sarkor-success').value) || 0; const hours = parseInt(document.getElementById('sarkor-hours').value) || 0; const minutes = parseInt(document.getElementById('sarkor-minutes').value) || 0;
             if (success > attempts) { alert("Muvaffaqiyatli qo'ng'iroqlar urinishlardan ko'p bo'lishi mumkin emas!"); return; }
             await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${selectedDateStr}.json`, { method: 'PUT', body: JSON.stringify({ attempts, success, hours, minutes }) });
