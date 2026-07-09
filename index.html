@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hisobotchi by khamiid</title>
-    <!-- Tailwind CSS interfeys dizayni uchun -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Chart.js vizual diagrammalar uchun -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .view-section { display: none; }
@@ -18,7 +16,6 @@
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
-    <!-- 1. LOGIN SOHASI -->
     <div id="login-section" class="view-section active min-h-screen items-center justify-center p-4 bg-slate-900">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
@@ -40,10 +37,8 @@
         </div>
     </div>
 
-    <!-- 2. ASOSIY TIZIM TUZILMASI -->
     <div id="app-section" class="view-section min-h-screen flex-col md:flex-row w-full hidden!">
         
-        <!-- CHAP TOMONDAGI MENYU (SIDEBAR) -->
         <aside class="w-full md:w-64 bg-slate-900 text-white flex flex-col justify-between p-4 shrink-0">
             <div>
                 <div class="mb-8 p-2 border-b border-slate-800">
@@ -58,7 +53,6 @@
                     <button id="menu-crm" onclick="switchView('crm-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
                         <span>⚡</span> CRM Live
                     </button>
-                    <!-- SARKOR BO'LIMI TUGMASI -->
                     <button id="menu-sarkor" onclick="switchView('sarkor-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
                         <span>👑</span> Sarkor Bo'limi
                     </button>
@@ -78,12 +72,9 @@
             </div>
         </aside>
 
-        <!-- O'NG TOMONDAGI KONTENT -->
         <main class="flex-1 p-6 md:p-8 overflow-y-auto bg-gray-50">
             
-            <!-- VIEW 1: USERS -->
             <div id="users-view" class="sub-view space-y-6 w-full hidden">
-                <!-- [Avvalgi o'zgarishsiz kod saqlandi] -->
                 <div class="flex justify-between items-center pb-4 border-b border-gray-200">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">Tizim Foydalanuvchilari</h2>
@@ -131,7 +122,6 @@
                 </div>
             </div>
 
-            <!-- VIEW 2: CRM LIVE -->
             <div id="crm-view" class="sub-view space-y-6 w-full hidden">
                 <div class="flex justify-between items-center pb-4 border-b border-gray-200">
                     <div>
@@ -183,7 +173,6 @@
                 </div>
             </div>
 
-            <!-- YANGI VIEW 3: SARKOR BO'LIMI -->
             <div id="sarkor-view" class="sub-view space-y-6 w-full hidden">
                 <div class="flex justify-between items-center pb-4 border-b border-gray-200">
                     <div>
@@ -193,18 +182,13 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <!-- WORKERLAR RO'YXATI -->
                     <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-3">
                         <h3 class="text-base font-bold text-gray-700 border-b border-gray-100 pb-2">Xodimlar (Workers)</h3>
-                        <div id="sarkor-workers-list" class="space-y-1.5">
-                            <!-- Dinamik to'ldiriladi -->
-                        </div>
+                        <div id="sarkor-workers-list" class="space-y-1.5"></div>
                     </div>
 
-                    <!-- INTERAKTIV INTERFEYS (KALENDAR VA INPUTLAR) -->
                     <div id="sarkor-main-panel" class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
                         
-                        <!-- KALENDAR PANEL -->
                         <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 id="calendar-month-title" class="text-base font-bold text-gray-800">Iyul 2026</h3>
@@ -214,25 +198,18 @@
                                 </div>
                             </div>
                             
-                            <!-- Kalendar haftalari boshi -->
                             <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-gray-400 mb-2">
                                 <div>Du</div><div>Se</div><div>Ch</div><div>Pa</div><div>Ju</div><div>Sh</div><div>Ya</div>
                             </div>
-                            <!-- Kalendar kunlari kataklari -->
-                            <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5">
-                                <!-- Dinamik kunlar chiqadi -->
-                            </div>
+                            <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5"></div>
                         </div>
 
-                        <!-- INPUT FORM VA KUNLIK SUMMARY -->
                         <div class="space-y-4">
-                            <!-- Effektivlik diagrammasi mini -->
                             <div class="bg-white p-4 rounded-2xl shadow-xs border border-gray-200 h-36 flex flex-col items-center justify-center relative">
                                 <h4 class="text-xs font-bold text-gray-400 absolute top-3 left-4">O'sha kungi samaradorlik</h4>
                                 <div class="w-full h-full pt-4"><canvas id="sarkorMiniChart"></canvas></div>
                             </div>
 
-                            <!-- Ma'lumotlarni kiritish shakli -->
                             <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200">
                                 <h3 id="sarkor-form-title" class="text-sm font-bold text-gray-800 mb-4 text-blue-600">Kunni tanlang...</h3>
                                 
@@ -242,7 +219,7 @@
                                         <input type="number" id="sarkor-attempts" min="0" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
                                     </div>
                                     <div>
-                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Muvaffaqiyatli (Sotuv/Kelishuv)</label>
+                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Muvaffaqiyatli qo'ng'iroq</label>
                                         <input type="number" id="sarkor-success" min="0" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
                                     </div>
                                     <div class="grid grid-cols-2 gap-3">
@@ -265,11 +242,7 @@
 
                     </div>
 
-                    <!-- SARKOR SELECTION PLACEHOLDER -->
-                    <div id="sarkor-placeholder" class="bg-gray-100/50 border border-dashed border-gray-200 p-12 rounded-2xl lg:col-span-3 flex flex-col items-center justify-center text-center text-gray-400">
-                        <span class="text-4xl mb-2">👑</span>
-                        <p class="text-sm font-medium">Kalendar va hisobotlarni ko'rish uchun xodimni tanlang</p>
-                    </div>
+                    <div id="sarkor-placeholder" class="bg-gray-100/50 border border-dashed border-gray-200 p-12 rounded-2xl lg:col-span-3 flex flex-col items-center justify-center text-center text-gray-400"><span class="text-4xl mb-2">👑</span><p class="text-sm font-medium">Xodimni tanlang</p></div>
                 </div>
             </div>
 
@@ -282,43 +255,28 @@
         let selectedFunnelId = null;
         let myChart = null;
 
-        // Sarkor o'zgaruvchilari
         let selectedWorkerUsername = null;
         let currentCalYear = 2026;
-        let currentCalMonth = 6; // Iyul (0-indeksda 6)
-        let selectedDateStr = null; // YYYY-MM-DD
+        let currentCalMonth = 6; 
+        let selectedDateStr = null; 
         let sarkorChartObj = null;
 
-        const stageColors = [
-            'rgba(14, 165, 233, 0.75)', 'rgba(245, 158, 11, 0.75)', 'rgba(249, 115, 22, 0.75)',
-            'rgba(99, 102, 241, 0.75)', 'rgba(168, 85, 247, 0.75)', 'rgba(16, 185, 129, 0.75)',
-            'rgba(20, 184, 166, 0.75)', 'rgba(34, 197, 94, 0.75)', 'rgba(244, 63, 94, 0.75)'
-        ];
-        const stageBorderColors = [
-            '#0ea5e9', '#f59e0b', '#f97316', '#6366f1', '#a855f7', '#10b981', '#14b8a6', '#22c55e', '#f43f5e'
-        ];
+        const stageColors = ['rgba(14, 165, 233, 0.75)', 'rgba(245, 158, 11, 0.75)', 'rgba(249, 115, 22, 0.75)', 'rgba(99, 102, 241, 0.75)', 'rgba(168, 85, 247, 0.75)', 'rgba(16, 185, 129, 0.75)', 'rgba(20, 184, 166, 0.75)', 'rgba(34, 197, 94, 0.75)', 'rgba(244, 63, 94, 0.75)'];
+        const stageBorderColors = ['#0ea5e9', '#f59e0b', '#f97316', '#6366f1', '#a855f7', '#10b981', '#14b8a6', '#22c55e', '#f43f5e'];
         const monthNames = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"];
 
         function switchView(viewId) {
             document.querySelectorAll('.sub-view').forEach(view => view.classList.add('hidden'));
             document.getElementById(viewId).classList.remove('hidden');
-
             document.getElementById('menu-users').className = "text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer " + (currentUser.role === 'superboss' ? 'w-full' : 'hidden!');
             document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer";
             document.getElementById('menu-sarkor').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer";
 
-            if (viewId === 'users-view') {
-                document.getElementById('menu-users').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white";
-            } else if (viewId === 'crm-view') {
-                document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white";
-                loadFunnelsList();
-            } else if (viewId === 'sarkor-view') {
-                document.getElementById('menu-sarkor').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white";
-                loadSarkorWorkersList();
-            }
+            if (viewId === 'users-view') document.getElementById('menu-users').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white";
+            else if (viewId === 'crm-view') { document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white"; loadFunnelsList(); }
+            else if (viewId === 'sarkor-view') { document.getElementById('menu-sarkor').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white"; loadSarkorWorkersList(); }
         }
 
-        // AUTH SYSTEM
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const user = document.getElementById('login-username').value.trim().toLowerCase();
@@ -328,25 +286,14 @@
 
             if (user === 'khamiid' && pass === '2236') {
                 currentUser = { username: 'khamiid', role: 'superboss', fullName: 'Khamid' };
-                initApp();
-                return;
+                initApp(); return;
             }
-
             try {
                 const res = await fetch(`${baseUrl}users/${user}.json`);
                 const userData = await res.json();
-
-                if (userData && userData.password === pass) {
-                    currentUser = { username: user, ...userData };
-                    initApp();
-                } else {
-                    errorDiv.innerText = "Login yoki parol noto'g'ri!";
-                    errorDiv.classList.remove('hidden');
-                }
-            } catch (err) {
-                errorDiv.innerText = "Baza bilan bog'lanishda xatolik.";
-                errorDiv.classList.remove('hidden');
-            }
+                if (userData && userData.password === pass) { currentUser = { username: user, ...userData }; initApp(); }
+                else { errorDiv.innerText = "Login yoki parol noto'g'ri!"; errorDiv.classList.remove('hidden'); }
+            } catch (err) { errorDiv.innerText = "Xatolik."; errorDiv.classList.remove('hidden'); }
         });
 
         function initApp() {
@@ -356,50 +303,35 @@
             const badge = document.getElementById('user-badge');
 
             if (currentUser.role === 'superboss') {
-                badge.innerText = 'Super Boss';
-                badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-red-500 text-white';
-                loadUsersList();
-                switchView('users-view');
+                badge.innerText = 'Super Boss'; badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-red-500 text-white';
+                loadUsersList(); switchView('users-view');
             } else {
-                badge.innerText = currentUser.role === 'boss' ? 'Boss' : 'Worker';
-                badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-purple-600 text-white';
+                badge.innerText = currentUser.role === 'boss' ? 'Boss' : 'Worker'; badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-purple-600 text-white';
                 switchView('crm-view');
             }
         }
 
         function logout() {
-            currentUser = null;
-            selectedFunnelId = null;
-            selectedWorkerUsername = null;
-            selectedDateStr = null;
+            currentUser = null; selectedFunnelId = null; selectedWorkerUsername = null; selectedDateStr = null;
             if(myChart) { myChart.destroy(); myChart = null; }
             if(sarkorChartObj) { sarkorChartObj.destroy(); sarkorChartObj = null; }
             document.getElementById('login-form').reset();
             document.getElementById('app-section').className = "view-section min-h-screen flex-col md:flex-row w-full hidden!";
             document.getElementById('login-section').style.display = 'flex';
-            document.getElementById('funnel-details-card').classList.add('hidden');
-            document.getElementById('funnel-placeholder').classList.remove('hidden');
-            document.getElementById('sarkor-main-panel').classList.add('hidden');
-            document.getElementById('sarkor-placeholder').classList.remove('hidden');
+            document.getElementById('funnel-details-card').classList.add('hidden'); document.getElementById('funnel-placeholder').classList.remove('hidden');
+            document.getElementById('sarkor-main-panel').classList.add('hidden'); document.getElementById('sarkor-placeholder').classList.remove('hidden');
         }
 
-        // USER RO'YXATI (ADMIN PANEL)
         async function loadUsersList() {
-            const res = await fetch(`${baseUrl}users.json`);
-            const data = await res.json();
-            const tableBody = document.getElementById('users-table-body');
-            tableBody.innerHTML = '';
-
-            let trAdmin = document.createElement('tr');
-            trAdmin.className = "hover:bg-gray-50 transition";
+            const res = await fetch(`${baseUrl}users.json`); const data = await res.json();
+            const tableBody = document.getElementById('users-table-body'); tableBody.innerHTML = '';
+            let trAdmin = document.createElement('tr'); trAdmin.className = "hover:bg-gray-50 transition";
             trAdmin.innerHTML = `<td class="py-3 font-semibold text-gray-900">khamiid</td><td>Khamid</td><td><span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-md font-medium">Super Boss</span></td><td class="text-right text-gray-400 text-xs italic">Tizim Egasi</td>`;
             tableBody.appendChild(trAdmin);
             if (!data) return;
-
             Object.keys(data).forEach(key => {
                 if(key === 'khamiid') return;
-                const user = data[key];
-                const tr = document.createElement('tr');
+                const user = data[key]; const tr = document.createElement('tr');
                 tr.innerHTML = `<td class="py-3 font-medium">${key}</td><td>${user.fullName}</td><td>${user.role}</td><td class="text-right"><button onclick="editUser('${key}', '${user.fullName}', '${user.role}', '${user.password}')" class="text-blue-600 mr-2">Tahrirlash</button><button onclick="deleteUser('${key}')" class="text-red-600">O'chirish</button></td>`;
                 tableBody.appendChild(tr);
             });
@@ -408,40 +340,25 @@
         document.getElementById('user-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-            const password = document.getElementById('password').value;
-            const fullName = document.getElementById('fullname').value;
-            const role = document.getElementById('role').value;
-            const editId = document.getElementById('edit-id').value;
-
-            if (editId) {
-                await fetch(`${baseUrl}users/${editId}.json`, { method: 'PATCH', body: JSON.stringify({ password, fullName, role }) });
-            } else {
-                await fetch(`${baseUrl}users/${username}.json`, { method: 'PUT', body: JSON.stringify({ password, fullName, role }) });
-            }
+            const password = document.getElementById('password').value; const fullName = document.getElementById('fullname').value; const role = document.getElementById('role').value; const editId = document.getElementById('edit-id').value;
+            if (editId) await fetch(`${baseUrl}users/${editId}.json`, { method: 'PATCH', body: JSON.stringify({ password, fullName, role }) });
+            else await fetch(`${baseUrl}users/${username}.json`, { method: 'PUT', body: JSON.stringify({ password, fullName, role }) });
             resetUserForm(); loadUsersList();
         });
 
         window.editUser = function(id, fullName, role, password) {
-            document.getElementById('edit-id').value = id; document.getElementById('username').value = id;
-            document.getElementById('username').disabled = true; document.getElementById('password').value = password;
-            document.getElementById('fullname').value = fullName; document.getElementById('role').value = role;
-            document.getElementById('cancel-btn').classList.remove('hidden');
+            document.getElementById('edit-id').value = id; document.getElementById('username').value = id; document.getElementById('username').disabled = true; document.getElementById('password').value = password; document.getElementById('fullname').value = fullName; document.getElementById('role').value = role; document.getElementById('cancel-btn').classList.remove('hidden');
         };
         window.deleteUser = async function(id) { if (confirm("O'chirilsinmi?")) { await fetch(`${baseUrl}users/${id}.json`, { method: 'DELETE' }); loadUsersList(); } };
         document.getElementById('cancel-btn').addEventListener('click', resetUserForm);
         function resetUserForm() { document.getElementById('user-form').reset(); document.getElementById('edit-id').value = ''; document.getElementById('username').disabled = false; document.getElementById('cancel-btn').classList.add('hidden'); }
 
-        // CRM LINE FUNKSIYALARI
         async function loadFunnelsList() {
             const res = await fetch(`${baseUrl}funnels.json`); const data = await res.json();
-            const container = document.getElementById('funnel-list'); container.innerHTML = '';
-            if (!data) return;
+            const container = document.getElementById('funnel-list'); container.innerHTML = ''; if (!data) return;
             Object.keys(data).forEach(key => {
-                const btn = document.createElement('button');
-                btn.className = `w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex justify-between items-center cursor-pointer ${selectedFunnelId === key ? 'bg-slate-900 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'}`;
-                btn.innerHTML = `<span>📂 ${data[key].name}</span>`;
-                btn.onclick = () => selectFunnel(key, data[key].name);
-                container.appendChild(btn);
+                const btn = document.createElement('button'); btn.className = `w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex justify-between items-center cursor-pointer ${selectedFunnelId === key ? 'bg-slate-900 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'}`;
+                btn.innerHTML = `<span>📂 ${data[key].name}</span>`; btn.onclick = () => selectFunnel(key, data[key].name); container.appendChild(btn);
             });
         }
         async function addNewFunnel() {
@@ -451,14 +368,10 @@
             document.getElementById('new-funnel-name').value = ''; loadFunnelsList();
         }
         async function selectTotalFunnel() {
-            selectedFunnelId = "total_summary"; document.getElementById('funnel-placeholder').classList.add('hidden');
-            document.getElementById('funnel-details-card').classList.remove('hidden');
-            document.getElementById('selected-funnel-title').innerText = "Jami Voronkalar (Jamlama)";
-            document.getElementById('crm-save-container').classList.add('hidden');
+            selectedFunnelId = "total_summary"; document.getElementById('funnel-placeholder').classList.add('hidden'); document.getElementById('funnel-details-card').classList.remove('hidden');
+            document.getElementById('selected-funnel-title').innerText = "Jami Voronkalar (Jamlama)"; document.getElementById('crm-save-container').classList.add('hidden');
             for (let i = 1; i <= 9; i++) document.getElementById(`stage-${i}`).disabled = true;
-            
-            const res = await fetch(`${baseUrl}crm_live.json`); const allLiveSummary = await res.json();
-            const totals = [0,0,0,0,0,0,0,0,0];
+            const res = await fetch(`${baseUrl}crm_live.json`); const allLiveSummary = await res.json(); const totals = [0,0,0,0,0,0,0,0,0];
             if (allLiveSummary) {
                 Object.keys(allLiveSummary).forEach(fk => {
                     for (let i = 1; i <= 9; i++) totals[i - 1] += allLiveSummary[fk][`stage_${i}`] ? parseInt(allLiveSummary[fk][`stage_${i}`]) : 0;
@@ -468,14 +381,10 @@
             updateChartAnimation(totals);
         }
         async function selectFunnel(id, name) {
-            selectedFunnelId = id; document.getElementById('funnel-placeholder').classList.add('hidden');
-            document.getElementById('funnel-details-card').classList.remove('hidden');
-            document.getElementById('selected-funnel-title').innerText = name;
-            const res = await fetch(`${baseUrl}crm_live/${id}.json`); const data = await res.json();
-            const values = [];
+            selectedFunnelId = id; document.getElementById('funnel-placeholder').classList.add('hidden'); document.getElementById('funnel-details-card').classList.remove('hidden'); document.getElementById('selected-funnel-title').innerText = name;
+            const res = await fetch(`${baseUrl}crm_live/${id}.json`); const data = await res.json(); const values = [];
             for (let i = 1; i <= 9; i++) {
-                const val = (data && data[`stage_${i}`]) ? data[`stage_${i}`] : 0;
-                const inp = document.getElementById(`stage-${i}`); inp.value = val; values.push(val);
+                const val = (data && data[`stage_${i}`]) ? data[`stage_${i}`] : 0; const inp = document.getElementById(`stage-${i}`); inp.value = val; values.push(val);
                 if (currentUser.role === 'superboss') { inp.disabled = false; document.getElementById('crm-save-container').classList.remove('hidden'); }
                 else { inp.disabled = true; document.getElementById('crm-save-container').classList.add('hidden'); }
             }
@@ -490,201 +399,84 @@
         }
         document.getElementById('crm-stages-form').addEventListener('submit', async (e) => {
             e.preventDefault(); if (selectedFunnelId === "total_summary" || currentUser.role !== 'superboss') return;
-            const d = {}; const nv = [];
-            for (let i = 1; i <= 9; i++) { const v = parseInt(document.getElementById(`stage-${i}`).value) || 0; d[`stage_${i}`] = v; nv.push(v); }
-            await fetch(`${baseUrl}crm_live/${selectedFunnelId}.json`, { method: 'PUT', body: JSON.stringify(d) });
-            updateChartAnimation(nv); alert("Saqlandi! ⚡");
+            const d = {}; const nv = []; for (let i = 1; i <= 9; i++) { const v = parseInt(document.getElementById(`stage-${i}`).value) || 0; d[`stage_${i}`] = v; nv.push(v); }
+            await fetch(`${baseUrl}crm_live/${selectedFunnelId}.json`, { method: 'PUT', body: JSON.stringify(d) }); updateChartAnimation(nv); alert("Saqlandi! ⚡");
         });
 
-
-        // ================= SARKOR BO'LIMI MANTIQLARI =================
+        // ================= SARKOR MANTIQLARI =================
         async function loadSarkorWorkersList() {
-            const container = document.getElementById('sarkor-workers-list');
-            container.innerHTML = '';
-
-            // Agar kirgan odam Worker bo'lsa, ro'yxatda faqat uning o'zi chiqadi
+            const container = document.getElementById('sarkor-workers-list'); container.innerHTML = '';
             if (currentUser.role === 'worker') {
-                const btn = document.createElement('button');
-                btn.className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs";
-                btn.innerHTML = `🌟 ${currentUser.fullName} (Siz)`;
-                btn.onclick = () => selectWorker(currentUser.username);
-                container.appendChild(btn);
-                selectWorker(currentUser.username); // Avtomatik tanlash
-                return;
+                const btn = document.createElement('button'); btn.className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs";
+                btn.innerHTML = `🌟 ${currentUser.fullName} (Siz)`; btn.onclick = () => selectWorker(currentUser.username); container.appendChild(btn); selectWorker(currentUser.username); return;
             }
-
-            // Agar SuperBoss yoki Boss bo'lsa, hamma xodimlarni tortadi
-            const res = await fetch(`${baseUrl}users.json`);
-            const data = await res.json();
-            
-            if(!data) return;
-
+            const res = await fetch(`${baseUrl}users.json`); const data = await res.json(); if(!data) return;
             Object.keys(data).forEach(key => {
-                if(data[key].role !== 'worker') return; // Faqat workerlarni chiqarish
-                const btn = document.createElement('button');
-                btn.className = `w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex justify-between items-center ${selectedWorkerUsername === key ? 'bg-slate-900 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'}`;
-                btn.innerHTML = `<span>👤 ${data[key].fullName}</span> <span class="text-[10px] opacity-40">id: ${key}</span>`;
-                btn.onclick = () => selectWorker(key);
-                container.appendChild(btn);
+                if(data[key].role !== 'worker') return;
+                const btn = document.createElement('button'); btn.className = `w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex justify-between items-center ${selectedWorkerUsername === key ? 'bg-slate-900 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'}`;
+                btn.innerHTML = `<span>👤 ${data[key].fullName}</span> <span class="text-[10px] opacity-40">id: ${key}</span>`; btn.onclick = () => selectWorker(key); container.appendChild(btn);
             });
         }
 
         function selectWorker(username) {
-            selectedWorkerUsername = username;
-            document.getElementById('sarkor-placeholder').classList.add('hidden');
-            document.getElementById('sarkor-main-panel').classList.remove('hidden');
-            
-            // Tugmalarni qayta bo'yash
-            loadSarkorWorkersList();
-            // Kalendarni chizish
-            buildCalendar();
-            resetSarkorFormFields("Kun tanlang...");
+            selectedWorkerUsername = username; document.getElementById('sarkor-placeholder').classList.add('hidden'); document.getElementById('sarkor-main-panel').classList.remove('hidden');
+            loadSarkorWorkersList(); buildCalendar(); resetSarkorFormFields("Kun tanlang...");
         }
 
         function buildCalendar() {
-            document.getElementById('calendar-month-title').innerText = `${monthNames[currentCalMonth]} ${currentCalYear}`;
-            const grid = document.getElementById('calendar-days-grid');
-            grid.innerHTML = '';
-
-            const firstDayIndex = new Date(currentCalYear, currentCalMonth, 1).getDay();
-            // Haftaning birinchi kunini Dushanbaga moslash (JS bo'yicha 0 - Yakshanba)
-            const startOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1;
-            const totalDays = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
-
-            // Bo'sh kataklar (oldingi oy qoldiqlari)
-            for (let i = 0; i < startOffset; i++) {
-                const emptyDiv = document.createElement('div');
-                grid.appendChild(emptyDiv);
-            }
-
-            // Oy kunlari
+            document.getElementById('calendar-month-title').innerText = `${monthNames[currentCalMonth]} ${currentCalYear}`; const grid = document.getElementById('calendar-days-grid'); grid.innerHTML = '';
+            const firstDayIndex = new Date(currentCalYear, currentCalMonth, 1).getDay(); const startOffset = firstDayIndex === 0 ? 6 : firstDayIndex - 1; const totalDays = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
+            for (let i = 0; i < startOffset; i++) grid.appendChild(document.createElement('div'));
             for (let day = 1; day <= totalDays; day++) {
-                const dayBtn = document.createElement('button');
-                const mStr = String(currentCalMonth + 1).padStart(2, '0');
-                const dStr = String(day).padStart(2, '0');
-                const loopDateStr = `${currentCalYear}-${mStr}-${dStr}`;
-
-                dayBtn.innerText = day;
-                dayBtn.className = `calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border ${selectedDateStr === loopDateStr ? 'bg-blue-600 border-blue-600 text-white shadow-md' : 'bg-gray-50 border-gray-100 text-gray-800 hover:bg-gray-200'}`;
-                
-                dayBtn.onclick = () => selectSarkorDate(loopDateStr, dayBtn);
-                grid.appendChild(dayBtn);
+                const dayBtn = document.createElement('button'); const mStr = String(currentCalMonth + 1).padStart(2, '0'); const dStr = String(day).padStart(2, '0'); const loopDateStr = `${currentCalYear}-${mStr}-${dStr}`;
+                dayBtn.innerText = day; dayBtn.className = `calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border ${selectedDateStr === loopDateStr ? 'bg-blue-600 border-blue-600 text-white shadow-md' : 'bg-gray-50 border-gray-100 text-gray-800 hover:bg-gray-200'}`;
+                dayBtn.onclick = () => selectSarkorDate(loopDateStr, dayBtn); grid.appendChild(dayBtn);
             }
         }
 
         function changeMonth(direction) {
-            currentCalMonth += direction;
-            if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; }
-            if (currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; }
-            buildCalendar();
+            currentCalMonth += direction; if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; } if (currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; } buildCalendar();
         }
 
         async function selectSarkorDate(dateStr, element) {
             selectedDateStr = dateStr;
-            
-            // Aktiv kun vizualini yangilash
-            document.querySelectorAll('.calendar-day').forEach(b => {
-                b.classList.remove('bg-blue-600', 'border-blue-600', 'text-white', 'shadow-md');
-                b.classList.add('bg-gray-50', 'border-gray-100', 'text-gray-800');
-            });
+            document.querySelectorAll('.calendar-day').forEach(b => { b.className = "calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border bg-gray-50 border-gray-100 text-gray-800 hover:bg-gray-200"; });
             element.className = "calendar-day p-2.5 rounded-xl text-xs font-bold text-center cursor-pointer border bg-blue-600 border-blue-600 text-white shadow-md";
-
             document.getElementById('sarkor-form-title').innerText = `📅 Sana: ${dateStr}`;
 
-            // Huquqlarga ko'ra saqlash tugmasini ko'rsatish/yashirish va inputlarni ochish
             const isEditable = (currentUser.role === 'superboss' || currentUser.username === selectedWorkerUsername);
-            
-            document.getElementById('sarkor-attempts').disabled = !isEditable;
-            document.getElementById('sarkor-success').disabled = !isEditable;
-            document.getElementById('sarkor-hours').disabled = !isEditable;
-            document.getElementById('sarkor-minutes').disabled = !isEditable;
+            document.getElementById('sarkor-attempts').disabled = !isEditable; document.getElementById('sarkor-success').disabled = !isEditable; document.getElementById('sarkor-hours').disabled = !isEditable; document.getElementById('sarkor-minutes').disabled = !isEditable;
+            if(isEditable) document.getElementById('sarkor-save-btn-container').classList.remove('hidden');
+            else document.getElementById('sarkor-save-btn-container').classList.add('hidden');
 
-            if(isEditable) {
-                document.getElementById('sarkor-save-btn-container').classList.remove('hidden');
-            } else {
-                document.getElementById('sarkor-save-btn-container').classList.add('hidden');
-            }
-
-            // Firebase'dan ushbu kungi malumotni tortish
-            const res = await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${dateStr}.json`);
-            const data = await res.json();
-
+            const res = await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${dateStr}.json`); const data = await res.json();
             if (data) {
-                document.getElementById('sarkor-attempts').value = data.attempts || 0;
-                document.getElementById('sarkor-success').value = data.success || 0;
-                document.getElementById('sarkor-hours').value = data.hours || 0;
-                document.getElementById('sarkor-minutes').value = data.minutes || 0;
+                document.getElementById('sarkor-attempts').value = data.attempts || 0; document.getElementById('sarkor-success').value = data.success || 0; document.getElementById('sarkor-hours').value = data.hours || 0; document.getElementById('sarkor-minutes').value = data.minutes || 0;
                 updateSarkorMiniChart(data.attempts || 0, data.success || 0);
             } else {
-                document.getElementById('sarkor-attempts').value = '';
-                document.getElementById('sarkor-success').value = '';
-                document.getElementById('sarkor-hours').value = '';
-                document.getElementById('sarkor-minutes').value = '';
+                document.getElementById('sarkor-attempts').value = ''; document.getElementById('sarkor-success').value = ''; document.getElementById('sarkor-hours').value = ''; document.getElementById('sarkor-minutes').value = '';
                 updateSarkorMiniChart(0, 0);
             }
         }
 
         function resetSarkorFormFields(title) {
-            document.getElementById('sarkor-form-title').innerText = title;
-            document.getElementById('sarkor-data-form').reset();
-            document.getElementById('sarkor-save-btn-container').classList.add('hidden');
-            selectedDateStr = null;
-            updateSarkorMiniChart(0, 0);
+            document.getElementById('sarkor-form-title').innerText = title; document.getElementById('sarkor-data-form').reset(); document.getElementById('sarkor-save-btn-container').classList.add('hidden'); selectedDateStr = null; updateSarkorMiniChart(0, 0);
         }
 
-        // MINI DIAGRAMMA (SAMARADORLIK)
         function updateSarkorMiniChart(attempts, success) {
-            const ctx = document.getElementById('sarkorMiniChart').getContext('2d');
-            const fail = (attempts - success) < 0 ? 0 : (attempts - success);
-            
-            if (sarkorChartObj) {
-                sarkorChartObj.data.datasets[0].data = [success, fail];
-                sarkorChartObj.update();
-            } else {
-                sarkorChartObj = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Muvaffaqiyatli', 'Urinishlar (Natijasiz)'],
-                        datasets: [{
-                            data: [success, fail],
-                            backgroundColor: ['#22c55e', '#e2e8f0'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        cutout: '75%',
-                        plugins: { legend: { display: false } }
-                    }
-                });
+            const ctx = document.getElementById('sarkorMiniChart').getContext('2d'); const fail = (attempts - success) < 0 ? 0 : (attempts - success);
+            if (sarkorChartObj) { sarkorChartObj.data.datasets[0].data = [success, fail]; sarkorChartObj.update(); } 
+            else {
+                sarkorChartObj = new Chart(ctx, { type: 'doughnut', data: { labels: ['Muvaffaqiyatli qo\'ng\'iroq', 'Urinishlar (Natijasiz)'], datasets: [{ data: [success, fail], backgroundColor: ['#22c55e', '#e2e8f0'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } } });
             }
         }
 
-        // SARKOR MA'LUMOTLARINI SAQLASH
         document.getElementById('sarkor-data-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!selectedWorkerUsername || !selectedDateStr) return;
-
-            const attempts = parseInt(document.getElementById('sarkor-attempts').value) || 0;
-            const success = parseInt(document.getElementById('sarkor-success').value) || 0;
-            const hours = parseInt(document.getElementById('sarkor-hours').value) || 0;
-            const minutes = parseInt(document.getElementById('sarkor-minutes').value) || 0;
-
-            if (success > attempts) {
-                alert("Muvaffaqiyatli qo'ng'iroqlar umumiy urinishlardan ko'p bo'lishi mumkin emas!");
-                return;
-            }
-
-            const sarkorData = { attempts, success, hours, minutes };
-
-            await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${selectedDateStr}.json`, {
-                method: 'PUT',
-                body: JSON.stringify(sarkorData)
-            });
-
-            updateSarkorMiniChart(attempts, success);
-            alert("Sarkor hisoboti muvaffaqiyatli saqlandi! 👑⚡");
+            e.preventDefault(); if (!selectedWorkerUsername || !selectedDateStr) return;
+            const attempts = parseInt(document.getElementById('sarkor-attempts').value) || 0; const success = parseInt(document.getElementById('sarkor-success').value) || 0; const hours = parseInt(document.getElementById('sarkor-hours').value) || 0; const minutes = parseInt(document.getElementById('sarkor-minutes').value) || 0;
+            if (success > attempts) { alert("Muvaffaqiyatli qo'ng'iroqlar urinishlardan ko'p bo'lishi mumkin emas!"); return; }
+            await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${selectedDateStr}.json`, { method: 'PUT', body: JSON.stringify({ attempts, success, hours, minutes }) });
+            updateSarkorMiniChart(attempts, success); alert("Sarkor hisoboti muvaffaqiyatli saqlandi! 👑⚡");
         });
     </script>
 </body>
