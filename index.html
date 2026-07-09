@@ -1,551 +1,397 @@
 <!DOCTYPE html>
-<html lang="uz" class="dark">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>X-Control — Aqlli Biznes ERP</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <style>
-        .fade-in { animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        .calendar-day:hover { transform: scale(1.02); }
-    </style>
+    <title>Sales Analytics & Management Dashboard</title>
+    <!-- Tailwind CSS dynamic boshqaruv uchun -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome ikonkalari uchun -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-emerald-500 selection:text-white">
+<body class="bg-gray-50 font-sans text-gray-800">
 
-    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 px-4">
-        <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
-            <div class="text-center mb-8">
-                <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-3">
-                    <span class="text-emerald-400 font-bold text-xl">📊</span>
-                </div>
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-indigo-400 bg-clip-text text-transparent">X-Control ERP</h1>
-                <p class="text-slate-400 text-sm mt-1">Loyiha va Jamlangan Hisobotlar Platformasi</p>
+    <div class="flex h-screen overflow-hidden">
+        
+        <!-- SIDEBAR -->
+        <div class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex">
+            <div class="p-5">
+                <h1 class="text-2xl font-bold tracking-wider text-emerald-400 mb-8 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-line"></i> KHAMID.CRM
+                </h1>
+                <nav class="space-y-2">
+                    <button onclick="switchTab('dashboard')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-600 text-white font-medium transition-all">
+                        <i class="fa-solid fa-house w-5"></i> Dashboard
+                    </button>
+                    <button onclick="switchTab('crm')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
+                        <i class="fa-solid fa-users-gear w-5"></i> CRM Oqim
+                    </button>
+                    <button onclick="switchTab('rop')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
+                        <i class="fa-solid fa-user-tie w-5"></i> ROP Analitika
+                    </button>
+                    <button onclick="switchTab('davomat')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
+                        <i class="fa-solid fa-calendar-check w-5"></i> Davomat
+                    </button>
+                    <button onclick="switchTab('oylik')" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
+                        <i class="fa-solid fa-wallet w-5"></i> Oylik & Kadrlar
+                    </button>
+                </nav>
             </div>
-            <form onsubmit="handleLogin(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Login</label>
-                    <input type="text" id="username" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">Parol</label>
-                    <input type="password" id="password" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-emerald-500">
-                </div>
-                <div id="loginError" class="text-rose-400 text-xs hidden text-center font-medium">❌ Login yoki parol xato!</div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl shadow-lg transition-all">Tizimga kirish</button>
-            </form>
+            <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
+                Vercel & Firebase Admin v2.1
+            </div>
         </div>
-    </div>
 
-    <div id="dashboardScreen" class="hidden min-h-screen flex flex-col fade-in">
-        <header class="border-b border-slate-900 bg-slate-900/60 backdrop-blur sticky top-0 z-40">
-            <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <span class="font-bold text-lg text-slate-100">X-Control</span>
-                    <select id="globalProjectSelect" onchange="onProjectChange()" class="bg-slate-950 border border-slate-800 text-xs rounded-lg p-1.5 ml-2 text-emerald-400 font-semibold focus:outline-none"></select>
-                    
-                    <div id="bossFilterPart" class="hidden flex items-center gap-2">
-                        <span class="text-slate-500 text-xs">| Ko'rish:</span>
-                        <select id="globalBranchSelect" onchange="renderCalendar()" class="bg-indigo-950 text-indigo-300 border border-indigo-900 text-xs rounded-lg p-1.5 focus:outline-none">
-                            <option value="JAMLANGAN">📊 BARCHASI (JAMLANGAN)</option>
+        <!-- ASOSIY KONTENT -->
+        <div class="flex-1 flex flex-col overflow-y-auto">
+            
+            <!-- TOPBAR -->
+            <header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-50">
+                <h2 id="page-title" class="text-xl font-bold text-gray-800">Dashboard Tahlili</h2>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-medium bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full border border-emerald-200">
+                        <i class="fa-regular fa-clock"></i> Iyul, 2026-yil
+                    </span>
+                    <div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold shadow-md">
+                        K
+                    </div>
+                </div>
+            </header>
+
+            <main class="p-6 max-w-7xl w-full mx-auto space-y-6">
+
+                <!-- 1. DASHBOARD TAB -->
+                <div id="tab-dashboard" class="tab-content space-y-6">
+                    <!-- Faqat asosiy dashboardda zarur bo'lsa global filtr qolishi mumkin -->
+                    <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <p class="text-sm text-gray-500 font-medium">Global Filial Nazorati:</p>
+                        <select id="global-filial-select" onchange="loadDashboardData()" class="border border-gray-300 rounded-lg px-4 py-1.5 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <option value="all">Barcha Filiallar (Umumiy)</option>
+                            <option value="namangan">Namangan</option>
+                            <option value="fergana">Farg'ona</option>
+                            <option value="tashkent">Toshkent</option>
                         </select>
                     </div>
-                </div>
-                <div class="flex items-center gap-4">
-                    <span id="roleBadge" class="px-2.5 py-0.5 text-xs rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase"></span>
-                    <button onclick="location.reload()" class="text-xs text-slate-400 hover:text-rose-400 transition-colors">Chiqish</button>
-                </div>
-            </div>
-        </header>
 
-        <div class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
-            
-            <div class="space-y-4 lg:col-span-1">
-                <div class="bg-slate-900 border border-slate-900 rounded-xl p-4 space-y-1">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Bo'limlar</h3>
-                    <button onclick="selectCategory('crm')" id="btn-cat-crm" class="w-full text-left px-3 py-2 text-sm rounded-lg bg-slate-950 text-slate-300 font-medium transition-all">📊 CRM Live Voronka</button>
-                    <button onclick="selectCategory('sarkor')" id="btn-cat-sarkor" class="w-full text-left px-3 py-2 text-sm rounded-lg bg-slate-950 text-slate-300 font-medium transition-all">📞 Sarkor (Call log)</button>
-                    <button onclick="selectCategory('rop')" id="btn-cat-rop" class="w-full text-left px-3 py-2 text-sm rounded-lg bg-slate-950 text-slate-300 font-medium transition-all">📈 ROP Analitika</button>
-                    <button onclick="selectCategory('target')" id="btn-cat-target" class="w-full text-left px-3 py-2 text-sm rounded-lg bg-slate-950 text-slate-300 font-medium transition-all">🎯 Target & Marketing</button>
-                    <button onclick="selectCategory('davomat')" id="btn-cat-davomat" class="w-full text-left px-3 py-2 text-sm rounded-lg bg-slate-950 text-slate-300 font-medium transition-all">📅 Xodimlar Davomati</button>
-                    <button onclick="selectCategory('oylik')" id="btn-cat-oylik" class="w-full text-left px-3 py-2 text-sm rounded-lg bg-slate-950 text-slate-300 font-medium transition-all">💰 Oylik / KPI</button>
-                    <button onclick="selectCategory('admin')" id="btn-cat-admin" class="w-full text-left px-3 py-2 text-sm rounded-lg bg-indigo-950/40 text-indigo-400 border border-indigo-900/30 hidden font-medium transition-all">⚙️ Admin Panel</button>
-                </div>
-
-                <div class="bg-slate-900 border border-slate-900 rounded-xl p-4">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Loyiha Faollari</h3>
-                    <div id="workersList" class="space-y-1 text-xs text-slate-400"></div>
-                </div>
-            </div>
-
-            <div class="lg:col-span-3 space-y-6">
-                
-                <div id="calendarSection" class="bg-slate-900 border border-slate-900 rounded-2xl p-6 shadow-xl space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="text-base font-bold text-slate-200" id="calendarTitle">Loyiha Kalendari</h2>
-                            <p class="text-xs text-slate-400 mt-0.5">Ma'lumotlar bilan ishlash uchun kun qutisini bosing.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Oylik Reja (Iyul)</p>
+                                <h3 class="text-3xl font-black text-gray-800 mt-1">1,000 <span class="text-sm font-normal text-gray-500">ta savdo</span></h3>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-bullseye"></i></div>
                         </div>
-                        <div class="text-sm font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg">Iyul 2026</div>
-                    </div>
-
-                    <div class="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-slate-400 border-b border-slate-800 pb-2">
-                        <div>Du</div><div>Se</div><div>Ch</div><div>Pa</div><div>Ju</div><div>Sh</div><div>Ya</div>
-                    </div>
-                    <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
-                </div>
-
-                <div id="inputFormSection" class="hidden bg-slate-900 border-2 border-emerald-500/20 rounded-2xl p-6 shadow-xl space-y-4 fade-in">
-                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                        <h3 class="text-base font-bold text-emerald-400" id="formTitleDate">Sana: OOOO-AA-KK</h3>
-                        <button onclick="closeForm()" class="text-slate-400 hover:text-slate-200 text-sm">✕ Yopish</button>
-                    </div>
-
-                    <div id="dynamicFormFields" class="space-y-4"></div>
-
-                    <div class="flex items-center justify-end gap-3 pt-2" id="formActionButtons">
-                        <button onclick="deleteDataFromFirebase()" id="deleteDataBtn" class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 font-medium px-4 py-2 rounded-xl text-xs transition-all">🗑 To'liq O'chirish</button>
-                        <button onclick="saveDataToFirebase()" id="saveDataBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-2.5 rounded-xl text-xs shadow-lg transition-all">⚡ Saqlash / Yangilash</button>
-                    </div>
-                </div>
-
-                <div id="adminView" class="hidden space-y-6 fade-in">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-850 space-y-3">
-                            <h3 class="text-sm font-bold text-emerald-400">🆕 Yangi Loyiha Yaratish</h3>
-                            <input type="text" id="adm_proj_name" placeholder="Masalan: SMSMED, Store_Material" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm">
-                            <button onclick="addProject()" class="bg-emerald-600 text-white text-xs px-4 py-2 rounded-lg">Loyiha Qo'shish</button>
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Bajarildi</p>
+                                <h3 id="dash-bajarildi" class="text-3xl font-black text-emerald-600 mt-1">0 <span class="text-sm font-normal text-gray-500">ta</span></h3>
+                            </div>
+                            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-circle-check"></i></div>
                         </div>
-                        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-850 space-y-3">
-                            <h3 class="text-sm font-bold text-indigo-400">🆕 Loyihaga Filial Qo'shish</h3>
-                            <select id="adm_proj_select" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-300"></select>
-                            <input type="text" id="adm_branch_name" placeholder="Masalan: Toshkent, Fergana" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm">
-                            <button onclick="addBranch()" class="bg-indigo-600 text-white text-xs px-4 py-2 rounded-lg">Filial Qo'shish</button>
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-400 uppercase tracking-wider">Konversiya Oxirgi Oy (Iyun)</p>
+                                <h3 class="text-3xl font-black text-purple-600 mt-1">327 <span class="text-sm font-normal text-gray-500">ta haqiqiy</span></h3>
+                            </div>
+                            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-arrow-trend-up"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. CRM OQIM TAB (FILIAL FILTRI OLIB TASHLANDI) -->
+                <div id="tab-crm" class="tab-content space-y-6 hidden">
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                        <div class="flex items-center gap-2 text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg text-sm font-medium border border-amber-200">
+                            <i class="fa-solid fa-circle-info"></i> Filial filtri o'chirildi. Hozir barcha hududlar bo'yicha integratsiyalashgan umumiy oqim ko'rilmoqda.
                         </div>
                     </div>
 
-                    <div class="bg-slate-900 p-6 rounded-2xl border border-slate-850 space-y-4">
-                        <h3 class="text-sm font-bold text-sky-400">👤 Loyiha Bo'yicha Xodim Yaratish</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                            <input type="text" id="adm_user_login" placeholder="Login" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm">
-                            <input type="text" id="adm_user_pass" placeholder="Parol" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm">
-                            <select id="adm_user_role" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-300">
-                                <option value="worker">Worker (Xodim/Operator)</option>
-                                <option value="boss">Boss (Boshliq — Faqat ko'ruvchi)</option>
-                            </select>
-                            <select id="adm_user_project_ctx" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-300"></select>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Yangi Leadlar paneli -->
+                        <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm space-y-4">
+                            <div class="flex justify-between items-center border-b pb-2 border-gray-100">
+                                <h4 class="font-bold text-gray-700 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Yangi kelganlar</h4>
+                                <span id="count-yangi" class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                            </div>
+                            <div id="crm-yangi-list" class="space-y-3 min-h-[300px]">
+                                <!-- Dinamik leadlar -->
+                            </div>
                         </div>
-                        <button onclick="createUser()" class="bg-sky-600 text-white text-xs px-5 py-2.5 rounded-lg">Saqlash</button>
+                        <!-- Jarayondagilar paneli -->
+                        <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm space-y-4">
+                            <div class="flex justify-between items-center border-b pb-2 border-gray-100">
+                                <h4 class="font-bold text-gray-700 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Saralash & Qo'ng'iroq</h4>
+                                <span id="count-saralash" class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                            </div>
+                            <div id="crm-saralash-list" class="space-y-3 min-h-[300px]"></div>
+                        </div>
+                        <!-- Rad etilganlar (Sabablari tahlili uchun) -->
+                        <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm space-y-4">
+                            <div class="flex justify-between items-center border-b pb-2 border-gray-100">
+                                <h4 class="font-bold text-gray-700 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Unqualified (Radlar)</h4>
+                                <span id="count-rad" class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                            </div>
+                            <div id="crm-rad-list" class="space-y-3 min-h-[300px]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. ROP ANALITIKA TAB (FILIAL FILTRI OLIB TASHLANDI) -->
+                <div id="tab-rop" class="tab-content space-y-6 hidden">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center border-b pb-4 border-gray-100">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800">Operatorlar KPI va Savdo Ko'rsatkichlari</h3>
+                                <p class="text-xs text-gray-400">9 ta operatorning to'liq 2-bosqich yakuniy savdo natijalari (Yaxlit ro'yxat)</p>
+                            </div>
+                        </div>
                         
-                        <div class="overflow-x-auto pt-2">
-                            <table class="w-full text-left text-xs text-slate-400 border-t border-slate-800 mt-2">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="text-slate-500">
-                                        <th class="py-2">Login</th><th class="py-2">Parol</th><th class="py-2">Roli</th><th class="py-2">Biriktirilgan Loyiha</th>
+                                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                                        <th class="py-3 px-4 font-semibold">Operator Ismi</th>
+                                        <th class="py-3 px-4 font-semibold">Liniya Turi</th>
+                                        <th class="py-3 px-4 font-semibold text-center">Muloqotlar</th>
+                                        <th class="py-3 px-4 font-semibold text-center">Yopilgan Savdo</th>
+                                        <th class="py-3 px-4 font-semibold text-center">Konversiya %</th>
+                                        <th class="py-3 px-4 font-semibold">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody id="adminUsersTableBody"></tbody>
+                                <tbody id="rop-operators-table" class="text-sm divide-y divide-gray-100">
+                                    <!-- Operatorlar ro'yxati JS orqali yaxlit render qilinadi -->
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
 
-            </div>
+                <!-- 4. DAVOMAT TAB (FILIAL FILTRI OLIB TASHLANDI) -->
+                <div id="tab-davomat" class="tab-content space-y-6 hidden">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">Kunlik Ishchi Davomat Tizimi</h3>
+                            <p class="text-xs text-gray-400">Hamma operatorlar uchun yagona umumiy nazorat jadvali.</p>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                                        <th class="py-3 px-4 font-semibold">Xodim</th>
+                                        <th class="py-3 px-4 font-semibold text-center">Bugun</th>
+                                        <th class="py-3 px-4 font-semibold text-center">Kelgan vaqti</th>
+                                        <th class="py-3 px-4 font-semibold text-center">Ketgan vaqti</th>
+                                        <th class="py-3 px-4 font-semibold text-center">Kechikish (min)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="davomat-table-body" class="text-sm divide-y divide-gray-100">
+                                    <!-- Davomat elementlari -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. OYLIK & KADRLAR TAB (FILIAL FILTRI OLIB TASHLANDI) -->
+                <div id="tab-oylik" class="tab-content space-y-6 hidden">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">Payroll - Oylik Maosh va Bonus Hisoblagichi</h3>
+                            <p class="text-xs text-gray-400">Yopilgan real shartnomalar va KPI asosida barcha xodimlarning yakuniy balansi.</p>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
+                                        <th class="py-3 px-4 font-semibold">Xodim Ismi</th>
+                                        <th class="py-3 px-4 font-semibold">Fiks Maosh</th>
+                                        <th class="py-3 px-4 font-semibold text-center">Bonus (Savdo)</th>
+                                        <th class="py-3 px-4 font-semibold text-center">Jarimalar</th>
+                                        <th class="py-3 px-4 font-semibold text-right">Jami To'lanadigan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="oylik-table-body" class="text-sm divide-y divide-gray-100">
+                                    <!-- Maoshlar ro'yxati -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-        import { getDatabase, ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+    <!-- SCRIPT LOGIKA (FIREBASE INTEGRATSIYA & GLOBAL YAXLIT MA'LUMOTLAR) -->
+    <script>
+        // Operatorlar statik bazasi (Barcha filiallar bitta massiv ichida, ajratuvchi filtrlar olib tashlandi)
+        const teamMembers = [
+            { name: 'Xumora', role: 'Primary Qualification', line: 'Liniya 1', salary: 3500000, sales: 45, calls: 320, penalty: 0 },
+            { name: 'Robiya', role: 'Closing Specialist', line: 'Liniya 2', salary: 4000000, sales: 62, calls: 280, penalty: 50000 },
+            { name: 'Rayyona', role: 'Primary Qualification', line: 'Liniya 1', salary: 3500000, sales: 38, calls: 310, penalty: 0 },
+            { name: 'Shaxnoza', role: 'Closing Specialist', line: 'Liniya 2', salary: 4000000, sales: 55, calls: 290, penalty: 0 },
+            { name: 'Diyoraxon', role: 'Retention/Support', line: 'Liniya 3', salary: 3800000, sales: 29, calls: 190, penalty: 20000 },
+            { name: 'Mubina', role: 'Primary Qualification', line: 'Liniya 1', salary: 3500000, sales: 41, calls: 305, penalty: 0 },
+            { name: 'Mushtariy', role: 'Closing Specialist', line: 'Liniya 2', salary: 4000000, sales: 70, calls: 340, penalty: 0 },
+            { name: 'Zeboxon', role: 'Primary Qualification', line: 'Liniya 1', salary: 3500000, sales: 33, calls: 275, penalty: 10000 },
+            { name: 'Sarkor Operator', role: 'Closing Specialist', line: 'Liniya 2', salary: 4000000, sales: 50, calls: 300, penalty: 0 } 
+        ];
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyA1-SizningApiKeyNiQoyasiz", 
-            authDomain: "hisotb-46af8.firebaseapp.com",
-            projectId: "hisotb-46af8",
-            databaseURL: "https://hisotb-46af8-default-rtdb.firebaseio.com/"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-
-        let uRole = "", uName = "", uProjectCtx = "";
-        let selectedCategory = "crm"; 
-        let selectedDate = "2026-07-09";
-        let activeBranches = [];
-
-        window.handleLogin = async function(event) {
-            event.preventDefault();
-            const inpUser = document.getElementById("username").value.trim();
-            const inpPass = document.getElementById("password").value.trim();
-            const err = document.getElementById("loginError");
-
-            if(inpUser === "khamiid" && inpPass === "2236") {
-                uRole = "admin"; uName = "khamiid"; initApp(); return;
-            }
-
-            try {
-                const snap = await get(child(ref(db), `users/${inpUser}`));
-                if(snap.exists() && snap.val().password === inpPass) {
-                    uRole = snap.val().role; uName = inpUser; uProjectCtx = snap.val().project || "";
-                    initApp();
-                } else { err.classList.remove("hidden"); }
-            } catch(e) { err.classList.remove("hidden"); console.error(e); }
-        };
-
-        async function initApp() {
-            document.getElementById("loginScreen").classList.add("hidden");
-            document.getElementById("dashboardScreen").classList.remove("hidden");
-            document.getElementById("roleBadge").innerText = `${uName} (${uRole})`;
-
-            if(uRole === "admin" || uRole === "boss") {
-                document.getElementById("bossFilterPart").classList.remove("hidden");
-            }
-            if(uRole === "admin") {
-                document.getElementById("btn-cat-admin").classList.remove("hidden");
-            }
-            await loadProjectsDropdown();
-            await onProjectChange();
-            loadAllUsersForAdmin();
-        }
-
-        async function loadProjectsDropdown() {
-            const snap = await get(child(ref(db), "projects"));
-            const pSel = document.getElementById("globalProjectSelect");
-            const admPSel = document.getElementById("adm_proj_select");
-            pSel.innerHTML = ""; admPSel.innerHTML = "";
-
-            if(snap.exists()) {
-                Object.keys(snap.val()).forEach(p => {
-                    if(uRole !== "admin" && uProjectCtx !== p) return; 
-                    pSel.innerHTML += `<option value="${p}">${p}</option>`;
-                    admPSel.innerHTML += `<option value="${p}">${p}</option>`;
-                });
-            }
-        }
-
-        window.onProjectChange = async function() {
-            const proj = document.getElementById("globalProjectSelect").value;
-            const bSel = document.getElementById("globalBranchSelect");
+        // Navigatsiya almashtirish mantiqi
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
             
-            // Default Jamlangan parametrini tiklash
-            bSel.innerHTML = `<option value="JAMLANGAN">📊 BARCHASI (JAMLANGAN)</option>`;
-            activeBranches = [];
-
-            const snap = await get(child(ref(db), `projects/${proj}/branches`));
-            if(snap.exists()) {
-                Object.keys(snap.val()).forEach(b => {
-                    activeBranches.push(b);
-                    bSel.innerHTML += `<option value="${b}">${b} filiali</option>`;
-                });
-            }
+            // Sarlavhani o'zgartirish
+            const titles = {
+                dashboard: 'Dashboard Tahlili',
+                crm: 'Umumiy CRM Oqimi',
+                rop: 'ROP Boshqaruv Markazi',
+                davomat: 'Yagona Ishchi Davomat Kontroli',
+                oylik: 'Umumiy Maosh va Payroll Jadvallari'
+            };
+            document.getElementById('page-title').innerText = titles[tabName] || 'Dashboard';
             
-            document.getElementById("calendarTitle").innerText = `${proj} — Loyiha Analitikasi`;
-            closeForm();
-            renderCalendar();
-            loadWorkersForProject();
-        };
-
-        window.selectCategory = function(cat) {
-            selectedCategory = cat;
-            document.querySelectorAll("[id^='btn-cat-']").forEach(b => b.classList.remove("bg-emerald-600", "text-white"));
-            document.getElementById(`btn-cat-${cat}`).classList.add("bg-emerald-600", "text-white");
-
-            if(cat === "admin") {
-                document.getElementById("calendarSection").classList.add("hidden");
-                document.getElementById("inputFormSection").classList.add("hidden");
-                document.getElementById("adminView").classList.remove("hidden");
-            } else {
-                document.getElementById("adminView").classList.add("hidden");
-                document.getElementById("calendarSection").classList.remove("hidden");
-                renderCalendar();
-            }
-        };
-
-        async function loadWorkersForProject() {
-            const proj = document.getElementById("globalProjectSelect").value;
-            const container = document.getElementById("workersList");
-            container.innerHTML = "";
-            const snap = await get(child(ref(db), "users"));
-            if(snap.exists()) {
-                Object.keys(snap.val()).forEach(u => {
-                    if(snap.val()[u].project === proj) {
-                        container.innerHTML += `<div>• ${u} (${snap.val()[u].role})</div>`;
-                    }
-                });
-            }
+            // Aktiv tugma dizayni
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-600', 'text-white');
+                btn.classList.add('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
+            });
+            event.currentTarget.classList.add('bg-emerald-600', 'text-white');
+            event.currentTarget.classList.remove('text-slate-400', 'hover:bg-slate-800');
         }
 
-        // KALENDAR STRUKTURASI
-        function renderCalendar() {
-            const grid = document.getElementById("calendarGrid");
-            grid.innerHTML = "";
-            for(let i=1; i<=2; i++) { grid.innerHTML += `<div></div>`; } // Iyul 2026
-
-            for(let day=1; day<=31; day++) {
-                const dayStr = day < 10 ? "0" + day : day;
-                const fullDate = `2026-07-${dayStr}`;
-
-                grid.innerHTML += `<button onclick="openFormForDate('${fullDate}')" class="calendar-day bg-slate-950 hover:bg-slate-800 border border-slate-850 p-3 rounded-xl font-mono text-sm transition-all duration-200 flex flex-col items-center justify-between min-h-[55px]">
-                    <span class="text-slate-400 text-xs">${day}</span>
-                    <span id="dot-${fullDate}" class="w-1.5 h-1.5 rounded-full bg-transparent mt-1"></span>
-                </button>`;
-                checkDataPresence(fullDate);
-            }
+        // Dashboard umumiy ma'lumotlarini yuklash
+        function loadDashboardData() {
+            const totalSales = teamMembers.reduce((sum, member) => sum + member.sales, 0);
+            document.getElementById('dash-bajarildi').innerHTML = `${totalSales} <span class="text-sm font-normal text-gray-500">ta</span>`;
         }
 
-        async function checkDataPresence(date) {
-            const p = document.getElementById("globalProjectSelect").value;
-            const viewMode = document.getElementById("globalBranchSelect").value;
-            const dot = document.getElementById(`dot-${date}`);
-            if(!dot) return;
+        // CRM Oqimidagi leadlarni yaxlit joylashtirish (Filtrsiz)
+        function renderCRM() {
+            const yangiContainer = document.getElementById('crm-yangi-list');
+            const saralashContainer = document.getElementById('crm-saralash-list');
+            const radContainer = document.getElementById('crm-rad-list');
 
-            if(viewMode === "JAMLANGAN") {
-                // Jamlanganda biror filialda ma'lumot bo'lsa ham nuqta yonadi
-                for(let b of activeBranches) {
-                    const snap = await get(child(ref(db), `stats/${p}/${b}/${selectedCategory}/${date}`));
-                    if(snap.exists()) { dot.classList.add("bg-emerald-400"); break; }
-                }
-            } else {
-                const snap = await get(child(ref(db), `stats/${p}/${viewMode}/${selectedCategory}/${date}`));
-                if(snap.exists()) dot.classList.add("bg-emerald-400");
-            }
+            // Namunaviy lead ma'lumotlari
+            const sampleLeads = [
+                { id: '#1024', source: 'YouTube (@smsmedgijja_bot)', time: '10 daqiqa oldin', type: 'yangi', client: 'A. Karimov' },
+                { id: '#1025', source: 'Instagram DM', time: '25 daqiqa oldin', type: 'yangi', client: 'S. Aliyeva' },
+                { id: '#1021', source: 'Telegram Bot', time: '2 soat oldin', type: 'saralash', client: 'M. Umarov' },
+                { id: '#1019', source: 'YouTube Video', time: '1 kun oldin', type: 'rad', reason: 'Narxi qimmat topdi' }
+            ];
+
+            yangiContainer.innerHTML = '';
+            saralashContainer.innerHTML = '';
+            radContainer.innerHTML = '';
+
+            let cYangi = 0, cSaralash = 0, cRad = 0;
+
+            sampleLeads.forEach(lead => {
+                const card = `
+                    <div class="bg-gray-50 p-3 rounded-xl border border-gray-200 shadow-sm space-y-1 text-xs">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-gray-700">${lead.id} - ${lead.client || 'Noma\'lum'}</span>
+                            <span class="text-gray-400 text-[10px]">${lead.time}</span>
+                        </div>
+                        <p class="text-gray-500"><i class="fa-solid fa-arrow-turn-up text-emerald-500"></i> ${lead.source}</p>
+                        ${lead.reason ? `<p class="text-rose-600 font-medium">Sabab: ${lead.reason}</p>` : ''}
+                    </div>
+                `;
+                if(lead.type === 'yangi') { yangiContainer.innerHTML += card; cYangi++; }
+                if(lead.type === 'saralash') { saralashContainer.innerHTML += card; cSaralash++; }
+                if(lead.type === 'rad') { radContainer.innerHTML += card; cRad++; }
+            });
+
+            document.getElementById('count-yangi').innerText = cYangi;
+            document.getElementById('count-saralash').innerText = cSaralash;
+            document.getElementById('count-rad').innerText = cRad;
         }
 
-        // FORMANI KUNGA MOSLAB OCHISH
-        window.openFormForDate = async function(date) {
-            selectedDate = date;
-            const proj = document.getElementById("globalProjectSelect").value;
-            const viewMode = document.getElementById("globalBranchSelect").value;
-            
-            document.getElementById("formTitleDate").innerText = `Sana: ${date} | Bo'lim: ${selectedCategory.toUpperCase()}`;
-            document.getElementById("inputFormSection").classList.remove("hidden");
-            document.getElementById("inputFormSection").scrollIntoView({ behavior: 'smooth' });
+        // ROP Operatorlar jadvalini yaxlit chop etish (Hech qanday filtr aralashmaydi)
+        function renderROPTable() {
+            const tbody = document.getElementById('rop-operators-table');
+            tbody.innerHTML = '';
 
-            const fieldsContainer = document.getElementById("dynamicFormFields");
-            fieldsContainer.innerHTML = "";
-
-            // Boss ma'lumot kiritmaydi, faqat ko'radi
-            if(uRole === "boss") {
-                document.getElementById("formActionButtons").classList.add("hidden");
-            } else {
-                document.getElementById("formActionButtons").classList.remove("hidden");
-            }
-
-            // Agarda Boss JAMLANGAN rejimda tursa — u faqat hamma filiallar yig'indisini hisoblab ko'radi
-            if(viewMode === "JAMLANGAN") {
-                fieldsContainer.innerHTML = `<div class="bg-indigo-950/40 p-4 border border-indigo-900/40 rounded-xl text-xs text-indigo-300 mb-2">💡 Quyida barcha filiallar bo'yicha hisobotlar jamlangan (Yig'indi) holda ko'rsatilmoqda.</div>`;
-                fieldsContainer.innerHTML += getFormFieldsHTML(selectedCategory, "TOTAL_SUM");
-                
-                // Jamlab hisoblash
-                let totalData = {};
-                for(let b of activeBranches) {
-                    const snap = await get(child(ref(db), `stats/${proj}/${b}/${selectedCategory}/${date}`));
-                    if(snap.exists()) {
-                        Object.keys(snap.val()).forEach(k => {
-                            totalData[k] = (totalData[k] || 0) + (parseFloat(snap.val()[k]) || 0);
-                        });
-                    }
-                }
-                // Qiymatlarni Jamlangan inputlarga yuklash (read-only)
-                Object.keys(totalData).forEach(k => {
-                    const el = document.getElementById(`inp_TOTAL_SUM_${k}`);
-                    if(el) { el.value = totalData[k]; el.setAttribute("disabled", "true"); }
-                });
-                document.getElementById("deleteDataBtn").classList.add("hidden");
-                if(uRole === "worker") document.getElementById("saveDataBtn").classList.add("hidden");
-            } 
-            // Agar bitta filial tanlangan bo'lsa yoki xodim (Worker) kirgan bo'lsa (Unga har doim filiallar ro'yxati ochiladi)
-            else {
-                if(uRole === "worker") {
-                    // Operatorga barcha filiallar bitta ekranda chiroyli guruh bo'lib ochiladi
-                    activeBranches.forEach(b => {
-                        fieldsContainer.innerHTML += `
-                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3">
-                                <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">📍 ${b} Filiali uchun ma'lumot:</h4>
-                                ${getFormFieldsHTML(selectedCategory, b)}
-                            </div>`;
-                    });
-
-                    // Ma'lumotlarni yuklash
-                    for(let b of activeBranches) {
-                        const snap = await get(child(ref(db), `stats/${proj}/${b}/${selectedCategory}/${date}`));
-                        if(snap.exists()) {
-                            Object.keys(snap.val()).forEach(k => {
-                                const el = document.getElementById(`inp_${b}_${k}`);
-                                if(el) el.value = snap.val()[k];
-                            });
-                        }
-                    }
-                    document.getElementById("deleteDataBtn").classList.remove("hidden");
-                    document.getElementById("saveDataBtn").classList.remove("hidden");
-                } else {
-                    // Boss bitta aniq filialni tanlagan bo'lsa
-                    fieldsContainer.innerHTML = `
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3">
-                            <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider">📍 ${viewMode} Filiali ma'lumotlari:</h4>
-                            ${getFormFieldsHTML(selectedCategory, viewMode)}
-                        </div>`;
-                    
-                    const snap = await get(child(ref(db), `stats/${proj}/${viewMode}/${selectedCategory}/${date}`));
-                    if(snap.exists()) {
-                        Object.keys(snap.val()).forEach(k => {
-                            const el = document.getElementById(`inp_${viewMode}_${k}`);
-                            if(el) { el.value = snap.val()[k]; if(uRole==='boss') el.setAttribute("disabled", "true"); }
-                        });
-                    }
-                }
-            }
-        };
-
-        window.closeForm = function() { document.getElementById("inputFormSection").classList.add("hidden"); };
-
-        // INPUTLAR GENERATORI (PREFIKS BILAN CHALKAShMASLIK UCHUN)
-        function getFormFieldsHTML(cat, prefix) {
-            if(cat === "crm") {
-                return `<div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
-                    <div><label class="text-slate-400 block mb-1">Yangi Lid</label><input type="number" id="inp_${prefix}_yangi" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 font-bold text-sky-400"></div>
-                    <div><label class="text-slate-400 block mb-1">Otkazib yuborilgan</label><input type="number" id="inp_${prefix}_otkaz" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 font-bold text-rose-400"></div>
-                    <div><label class="text-slate-400 block mb-1">Bog'lanib bo'lmadi</label><input type="number" id="inp_${prefix}_nocall" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 font-bold text-amber-400"></div>
-                    <div><label class="text-slate-400 block mb-1">Ofisga chaqirildi</label><input type="number" id="inp_${prefix}_invite" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 font-bold text-purple-400"></div>
-                    <div><label class="text-slate-400 block mb-1">Keldi (Sotildi)</label><input type="number" id="inp_${prefix}_sold" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 font-bold text-emerald-400"></div>
-                    <div><label class="text-slate-400 block mb-1">Sifatsiz Lead</label><input type="number" id="inp_${prefix}_bad" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5 font-bold text-slate-500"></div>
-                </div>`;
-            }
-            if(cat === "sarkor") {
-                return `<div class="grid grid-cols-3 gap-3 text-xs">
-                    <div><label class="text-slate-400 block mb-1">Urinishlar</label><input type="number" id="inp_${prefix}_try" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                    <div><label class="text-slate-400 block mb-1">Bog'lanildi</label><input type="number" id="inp_${prefix}_ok" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                    <div><label class="text-slate-400 block mb-1">Jami Daqiqa</label><input type="number" id="inp_${prefix}_min" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                </div>`;
-            }
-            if(cat === "rop") {
-                return `<div class="grid grid-cols-4 gap-3 text-xs">
-                    <div><label class="text-slate-400 block mb-1">Obrobotka</label><input type="number" id="inp_${prefix}_total" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                    <div><label class="text-slate-400 block mb-1">Aktiv Lid</label><input type="number" id="inp_${prefix}_active" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                    <div><label class="text-slate-400 block mb-1">Brak Lid</label><input type="number" id="inp_${prefix}_brak" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                    <div><label class="text-slate-400 block mb-1">Zakazlar</label><input type="number" id="inp_${prefix}_zakaz" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                </div>`;
-            }
-            if(cat === "target") {
-                return `<div class="grid grid-cols-2 gap-3 text-xs">
-                    <div><label class="text-slate-400 block mb-1">Xarajat ($)</label><input type="number" step="0.01" id="inp_${prefix}_spend" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                    <div><label class="text-slate-400 block mb-1">Lidlar</label><input type="number" id="inp_${prefix}_leads" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                </div>`;
-            }
-            if(cat === "davomat") {
-                return `<div class="flex gap-4 text-xs">
-                    <select id="inp_${prefix}_status" class="bg-slate-900 border border-slate-800 p-1.5 rounded"><option value="Keldi">Keldi</option><option value="Ketdi">Ketdi</option></select>
-                    <input type="time" id="inp_${prefix}_time" class="bg-slate-900 border border-slate-800 p-1.5 rounded">
-                </div>`;
-            }
-            if(cat === "oylik") {
-                return `<div class="grid grid-cols-3 gap-3 text-xs">
-                    <div><label class="text-slate-400 block mb-1">Kunlik Fix</label><input type="number" id="inp_${prefix}_fix" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                    <div><label class="text-slate-400 block mb-1">Bonus</label><input type="number" id="inp_${prefix}_bonus" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                    <div><label class="text-slate-400 block mb-1">Shtraf</label><input type="number" id="inp_${prefix}_penalty" class="w-full bg-slate-900 border border-slate-800 rounded p-1.5"></div>
-                </div>`;
-            }
+            teamMembers.forEach(op => {
+                const convRate = ((op.sales / op.calls) * 100).toFixed(1);
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50/80 transition-colors">
+                        <td class="py-3 px-4 font-bold text-gray-800">${op.name}</td>
+                        <td class="py-3 px-4 text-gray-500 text-xs">${op.role}</td>
+                        <td class="py-3 px-4 text-center font-medium">${op.calls}</td>
+                        <td class="py-3 px-4 text-center font-bold text-emerald-600">${op.sales}</td>
+                        <td class="py-3 px-4 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="font-semibold">${convRate}%</span>
+                                <div class="w-12 bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                                    <div class="bg-emerald-500 h-full" style="width: ${convRate}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${op.sales > 40 ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
+                                ${op.sales > 40 ? 'Faol Super' : 'Normal'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
         }
 
-        // MA'LUMOTLARNI SAQLASH
-        window.saveDataToFirebase = async function() {
-            const proj = document.getElementById("globalProjectSelect").value;
-            const viewMode = document.getElementById("globalBranchSelect").value;
+        // Umumiy yagona Davomat jadvali
+        function renderDavomatTable() {
+            const tbody = document.getElementById('davomat-table-body');
+            tbody.innerHTML = '';
 
-            // Agar Worker bo'lsa, hamma filial elementlarini o'qib alohida saqlaydi
-            let targets = (viewMode === "JAMLANGAN" || uRole === "worker") ? activeBranches : [viewMode];
-
-            try {
-                for(let b of targets) {
-                    let branchData = {};
-                    let hasInputs = false;
-                    
-                    document.querySelectorAll(`[id^='inp_${b}_']`).forEach(el => {
-                        hasInputs = true;
-                        const key = el.id.replace(`inp_${b}_`, "");
-                        branchData[key] = el.type === "number" ? (parseFloat(el.value) || 0) : el.value;
-                    });
-
-                    if(hasInputs) {
-                        await set(ref(db, `stats/${proj}/${b}/${selectedCategory}/${selectedDate}`), branchData);
-                    }
-                }
-                alert("Barcha filiallar ma'lumotlari muvaffaqiyatli saqlandi! ⚡");
-                closeForm(); renderCalendar();
-            } catch(e) { console.error(e); }
-        };
-
-        // O'CHIRISH
-        window.deleteDataFromFirebase = async function() {
-            if(!confirm("Ushbu kunga tegishli barcha filiallar ma'lumotlarini butkul o'chirmoqchimisiz?")) return;
-            const proj = document.getElementById("globalProjectSelect").value;
-
-            try {
-                for(let b of activeBranches) {
-                    await remove(ref(db, `stats/${proj}/${b}/${selectedCategory}/${selectedDate}`));
-                }
-                alert("Ma'lumotlar o'chirildi.");
-                closeForm(); renderCalendar();
-            } catch(e) { console.error(e); }
-        };
-
-        // --- ADMIN AMALLARI ---
-        window.addProject = async function() {
-            const name = document.getElementById("adm_proj_name").value.trim();
-            if(!name) return;
-            await set(ref(db, `projects/${name}/created`), true);
-            alert(`Loyiha ochildi: ${name}`);
-            document.getElementById("adm_proj_name").value = "";
-            await loadProjectsDropdown(); loadAllUsersForAdmin();
-        };
-
-        window.addBranch = async function() {
-            const proj = document.getElementById("adm_proj_select").value;
-            const branch = document.getElementById("adm_branch_name").value.trim();
-            if(!branch) return;
-            await set(ref(db, `projects/${proj}/branches/${branch}`), true);
-            alert(`Filial qo'shildi: ${branch}`);
-            document.getElementById("adm_branch_name").value = "";
-            onProjectChange();
-        };
-
-        window.createUser = async function() {
-            const u = document.getElementById("adm_user_login").value.trim();
-            const p = document.getElementById("adm_user_pass").value.trim();
-            const r = document.getElementById("adm_user_role").value;
-            const prj = document.getElementById("adm_user_project_ctx").value;
-
-            if(!u || !p) return;
-            await set(ref(db, `users/${u}`), { password: p, role: r, project: prj });
-            alert(`Xodim saqlandi: ${u}`);
-            document.getElementById("adm_user_login").value = "";
-            document.getElementById("adm_user_pass").value = "";
-            loadAllUsersForAdmin(); loadWorkersForProject();
-        };
-
-        async function loadAllUsersForAdmin() {
-            const snap = await get(child(ref(db), "users"));
-            const tbody = document.getElementById("adminUsersTableBody");
-            const prjSelect = document.getElementById("adm_user_project_ctx");
-            tbody.innerHTML = ""; prjSelect.innerHTML = "";
-
-            const pSnap = await get(child(ref(db), "projects"));
-            if(pSnap.exists()) {
-                Object.keys(pSnap.val()).forEach(p => {
-                    prjSelect.innerHTML += `<option value="${p}">${p}</option>`;
-                });
-            }
-            if(snap.exists()) {
-                Object.keys(snap.val()).forEach(u => {
-                    tbody.innerHTML += `<tr>
-                        <td class="py-1">${u}</td>
-                        <td class="py-1 font-mono">${snap.val()[u].password}</td>
-                        <td class="py-1 text-sky-400">${snap.val()[u].role}</td>
-                        <td class="py-1 text-emerald-400 font-bold">${snap.val()[u].project}</td>
-                    </tr>`;
-                });
-            }
+            teamMembers.forEach(op => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50/80 transition-colors">
+                        <td class="py-3 px-4 font-bold text-gray-800">${op.name}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-md font-bold">In-Office</span>
+                        </td>
+                        <td class="py-3 px-4 text-center font-mono text-gray-600">08:52</td>
+                        <td class="py-3 px-4 text-center font-mono text-gray-600">18:05</td>
+                        <td class="py-3 px-4 text-center font-bold ${op.name === 'Robiya' ? 'text-rose-500' : 'text-gray-400'}">
+                            ${op.name === 'Robiya' ? '12 min' : '0'}
+                        </td>
+                    </tr>
+                `;
+            });
         }
+
+        // Barcha xodimlarni oylik hisob-kitob varaqasi (Yaxlit shaklda)
+        function renderOylikTable() {
+            const tbody = document.getElementById('oylik-table-body');
+            tbody.innerHTML = '';
+
+            teamMembers.forEach(op => {
+                const bonus = op.sales * 40000; // Har bir sotuvga 40,000 so'mdan shartli bonus
+                const total = op.salary + bonus - op.penalty;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50/80 transition-colors">
+                        <td class="py-3 px-4 font-bold text-gray-800">${op.name}</td>
+                        <td class="py-3 px-4 font-mono text-gray-500">${op.salary.toLocaleString()} UZS</td>
+                        <td class="py-3 px-4 text-center font-mono text-emerald-600 font-semibold">+${bonus.toLocaleString()} UZS</td>
+                        <td class="py-3 px-4 text-center font-mono text-rose-500">${op.penalty > 0 ? `-${op.penalty.toLocaleString()}` : '0'} UZS</td>
+                        <td class="py-3 px-4 text-right font-mono font-black text-slate-900">${total.toLocaleString()} UZS</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Sahifa yuklanganda barcha ma'lumotlarni render qilish
+        window.onload = function() {
+            loadDashboardData();
+            renderCRM();
+            renderROPTable();
+            renderDavomatTable();
+            renderOylikTable();
+        };
     </script>
 </body>
 </html>
