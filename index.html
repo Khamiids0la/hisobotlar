@@ -14,6 +14,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen">
 
+    <!-- 1. LOGIN SCREEN -->
     <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 px-4">
         <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
             <div class="text-center mb-6">
@@ -35,6 +36,7 @@
         </div>
     </div>
 
+    <!-- 2. MAIN DASHBOARD -->
     <div id="dashboardScreen" class="hidden min-h-screen flex flex-col fade-in">
         <header class="border-b border-slate-900 bg-slate-900/80 sticky top-0 z-40 px-4">
             <div class="max-w-7xl mx-auto h-14 flex items-center justify-between">
@@ -42,6 +44,7 @@
                     <span class="font-bold text-base tracking-wide text-emerald-400">X-Control</span>
                     <select id="globalProjectSelect" onchange="onProjectChange()" class="bg-slate-950 border border-slate-800 text-xs rounded-md p-1 font-semibold text-slate-300"></select>
                     
+                    <!-- HUDUD FILTRI FAQAT TARGET BO'LIMIDAGINA PAYDO BO'LADI -->
                     <div id="targetFilterPart" class="hidden flex items-center gap-1 text-xs">
                         <span class="text-slate-500 ml-2">| Target Hududi:</span>
                         <select id="globalBranchSelect" onchange="onBranchFilterChange()" class="bg-slate-950 border border-slate-800 text-slate-300 rounded p-1 font-semibold"></select>
@@ -56,6 +59,7 @@
 
         <div class="max-w-7xl w-full mx-auto px-4 py-4 grid grid-cols-1 lg:grid-cols-4 gap-4 flex-1">
             
+            <!-- CHAP APANEL -->
             <div class="space-y-4 lg:col-span-1">
                 <div class="bg-slate-900 border border-slate-900 rounded-xl p-3 space-y-1">
                     <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-2 mb-1">Bo'limlar</h3>
@@ -65,17 +69,22 @@
                     <button onclick="selectCategory('target')" id="btn-cat-target" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-slate-950 text-slate-300 font-medium transition-all cursor-pointer">🎯 Target & Marketing</button>
                     <button onclick="selectCategory('davomat')" id="btn-cat-davomat" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-slate-950 text-slate-300 font-medium transition-all cursor-pointer">📅 Xodimlar Davomati</button>
                     <button onclick="selectCategory('oylik')" id="btn-cat-oylik" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-slate-950 text-slate-300 font-medium transition-all cursor-pointer">💰 Oylik / KPI</button>
+                    
+                    <!-- ADMIN TUGMASI (KHAMIID BILAN KIRGANDA CHIQADI) -->
                     <button onclick="selectCategory('admin')" id="btn-cat-admin" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-indigo-950/40 text-indigo-400 border border-indigo-950 hidden font-medium transition-all cursor-pointer">⚙️ Admin Panel</button>
                 </div>
 
+                <!-- ISHCHILAR RO'YXATI -->
                 <div id="workersListSection" class="bg-slate-900 border border-slate-900 rounded-xl p-3">
-                    <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-2 mb-2">Loyiha Ishchilari (Andijon CC)</h3>
+                    <h3 class="text-[11px] font-bold text-slate-500 uppercase tracking-wider px-2 mb-2">Loyiha Xodimlari</h3>
                     <div id="workersListContainer" class="space-y-1.5"></div>
                 </div>
             </div>
 
+            <!-- O'NG APANEL -->
             <div class="lg:col-span-3 space-y-4">
                 
+                <!-- KALENDAR SECTION -->
                 <div id="calendarSection" class="hidden bg-slate-900 border border-slate-900 rounded-xl p-4 shadow-xl fade-in space-y-3">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                         <div>
@@ -90,20 +99,24 @@
                     <div id="calendarGrid" class="grid grid-cols-7 gap-1.5"></div>
                 </div>
 
+                <!-- AQLLI FORMA OYNASI -->
                 <div id="inputFormSection" class="hidden bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4 fade-in">
                     <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                         <h3 class="text-sm font-bold text-emerald-400" id="formTitleDate">Sana: OOOO-AA-KK</h3>
                         <button onclick="closeForm()" class="text-slate-500 hover:text-slate-300 text-xs cursor-pointer">✕ Yopish</button>
                     </div>
 
+                    <!-- DINAMIK INPUT ELEMENTLARI -->
                     <div id="dynamicFormFields" class="space-y-4"></div>
 
+                    <!-- SAQLASH TUGMALARI BLOCKI -->
                     <div class="flex items-center justify-end gap-2 pt-2" id="formActionButtons">
                         <button onclick="deleteDataFromFirebase()" id="deleteDataBtn" class="bg-rose-950/40 hover:bg-rose-900 border border-rose-900 text-rose-300 font-medium px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer">🗑 O'chirish</button>
                         <button onclick="saveDataToFirebase()" id="saveDataBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-4 py-2 rounded-lg text-xs transition-all cursor-pointer">⚡ Saqlash Hisobotni</button>
                     </div>
                 </div>
 
+                <!-- ADMIN VIEW -->
                 <div id="adminView" class="hidden space-y-4 fade-in">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="bg-slate-900 p-4 rounded-xl border border-slate-850 space-y-2">
@@ -149,6 +162,7 @@
         </div>
     </div>
 
+    <!-- DB MODULE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
         import { getDatabase, ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
@@ -175,14 +189,20 @@
             const inpPass = document.getElementById("password").value.trim();
             const err = document.getElementById("loginError");
 
+            // ⚠️ TO'G'RILANDI: khamiid kirganda admin panel tugmasi to'g'ridan-to'g'ri ko'rinadigan bo'ldi
             if(inpUser === "khamiid" && inpPass === "2236") {
-                uRole = "admin"; uName = "khamiid"; initApp(); return;
+                uRole = "admin"; uName = "khamiid"; 
+                document.getElementById("btn-cat-admin").classList.remove("hidden");
+                initApp(); return;
             }
 
             try {
                 const snap = await get(child(ref(db), `users/${inpUser}`));
                 if(snap.exists() && snap.val().password === inpPass) {
                     uRole = snap.val().role; uName = inpUser; uProjectCtx = snap.val().project || "";
+                    if(uRole === "admin") {
+                        document.getElementById("btn-cat-admin").classList.remove("hidden");
+                    }
                     initApp();
                 } else { err.classList.remove("hidden"); }
             } catch(e) { err.classList.remove("hidden"); }
@@ -216,11 +236,10 @@
 
         window.onProjectChange = async function() {
             const proj = document.getElementById("globalProjectSelect").value;
+            if(!proj) return;
             const bSel = document.getElementById("globalBranchSelect");
             
-            bSel.innerHTML = `
-                <option value="JAMLANGAN">📊 JAMI (JAMLANGAN)</option>
-            `;
+            bSel.innerHTML = `<option value="JAMLANGAN">📊 JAMI (JAMLANGAN)</option>`;
             activeBranches = [];
 
             const snap = await get(child(ref(db), `projects/${proj}/branches`));
@@ -278,6 +297,7 @@
 
         async function loadWorkersForProject() {
             const proj = document.getElementById("globalProjectSelect").value;
+            if(!proj) return;
             const container = document.getElementById("workersListContainer");
             container.innerHTML = "";
             
@@ -305,8 +325,8 @@
             const targetCard = document.getElementById(`user-card-${workerName}`);
             if(targetCard) targetCard.classList.add("border-emerald-500", "bg-emerald-950/20");
 
-            document.getElementById("calendarTitle").innerText = `Tahlilchi (Operator): ${workerName}`;
-            document.getElementById("calendarSubtitle").innerText = `Sana tanlab umumiy hisobot kiritishingiz yoki ko'rishingiz mumkin`;
+            document.getElementById("calendarTitle").innerText = `Xodim: ${workerName}`;
+            document.getElementById("calendarSubtitle").innerText = `Sana tanlang`;
             document.getElementById("calendarSection").classList.remove("hidden");
             closeForm();
             renderCalendar();
@@ -348,7 +368,6 @@
                 return;
             }
 
-            // BARCHA CALL CENTER BO'LIMLARI CHUN UMUMIY BAZADAN TEKSHIRAMIZ
             const snap = await get(child(ref(db), `stats/${p}/UMUMIY/${selectedCategory}/${date}/${activeSelectedWorker}`));
             if(snap.exists()) { dot.classList.add("bg-emerald-400"); }
         }
@@ -358,7 +377,7 @@
             const proj = document.getElementById("globalProjectSelect").value;
             const targetBranch = document.getElementById("globalBranchSelect").value;
             
-            document.getElementById("formTitleDate").innerText = `Sana: ${date} | Operator: ${activeSelectedWorker} | Bo'lim: ${selectedCategory.toUpperCase()}`;
+            document.getElementById("formTitleDate").innerText = `Sana: ${date} | Oqim: ${activeSelectedWorker || 'Umumiy'} | Bo'lim: ${selectedCategory.toUpperCase()}`;
             document.getElementById("inputFormSection").classList.remove("hidden");
             document.getElementById("inputFormSection").scrollIntoView({ behavior: 'smooth' });
 
@@ -371,12 +390,11 @@
                 document.getElementById("formActionButtons").classList.remove("hidden");
             }
 
-            // 🎯 TARGET BO'LIMI (HUDUDLAR/FILIALLAR KESIMIDA)
             if(selectedCategory === "target") {
                 if(targetBranch === "JAMLANGAN") {
                     fieldsContainer.innerHTML = `
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-2">
-                            <h4 class="text-xs font-bold text-sky-400">📊 Jami Target Xarajatlari (Jamlangan Holat)</h4>
+                            <h4 class="text-xs font-bold text-sky-400">📊 Jami Target Xarajatlari (Jamlangan)</h4>
                             ${getFormFieldsHTML("target", "TARGET_TOTAL")}
                         </div>`;
                     
@@ -390,7 +408,7 @@
                 } else {
                     fieldsContainer.innerHTML = `
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-2">
-                            <h4 class="text-xs font-bold text-indigo-400">📍 ${targetBranch} Hududi Target Ko'rsatkichlari</h4>
+                            <h4 class="text-xs font-bold text-indigo-400">📍 ${targetBranch} Hududi Targeti</h4>
                             ${getFormFieldsHTML("target", "TARGET_" + targetBranch)}
                         </div>`;
 
@@ -405,10 +423,9 @@
                 return; 
             }
 
-            // 📊 SARKOR, ROP, CRM, DAVOMAT, OYLIK (UMUMIY OQIM - FILIALLARSIZ!)
             fieldsContainer.innerHTML = `
                 <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3">
-                    <h4 class="text-xs font-bold text-emerald-400">📝 Kunlik Call Center Umumiy Ma'lumotlari</h4>
+                    <h4 class="text-xs font-bold text-emerald-400">📝 Kunlik Call Center Umumiy Ma'lumotlari (Filiallarsiz)</h4>
                     ${getFormFieldsHTML(selectedCategory, "UMUMIY")}
                 </div>`;
 
@@ -499,7 +516,6 @@
                         await set(ref(db, `stats/${proj}/TARGET_DEPT/target/${selectedDate}/${targetBranch}`), data);
                     }
                 } else {
-                    // CALL CENTER UMUMIY MA'LUMOTLARINI BAZAGA BITTA JOYGA YOZISH
                     let generalData = {};
                     document.querySelectorAll("[id^='inp_UMUMIY_']").forEach(el => {
                         const key = el.id.replace("inp_UMUMIY_", "");
@@ -507,7 +523,7 @@
                     });
                     await set(ref(db, `stats/${proj}/UMUMIY/${selectedCategory}/${selectedDate}/${activeSelectedWorker}`), generalData);
                 }
-                alert("Ma'lumotlar muvaffaqiyatli saqlandi! ⚡");
+                alert("Ma'lumotlar saqlandi! ⚡");
                 closeForm(); renderCalendar();
             } catch(e) { console.error(e); }
         };
@@ -566,7 +582,7 @@
         };
 
         window.deleteUser = async function(username) {
-            if(!confirm(`Haqiqatan ham ${username} xodimini tizimdan o'chirib tashlamoqchimisiz?`)) return;
+            if(!confirm(`Haqiqatan ham ${username} xodimini o'chirmoqchimisiz?`)) return;
             try {
                 await remove(ref(db, `users/${username}`));
                 alert("Xodim o'chirildi.");
@@ -578,6 +594,7 @@
             const snap = await get(child(ref(db), "users"));
             const tbody = document.getElementById("adminUsersTableBody");
             const prjSelect = document.getElementById("adm_user_project_ctx");
+            if(!tbody) return;
             tbody.innerHTML = ""; prjSelect.innerHTML = "";
 
             const pSnap = await get(child(ref(db), "projects"));
