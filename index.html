@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hisobotchi by khamiid</title>
-    <!-- Tailwind CSS interfeys dizayni uchun -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <!-- Chart.js vizual diagrammalar va chiroyli animatsiyalar uchun -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .view-section { display: none; }
@@ -15,7 +13,6 @@
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
-    <!-- 1. LOGIN SOHASI (EKRAN MARKAZIDA) -->
     <div id="login-section" class="view-section active min-h-screen items-center justify-center p-4 bg-slate-900">
         <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
@@ -37,10 +34,8 @@
         </div>
     </div>
 
-    <!-- 2. ASOSIY TIZIM TUZILMASI (SIDEBAR + MAIN CONTENT) -->
     <div id="app-section" class="view-section min-h-screen flex-col md:flex-row w-full hidden!">
         
-        <!-- CHAP TOMONDAGI MENYU (SIDEBAR) -->
         <aside class="w-full md:w-64 bg-slate-900 text-white flex flex-col justify-between p-4 shrink-0">
             <div>
                 <div class="mb-8 p-2 border-b border-slate-800">
@@ -49,7 +44,7 @@
                 </div>
                 
                 <nav class="space-y-1">
-                    <button id="menu-users" onclick="switchView('users-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
+                    <button id="menu-users" onclick="switchView('users-view')" class="w-full text-left hidden flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
                         <span>👤</span> Hisob Yaratish (Users)
                     </button>
                     <button id="menu-crm" onclick="switchView('crm-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
@@ -71,11 +66,9 @@
             </div>
         </aside>
 
-        <!-- O'NG TOMONDAGI KONTENT REYSI -->
         <main class="flex-1 p-6 md:p-8 overflow-y-auto bg-gray-50">
             
-            <!-- VIEW 1: HISOB YARATISH BO'LIMI -->
-            <div id="users-view" class="sub-view space-y-6 w-full">
+            <div id="users-view" class="sub-view space-y-6 w-full hidden">
                 <div class="flex justify-between items-center pb-4 border-b border-gray-200">
                     <div>
                         <h2 class="text-2xl font-bold text-gray-800">Tizim Foydalanuvchilari</h2>
@@ -83,7 +76,7 @@
                     </div>
                 </div>
 
-                <div id="admin-crud-container" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 h-fit">
                         <h3 id="form-title" class="text-base font-bold text-gray-700 mb-4">Yangi foydalanuvchi qo'shish</h3>
                         <form id="user-form" class="space-y-4">
@@ -123,7 +116,7 @@
                                         <th class="pb-3">Login</th>
                                         <th class="pb-3">Ismi</th>
                                         <th class="pb-3">Roli</th>
-                                        <th class="pb-3 id-actions-header text-right">Amallar</th>
+                                        <th class="pb-3 text-right">Amallar</th>
                                     </tr>
                                 </thead>
                                 <tbody id="users-table-body" class="text-gray-600 divide-y divide-gray-50"></tbody>
@@ -131,13 +124,8 @@
                         </div>
                     </div>
                 </div>
-
-                <div id="access-restricted-msg" class="hidden bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-xl text-sm">
-                    ⚠️ Sizda foydalanuvchilar hisobini boshqarish huquqi yo'q. Ma'lumotlarni faqat <b>khamiid</b> tahrirlay oladi.
-                </div>
             </div>
 
-            <!-- VIEW 2: CRM LIVE BO'LIMI -->
             <div id="crm-view" class="sub-view space-y-6 w-full hidden">
                 <div class="flex justify-between items-center pb-4 border-b border-gray-200">
                     <div>
@@ -147,7 +135,6 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- VORONKALAR RO'YXATI -->
                     <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-4">
                         <h3 class="text-base font-bold text-gray-700">Voronkalar (Linyalar)</h3>
                         <div id="funnel-list" class="space-y-2"></div>
@@ -161,9 +148,7 @@
                         </div>
                     </div>
 
-                    <!-- DETALLAR VA DIAGRAMMA -->
                     <div id="funnel-details-card" class="lg:col-span-2 space-y-6 hidden">
-                        <!-- DINAMIK CHUQQUR DIAGRAMMA BLOKI -->
                         <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
                             <h3 class="text-base font-bold text-gray-700 mb-2">Voronka statistikasi (Vizual diagramma)</h3>
                             <div class="w-full relative" style="height: 250px;">
@@ -171,11 +156,10 @@
                             </div>
                         </div>
 
-                        <!-- 9 TA BOSQICH INPUTLARI -->
                         <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
                             <div class="flex justify-between items-center mb-6">
                                 <h3 id="selected-funnel-title" class="text-lg font-bold text-gray-800">Oyna yuklanmoqda...</h3>
-                                <span class="text-xs bg-blue-100 text-blue-800 font-semibold px-2.5 py-1 rounded-full">Live Rejim</span>
+                                <span id="crm-mode-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full">Live Rejim</span>
                             </div>
 
                             <form id="crm-stages-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -216,14 +200,13 @@
                                     <input type="number" id="stage-9" min="0" class="w-full bg-white border border-rose-200 rounded-lg p-2 outline-none focus:ring-2 focus:ring-rose-500 text-sm font-medium">
                                 </div>
 
-                                <div id="crm-save-container" class="md:col-span-2 pt-2 flex justify-end">
+                                <div id="crm-save-container" class="md:col-span-2 pt-2 flex justify-end hidden">
                                     <button type="submit" class="bg-slate-900 hover:bg-black text-white font-semibold px-6 py-3 rounded-xl text-sm transition cursor-pointer shadow-lg">Saqlash va Grafikni yangilash</button>
                                 </div>
                             </form>
                         </div>
                     </div>
 
-                    <!-- PLACEHOLDER -->
                     <div id="funnel-placeholder" class="bg-gray-100/50 border border-dashed border-gray-200 p-12 rounded-2xl lg:col-span-2 flex flex-col items-center justify-center text-center text-gray-400">
                         <span class="text-4xl mb-2">📊</span>
                         <p class="text-sm font-medium">Diagramma va bosqichlarni ko'rish uchun biror voronkani tanlang</p>
@@ -234,26 +217,17 @@
         </main>
     </div>
 
-    <!-- SCRIPT MATNTIQI -->
     <script>
         const baseUrl = "https://hisotb-46af8-default-rtdb.firebaseio.com/";
         let currentUser = null;
         let selectedFunnelId = null;
-        let myChart = null; // Chart nusxasi
+        let myChart = null;
 
-        // Ranglar palitrasi (Har bir bo'lim uchun o'ziga xos chiroyli gradientlar)
         const stageColors = [
-            'rgba(14, 165, 233, 0.75)',  // 1. Yangi lid (Sky Blue)
-            'rgba(245, 158, 11, 0.75)',  // 2. O'tkazib yuborilgan (Amber)
-            'rgba(249, 115, 22, 0.75)',  // 3. Bog'lanib bo'lmadi (Orange)
-            'rgba(99, 102, 241, 0.75)',  // 4. Qayta aloqa (Indigo)
-            'rgba(168, 85, 247, 0.75)',  // 5. Offisga chaqirildi (Purple)
-            'rgba(16, 185, 129, 0.75)',  // 6. Offisga keldi (Emerald)
-            'rgba(20, 184, 166, 0.75)',  // 7. Keldi sotib olmadi (Teal)
-            'rgba(34, 197, 94, 0.75)',   // 8. Keldi (Green)
-            'rgba(244, 63, 94, 0.75)'    // 9. Sifatsiz lid (Rose)
+            'rgba(14, 165, 233, 0.75)', 'rgba(245, 158, 11, 0.75)', 'rgba(249, 115, 22, 0.75)',
+            'rgba(99, 102, 241, 0.75)', 'rgba(168, 85, 247, 0.75)', 'rgba(16, 185, 129, 0.75)',
+            'rgba(20, 184, 166, 0.75)', 'rgba(34, 197, 94, 0.75)', 'rgba(244, 63, 94, 0.75)'
         ];
-        
         const stageBorderColors = [
             '#0ea5e9', '#f59e0b', '#f97316', '#6366f1', '#a855f7', '#10b981', '#14b8a6', '#22c55e', '#f43f5e'
         ];
@@ -262,7 +236,7 @@
             document.querySelectorAll('.sub-view').forEach(view => view.classList.add('hidden'));
             document.getElementById(viewId).classList.remove('hidden');
 
-            document.getElementById('menu-users').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer";
+            document.getElementById('menu-users').className = "text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer " + (currentUser.role === 'superboss' ? 'w-full' : 'hidden!');
             document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer";
 
             if (viewId === 'users-view') {
@@ -273,7 +247,7 @@
             }
         }
 
-        // AUTH
+        // AUTH SYSTEM
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const user = document.getElementById('login-username').value.trim().toLowerCase();
@@ -310,29 +284,29 @@
             document.getElementById('user-display-name').innerText = currentUser.fullName;
             const badge = document.getElementById('user-badge');
 
+            // DOSTUP VA HUQUQLAR FILTRATSIYASI
             if (currentUser.role === 'superboss') {
                 badge.innerText = 'Super Boss';
                 badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-red-500 text-white';
-                document.getElementById('admin-crud-container').classList.remove('hidden');
-                document.getElementById('access-restricted-msg').classList.add('hidden');
+                
+                // Khamiid uchun hamma narsa ochiq
+                document.getElementById('menu-users').classList.remove('hidden'); 
                 document.getElementById('add-funnel-container').classList.remove('hidden');
                 document.getElementById('crm-save-container').classList.remove('hidden');
-                loadUsersList(true);
-            } else {
-                badge.innerText = currentUser.role === 'boss' ? 'Boss (View Only)' : 'Worker';
-                badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-purple-600 text-white';
-                document.getElementById('admin-crud-container').classList.add('hidden');
-                document.getElementById('access-restricted-msg').classList.remove('hidden');
-                document.getElementById('add-funnel-container').classList.add('hidden');
                 
-                if (currentUser.role === 'boss') {
-                    document.getElementById('crm-save-container').classList.add('hidden');
-                } else {
-                    document.getElementById('crm-save-container').classList.remove('hidden');
-                }
-                loadUsersList(false);
+                loadUsersList();
+                switchView('users-view');
+            } else {
+                badge.innerText = currentUser.role === 'boss' ? 'Boss' : 'Worker';
+                badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-purple-600 text-white';
+                
+                // Qolganlar uchun "Hisob Yaratish" yopiq va ko'rinmaydi
+                document.getElementById('menu-users').classList.add('hidden');
+                document.getElementById('add-funnel-container').classList.add('hidden');
+                document.getElementById('crm-save-container').classList.add('hidden');
+                
+                switchView('crm-view'); // To'g'ridan-to'g'ri CRM oynasiga yo'naltirish
             }
-            switchView('users-view');
         }
 
         function logout() {
@@ -346,20 +320,11 @@
             document.getElementById('funnel-placeholder').classList.remove('hidden');
         }
 
-        // USER CRUD
-        const userForm = document.getElementById('user-form');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const fullnameInput = document.getElementById('fullname');
-        const roleSelect = document.getElementById('role');
-        const editIdInput = document.getElementById('edit-id');
-        const submitBtn = document.getElementById('submit-btn');
-        const cancelBtn = document.getElementById('cancel-btn');
-        const tableBody = document.getElementById('users-table-body');
-
-        async function loadUsersList(hasAccess) {
+        // USER CRUD (FAQAT KHAMIID ISHLATA OLADI)
+        async function loadUsersList() {
             const res = await fetch(`${baseUrl}users.json`);
             const data = await res.json();
+            const tableBody = document.getElementById('users-table-body');
             tableBody.innerHTML = '';
 
             let trAdmin = document.createElement('tr');
@@ -368,7 +333,7 @@
                 <td class="py-3 font-semibold text-gray-900">khamiid</td>
                 <td class="py-3">Khamid</td>
                 <td class="py-3"><span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-md font-medium">Super Boss</span></td>
-                ${hasAccess ? '<td class="py-3 text-right text-gray-400 text-xs italic">Tizim Egasi</td>' : ''}
+                <td class="py-3 text-right text-gray-400 text-xs italic">Tizim Egasi</td>
             `;
             tableBody.appendChild(trAdmin);
 
@@ -387,23 +352,22 @@
                     <td class="py-3 font-medium text-gray-900">${key}</td>
                     <td class="py-3">${user.fullName}</td>
                     <td class="py-3">${roleBadge}</td>
-                    ${hasAccess ? `
                     <td class="py-3 text-right space-x-2">
                         <button onclick="editUser('${key}', '${user.fullName}', '${user.role}', '${user.password}')" class="text-blue-600 hover:text-blue-800 font-medium cursor-pointer">Tahrirlash</button>
                         <button onclick="deleteUser('${key}')" class="text-red-600 hover:text-red-800 font-medium cursor-pointer">O'chirish</button>
-                    </td>` : ''}
+                    </td>
                 `;
                 tableBody.appendChild(tr);
             });
         }
 
-        userForm.addEventListener('submit', async (e) => {
+        document.getElementById('user-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = usernameInput.value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-            const password = passwordInput.value;
-            const fullName = fullnameInput.value;
-            const role = roleSelect.value;
-            const editId = editIdInput.value;
+            const username = document.getElementById('username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+            const password = document.getElementById('password').value;
+            const fullName = document.getElementById('fullname').value;
+            const role = document.getElementById('role').value;
+            const editId = document.getElementById('edit-id').value;
             const userData = { password, fullName, role };
 
             if (editId) {
@@ -412,36 +376,36 @@
                 await fetch(`${baseUrl}users/${username}.json`, { method: 'PUT', body: JSON.stringify(userData) });
             }
             resetUserForm();
-            loadUsersList(true);
+            loadUsersList();
         });
 
         window.editUser = function(id, fullName, role, password) {
-            editIdInput.value = id;
-            usernameInput.value = id;
-            usernameInput.disabled = true;
-            passwordInput.value = password;
-            fullnameInput.value = fullName;
-            roleSelect.value = role;
+            document.getElementById('edit-id').value = id;
+            document.getElementById('username').value = id;
+            document.getElementById('username').disabled = true;
+            document.getElementById('password').value = password;
+            document.getElementById('fullname').value = fullName;
+            document.getElementById('role').value = role;
             document.getElementById('form-title').innerText = "Foydalanuvchini tahrirlash";
-            submitBtn.innerText = "Yangilash";
-            cancelBtn.classList.remove('hidden');
+            document.getElementById('submit-btn').innerText = "Yangilash";
+            document.getElementById('cancel-btn').classList.remove('hidden');
         };
 
         window.deleteUser = async function(id) {
             if (confirm(`"${id}" foydalanuvchisini o'chirmoqchisiz?`)) {
                 await fetch(`${baseUrl}users/${id}.json`, { method: 'DELETE' });
-                loadUsersList(true);
+                loadUsersList();
             }
         };
 
-        cancelBtn.addEventListener('click', resetUserForm);
+        document.getElementById('cancel-btn').addEventListener('click', resetUserForm);
         function resetUserForm() {
-            userForm.reset();
-            editIdInput.value = '';
-            usernameInput.disabled = false;
+            document.getElementById('user-form').reset();
+            document.getElementById('edit-id').value = '';
+            document.getElementById('username').disabled = false;
             document.getElementById('form-title').innerText = "Yangi foydalanuvchi qo'shish";
-            submitBtn.innerText = "Saqlash";
-            cancelBtn.classList.add('hidden');
+            document.getElementById('submit-btn').innerText = "Saqlash";
+            document.getElementById('cancel-btn').classList.add('hidden');
         }
 
         // VORONKALAR RO'YXATI
@@ -451,16 +415,7 @@
             const container = document.getElementById('funnel-list');
             container.innerHTML = '';
 
-            if (!data) {
-                const defaultFunnels = {
-                    "linya_1": { name: "Linya 1 (Asosiy)" },
-                    "linya_2": { name: "Linya 2 (Instagram)" },
-                    "linya_3": { name: "Linya 3 (YouTube)" }
-                };
-                await fetch(`${baseUrl}funnels.json`, { method: 'PUT', body: JSON.stringify(defaultFunnels) });
-                loadFunnelsList();
-                return;
-            }
+            if (!data) return;
 
             Object.keys(data).forEach(key => {
                 const funnel = data[key];
@@ -482,44 +437,43 @@
             loadFunnelsList();
         }
 
-        // VORONKANI TANLASH VA GRAFIKNI CHIZISH
+        // SELECTION & VIEW MODE FOR WORKERS/BOSS
         async function selectFunnel(id, name) {
             selectedFunnelId = id;
             document.getElementById('funnel-placeholder').classList.add('hidden');
             document.getElementById('funnel-details-card').classList.remove('hidden');
             document.getElementById('selected-funnel-title').innerText = name;
 
-            // Chap menyudagi aktivlikni renderlash
-            document.querySelectorAll('#funnel-list button').forEach(btn => {
-                if(btn.innerHTML.includes(name)) {
-                    btn.className = "w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex justify-between items-center cursor-pointer bg-slate-900 text-white";
-                } else {
-                    btn.className = "w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex justify-between items-center cursor-pointer bg-gray-50 hover:bg-gray-100 text-gray-700";
-                }
-            });
+            const badge = document.getElementById('crm-mode-badge');
 
-            // Firebase'dan ma'lumotni olish
+            // Chap menyuni renderlash
+            loadFunnelsList();
+
             const res = await fetch(`${baseUrl}crm_live/${id}.json`);
             const data = await res.json();
 
             const values = [];
             for (let i = 1; i <= 9; i++) {
                 const val = (data && data[`stage_${i}`]) ? data[`stage_${i}`] : 0;
-                document.getElementById(`stage-${i}`).value = val;
+                const inputEl = document.getElementById(`stage-${i}`);
+                inputEl.value = val;
                 values.push(val);
                 
-                if (currentUser && currentUser.role === 'boss') {
-                    document.getElementById(`stage-${i}`).disabled = true;
+                // AGAR SUPERBOSS BO'LMASA INPUTLAR BLOKLANADI (FAQAT TOMOSHA)
+                if (currentUser && currentUser.role === 'superboss') {
+                    inputEl.disabled = false;
+                    badge.innerText = "Tahrirlash Rejimi (Admin)";
+                    badge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-green-100 text-green-800";
                 } else {
-                    document.getElementById(`stage-${i}`).disabled = false;
+                    inputEl.disabled = true;
+                    badge.innerText = "Faqat Ko'rish (Cheklangan)";
+                    badge.className = "text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800";
                 }
             }
 
-            // ANIMATSIYALI DIAGRAMMANI YANGILASH YOKI QAYTA QURISH
             updateChartAnimation(values);
         }
 
-        // CHART.JS ANIMATSIYA FUNKSIYASI
         function updateChartAnimation(chartData) {
             const ctx = document.getElementById('funnelChart').getContext('2d');
             const labels = [
@@ -529,17 +483,14 @@
             ];
 
             if (myChart) {
-                // Agar grafik mavjud bo'lsa raqamlarni yangilab animatsiya beramiz
                 myChart.data.datasets[0].data = chartData;
                 myChart.update();
             } else {
-                // Yangi grafik obyektini yaratish
                 myChart = new Chart(ctx, {
-                    type: 'bar', // Ustunli diagramma ko'rinishi
+                    type: 'bar',
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Lidlar soni',
                             data: chartData,
                             backgroundColor: stageColors,
                             borderColor: stageBorderColors,
@@ -551,33 +502,20 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false } // Ortqacha yozuvlarni olib tashlaymiz
-                        },
+                        plugins: { legend: { display: false } },
                         scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: { color: '#f3f4f6' },
-                                ticks: { font: { family: 'sans-serif', size: 11 } }
-                            },
-                            x: {
-                                grid: { display: false },
-                                ticks: { font: { family: 'sans-serif', size: 10, weight: 'bold' } }
-                            }
+                            y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+                            x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
                         },
-                        animation: {
-                            duration: 1200,
-                            easing: 'easeOutQuart' // Silliq va qiziqarli animatsiya turi
-                        }
+                        animation: { duration: 1000, easing: 'easeOutQuart' }
                     }
                 });
             }
         }
 
-        // INPUTLAR ORQALI BAZANI YANGILASH VA GRAFIKKA UZATISH
         document.getElementById('crm-stages-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!selectedFunnelId) return;
+            if (!selectedFunnelId || currentUser.role !== 'superboss') return; // Admin bo'lmasa saqlamaydi
 
             const updateData = {};
             const newValues = [];
@@ -593,9 +531,8 @@
                 body: JSON.stringify(updateData)
             });
 
-            // Grafikni darhol yangilash (Jonli effekt)
             updateChartAnimation(newValues);
-            alert("Lidlar yangilandi va diagramma harakatga keldi! ⚡");
+            alert("Ma'lumotlar saqlandi! ⚡");
         });
     </script>
 </body>
