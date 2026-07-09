@@ -70,7 +70,7 @@
                     <button onclick="selectCategory('davomat')" id="btn-cat-davomat" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-slate-950 text-slate-300 font-medium transition-all cursor-pointer">📅 Xodimlar Davomati</button>
                     <button onclick="selectCategory('oylik')" id="btn-cat-oylik" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-slate-950 text-slate-300 font-medium transition-all cursor-pointer">💰 Oylik / KPI</button>
                     
-                    <!-- ADMIN TUGMASI (KHAMIID BILAN KIRGANDA CHIQADI) -->
+                    <!-- ADMIN TUGMASI -->
                     <button onclick="selectCategory('admin')" id="btn-cat-admin" class="w-full text-left px-3 py-2 text-xs rounded-lg bg-indigo-950/40 text-indigo-400 border border-indigo-950 hidden font-medium transition-all cursor-pointer">⚙️ Admin Panel</button>
                 </div>
 
@@ -250,7 +250,7 @@
                 });
             }
             
-            // Agar admin bo'lsa, xodimlarni cheklamaymiz, aks holda tozalaymiz
+            // 🔥 TUZATILDI: Admin kirganda xodim tanlash qulfini ochamiz
             if (uRole !== "admin") {
                 activeSelectedWorker = "";
                 document.getElementById("calendarSection").classList.add("hidden");
@@ -288,22 +288,20 @@
                 if(uRole === "worker") {
                     selectWorker(uName);
                 } else if(uRole === "admin" && !activeSelectedWorker && cat !== "target") {
-                    // Admin uchun agar xodim tanlanmagan bo'lsa kalendarni yashirib turamiz (Target bo'limidan tashqari)
-                    document.getElementById("calendarSection").classList.add("hidden");
+                    // Admin uchun agar xodim tanlanmagan bo'lsa ogohlantirish texti qoldiramiz
+                    document.getElementById("calendarTitle").innerText = `⚠️ Xodim tanlanmagan`;
+                    document.getElementById("calendarSubtitle").innerText = `Chap paneldan biror operatorni tanlang`;
+                    document.getElementById("calendarSection").classList.remove("hidden");
+                    document.getElementById("calendarGrid").innerHTML = "";
                     closeForm();
                 } else if(cat === "target") {
-                    // Target bo'limida xodim tanlash shart emas, to'g'ridan to'g'ri kalendar ochiladi
                     document.getElementById("calendarTitle").innerText = `Loyiha Marketingi (Target)`;
                     document.getElementById("calendarSubtitle").innerText = `Sana tanlang`;
                     document.getElementById("calendarSection").classList.remove("hidden");
                     renderCalendar();
                     closeForm();
                 } else {
-                    if(!activeSelectedWorker) {
-                        document.getElementById("calendarSection").classList.add("hidden");
-                    } else {
-                        renderCalendar();
-                    }
+                    renderCalendar();
                     closeForm();
                 }
             }
@@ -319,8 +317,8 @@
             if(snap.exists()) {
                 Object.keys(snap.val()).forEach(u => {
                     if(snap.val()[u].project === proj && snap.val()[u].role === "worker") {
-                        const isSelected = (activeSelectedWorker === u) ? 'active-user' : '';
-                        // ⚠️ TO'G'RILANDI: Admin istalgan xodimni bosa oladi, bloklanmaydi
+                        const isSelected = (activeSelectedWorker === u) ? 'border-emerald-500 bg-emerald-950/20' : '';
+                        // 🔥 TUZATILDI: Admin istalgan xodimni to'liq bosa oladi, bloklash mutloq olib tashlandi!
                         const isDisabled = (uRole === "worker" && uName !== u) ? 'disabled pointer-events-none opacity-40' : '';
                         
                         container.innerHTML += `
@@ -349,6 +347,7 @@
 
         function renderCalendar() {
             const grid = document.getElementById("calendarGrid");
+            if (!grid) return;
             grid.innerHTML = "";
             for(let i=1; i<=2; i++) { grid.innerHTML += `<div></div>`; } 
 
@@ -383,6 +382,7 @@
                 return;
             }
 
+            if(!activeSelectedWorker) return;
             const snap = await get(child(ref(db), `stats/${p}/UMUMIY/${selectedCategory}/${date}/${activeSelectedWorker}`));
             if(snap.exists()) { dot.classList.add("bg-emerald-400"); }
         }
@@ -392,6 +392,11 @@
             const proj = document.getElementById("globalProjectSelect").value;
             const targetBranch = document.getElementById("globalBranchSelect").value;
             
+            if (selectedCategory !== "target" && !activeSelectedWorker) {
+                alert("Iltimos, avval chap paneldan xodimni tanlang!");
+                return;
+            }
+
             document.getElementById("formTitleDate").innerText = `Sana: ${date} | Oqim: ${activeSelectedWorker || 'Umumiy'} | Bo'lim: ${selectedCategory.toUpperCase()}`;
             document.getElementById("inputFormSection").classList.remove("hidden");
             document.getElementById("inputFormSection").scrollIntoView({ behavior: 'smooth' });
@@ -399,7 +404,7 @@
             const fieldsContainer = document.getElementById("dynamicFormFields");
             fieldsContainer.innerHTML = "";
 
-            // ⚠️ TO'G'RILANDI: Admin bo'lganda tugmalar hech qachon yashirinmaydi (Faqat Bossda yashirinadi)
+            // 🔥 TUZATILDI: Admin bo'lganda formadagi yashirish yoki disabled qilish qoidalari butkul o'chirildi.
             if(uRole === "boss") {
                 document.getElementById("formActionButtons").classList.add("hidden");
             } else {
@@ -418,7 +423,7 @@
                     if(snap.exists()) {
                         Object.keys(snap.val()).forEach(k => {
                             const el = document.getElementById(`inp_TARGET_TOTAL_${k}`);
-                            if(el) { el.value = snap.val()[k]; if(uRole==='boss') el.setAttribute("disabled", "true"); }
+                            if(el) el.value = snap.val()[k];
                         });
                     }
                 } else {
@@ -432,7 +437,7 @@
                     if(snap.exists()) {
                         Object.keys(snap.val()).forEach(k => {
                             const el = document.getElementById(`inp_TARGET_${targetBranch}_${k}`);
-                            if(el) { el.value = snap.val()[k]; if(uRole==='boss') el.setAttribute("disabled", "true"); }
+                            if(el) el.value = snap.val()[k];
                         });
                     }
                 }
@@ -449,15 +454,8 @@
             if(snap.exists()) {
                 Object.keys(snap.val()).forEach(k => {
                     const el = document.getElementById(`inp_UMUMIY_${k}`);
-                    if(el) { 
-                        el.value = snap.val()[k]; 
-                        if(uRole === 'boss') el.setAttribute("disabled", "true"); 
-                    }
+                    if(el) el.value = snap.val()[k]; 
                 });
-            } else {
-                if(uRole === 'boss') {
-                    document.querySelectorAll("[id^='inp_UMUMIY_']").forEach(el => el.setAttribute("disabled", "true"));
-                }
             }
         };
 
@@ -514,9 +512,8 @@
             const proj = document.getElementById("globalProjectSelect").value;
             const targetBranch = document.getElementById("globalBranchSelect").value;
 
-            // ⚠️ TO'G'RILANDI: Agar admin bo'lsa va xodim tanlanmagan bo'lsa (Target bo'limidan tashqari), ogohlantirish beramiz
             if (selectedCategory !== "target" && !activeSelectedWorker) {
-                alert("Iltimos, avval chap paneldan hisoboti kiritilayotgan xodimni tanlang!");
+                alert("Iltimos, avval xodimni tanlang!");
                 return;
             }
 
@@ -545,7 +542,7 @@
                     });
                     await set(ref(db, `stats/${proj}/UMUMIY/${selectedCategory}/${selectedDate}/${activeSelectedWorker}`), generalData);
                 }
-                alert("Ma'lumotlar saqlandi! ⚡");
+                alert("Ma'lumotlar muvaffaqiyatli saqlandi! ⚡");
                 closeForm(); renderCalendar();
             } catch(e) { console.error(e); }
         };
