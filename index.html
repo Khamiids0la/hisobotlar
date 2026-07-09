@@ -137,13 +137,6 @@
                             </button>
                         </div>
                         <div id="funnel-list" class="space-y-2"></div>
-                        <div id="add-funnel-container" class="pt-4 border-t border-gray-100 hidden">
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Yangi voronka nomi</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="new-funnel-name" placeholder="Masalan: Linya 4" class="flex-1 border border-gray-200 rounded-xl p-2 text-sm">
-                                <button onclick="addNewFunnel()" class="bg-blue-600 text-white px-3 rounded-xl">+</button>
-                            </div>
-                        </div>
                     </div>
                     <div id="funnel-details-card" class="lg:col-span-2 space-y-6 hidden">
                         <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
@@ -193,7 +186,7 @@
 
                     <div id="sarkor-main-panel" class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
                         
-                        <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200">
+                        <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200 h-fit">
                             <div class="flex justify-between items-center mb-4">
                                 <div>
                                     <h3 id="calendar-month-title" class="text-base font-bold text-gray-800">Iyul 2026</h3>
@@ -247,6 +240,28 @@
                             </div>
                         </div>
 
+                        <!-- DINAMIK XODIMLAR KESIMIDAGI JADVAL BLOCKI -->
+                        <div id="sarkor-breakdown-card" class="md:col-span-2 bg-white p-5 rounded-2xl shadow-xs border border-gray-200 hidden">
+                            <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                <span>📊</span> Xodimlar kesimidagi hisobot
+                            </h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs">
+                                    <thead>
+                                        <tr class="border-b border-gray-200 text-gray-400 font-semibold pb-2">
+                                            <th class="pb-2">Xodim</th>
+                                            <th class="pb-2 text-center">Calls</th>
+                                            <th class="pb-2 text-center">Muvaffaqiyatli</th>
+                                            <th class="pb-2 text-center">Vaqt (S:D)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sarkor-breakdown-rows" class="text-gray-600 divide-y divide-gray-100">
+                                        <!-- Javascript orqali to'ldiriladi -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div id="sarkor-placeholder" class="bg-gray-100/50 border border-dashed border-gray-200 p-12 rounded-2xl lg:col-span-3 flex flex-col items-center justify-center text-center text-gray-400"><span class="text-4xl mb-2">👑</span><p class="text-sm font-medium">Xodimni tanlang</p></div>
@@ -266,12 +281,12 @@
         let currentCalYear = 2026;
         let currentCalMonth = 6; 
         
-        // DIAPAZON (RANGE) UCHUN O'ZGARUVCHILAR
         let selectedDateStr = null; 
         let rangeStartDateStr = null;
         let rangeEndDateStr = null;
 
         let sarkorChartObj = null;
+        let cachedWorkersDict = {}; // Xodimlarning Ismlarini saqlab turish uchun lug'at
 
         const stageColors = ['rgba(14, 165, 233, 0.75)', 'rgba(245, 158, 11, 0.75)', 'rgba(249, 115, 22, 0.75)', 'rgba(99, 102, 241, 0.75)', 'rgba(168, 85, 247, 0.75)', 'rgba(16, 185, 129, 0.75)', 'rgba(20, 184, 166, 0.75)', 'rgba(34, 197, 94, 0.75)', 'rgba(244, 63, 94, 0.75)'];
         const stageBorderColors = ['#0ea5e9', '#f59e0b', '#f97316', '#6366f1', '#a855f7', '#10b981', '#14b8a6', '#22c55e', '#f43f5e'];
@@ -325,7 +340,7 @@
 
         function logout() {
             currentUser = null; selectedFunnelId = null; selectedWorkerUsername = null; selectedDateStr = null;
-            rangeStartDateStr = null; rangeEndDateStr = null;
+            rangeStartDateStr = null; rangeEndDateStr = null; cachedWorkersDict = {};
             if(myChart) { myChart.destroy(); myChart = null; }
             if(sarkorChartObj) { sarkorChartObj.destroy(); sarkorChartObj = null; }
             document.getElementById('login-form').reset();
@@ -374,12 +389,6 @@
                 btn.innerHTML = `<span>📂 ${data[key].name}</span>`; btn.onclick = () => selectFunnel(key, data[key].name); container.appendChild(btn);
             });
         }
-        async function addNewFunnel() {
-            const name = document.getElementById('new-funnel-name').value.trim(); if (!name) return;
-            const id = name.toLowerCase().replace(/[^a-z0-9_]/g, '_') + '_' + Math.floor(Math.random() * 100);
-            await fetch(`${baseUrl}funnels/${id}.json`, { method: 'PUT', body: JSON.stringify({ name }) });
-            document.getElementById('new-funnel-name').value = ''; loadFunnelsList();
-        }
         async function selectTotalFunnel() {
             selectedFunnelId = "total_summary"; document.getElementById('funnel-placeholder').classList.add('hidden'); document.getElementById('funnel-details-card').classList.remove('hidden');
             document.getElementById('selected-funnel-title').innerText = "Jami Voronkalar (Jamlama)"; document.getElementById('crm-save-container').classList.add('hidden');
@@ -410,11 +419,6 @@
                 myChart = new Chart(ctx, { type: 'bar', data: { labels: ['Lid', 'O\'tkazilgan', 'Bog\'lanilmadi', 'Qayta', 'Ofis Chaq.', 'Ofis Keldi', 'Sotib olmadi', 'Keldi', 'Sifatsiz'], datasets: [{ data: chartData, backgroundColor: stageColors, borderColor: stageBorderColors, borderWidth: 1.5, borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
             }
         }
-        document.getElementById('crm-stages-form').addEventListener('submit', async (e) => {
-            e.preventDefault(); if (selectedFunnelId === "total_summary" || currentUser.role !== 'superboss') return;
-            const d = {}; const nv = []; for (let i = 1; i <= 9; i++) { const v = parseInt(document.getElementById(`stage-${i}`).value) || 0; d[`stage_${i}`] = v; nv.push(v); }
-            await fetch(`${baseUrl}crm_live/${selectedFunnelId}.json`, { method: 'PUT', body: JSON.stringify(d) }); updateChartAnimation(nv); alert("Saqlandi! ⚡");
-        });
 
         // ================= SARKOR MANTIQLARI =================
         async function loadSarkorWorkersList() {
@@ -436,8 +440,10 @@
                 btn.innerHTML = `🌟 ${currentUser.fullName} (Siz)`; btn.onclick = () => selectWorker(currentUser.username); container.appendChild(btn); selectWorker(currentUser.username); return;
             }
             const res = await fetch(`${baseUrl}users.json`); const data = await res.json(); if(!data) return;
+            cachedWorkersDict = {}; 
             Object.keys(data).forEach(key => {
                 if(data[key].role !== 'worker') return;
+                cachedWorkersDict[key] = data[key].fullName; // Ismni keshga olish
                 const btn = document.createElement('button'); btn.className = `w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex justify-between items-center ${selectedWorkerUsername === key ? 'bg-slate-900 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'}`;
                 btn.innerHTML = `<span>👤 ${data[key].fullName}</span> <span class="text-[10px] opacity-40">id: ${key}</span>`; btn.onclick = () => selectWorker(key); container.appendChild(btn);
             });
@@ -448,15 +454,17 @@
             rangeStartDateStr = null; rangeEndDateStr = null; selectedDateStr = null;
             document.getElementById('sarkor-placeholder').classList.add('hidden'); document.getElementById('sarkor-main-panel').classList.remove('hidden');
             document.getElementById('calendar-hint').innerText = "Kunlik rejim: Kunni bosing";
+            document.getElementById('sarkor-breakdown-card').classList.add('hidden'); // Kesim jadvalini yashirish
             loadSarkorWorkersList(); buildCalendar(); resetSarkorFormFields("Kun tanlang...");
         }
 
-        async function selectTotalSarkor() {
+        function selectTotalSarkor() {
             selectedWorkerUsername = "total_sarkor_summary"; 
             rangeStartDateStr = null; rangeEndDateStr = null; selectedDateStr = null;
             document.getElementById('sarkor-placeholder').classList.add('hidden'); 
             document.getElementById('sarkor-main-panel').classList.remove('hidden');
-            document.getElementById('calendar-hint').innerText = "Diapazon rejimi: Boshlanish va tugash kunini bosing";
+            document.getElementById('calendar-hint').innerText = "Diapazon rejimi: Istalgan bir kunni yoki oraliq kunlarni bosing";
+            document.getElementById('sarkor-breakdown-card').classList.add('hidden');
             loadSarkorWorkersList(); 
             buildCalendar(); 
             resetSarkorFormFields("Kun yoki Diapazon tanlang...");
@@ -492,20 +500,20 @@
             currentCalMonth += direction; if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; } if (currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; } buildCalendar();
         }
 
-        // KUN BOSILGANDA (RANGE YOKI ODDIY REJIM)
         function handleDateClick(dateStr) {
             if (selectedWorkerUsername === "total_sarkor_summary") {
-                // DIAPAZON TANLASH MANTIQLARI
                 if (!rangeStartDateStr || (rangeStartDateStr && rangeEndDateStr)) {
                     rangeStartDateStr = dateStr;
                     rangeEndDateStr = null;
                     selectedDateStr = null;
                     document.getElementById('sarkor-form-title').innerText = `Boshlanish: ${dateStr}`;
                     buildCalendar();
+                    calculateSarkorRangeData(); // Faqat bitta kun tanlanganda ham yuklash
                 } else if (rangeStartDateStr && !rangeEndDateStr) {
                     if (dateStr < rangeStartDateStr) {
                         rangeStartDateStr = dateStr;
                         buildCalendar();
+                        calculateSarkorRangeData();
                     } else {
                         rangeEndDateStr = dateStr;
                         buildCalendar();
@@ -513,14 +521,12 @@
                     }
                 }
             } else {
-                // ODDIY XODIM UCHUN KUNLIK REJIM
                 selectedDateStr = dateStr;
                 rangeStartDateStr = null; rangeEndDateStr = null;
                 loadSingleDayData(dateStr);
             }
         }
 
-        // ODDIY KUNLIK MA'LUMOTLARNI YUKLASH
         async function loadSingleDayData(dateStr) {
             document.getElementById('sarkor-form-title').innerText = `📅 Sana: ${dateStr}`;
             const isEditable = (currentUser.role === 'superboss' || currentUser.username === selectedWorkerUsername);
@@ -539,9 +545,15 @@
             buildCalendar();
         }
 
-        // DIAPAZON MA'LUMOTLARINI JAMLAB HISOBLASH
+        // KESIMLAR BO'YICHA VA JAMLAB HISOBLASH
         async function calculateSarkorRangeData() {
-            document.getElementById('sarkor-form-title').innerText = `📊 Jami Davr: ${rangeStartDateStr} dan ${rangeEndDateStr} gacha`;
+            let titleText = `📊 Jami Sana: ${rangeStartDateStr}`;
+            let targetEndDate = rangeStartDateStr;
+            if(rangeEndDateStr) {
+                titleText = `📊 Jami Davr: ${rangeStartDateStr} dan ${rangeEndDateStr} gacha`;
+                targetEndDate = rangeEndDateStr;
+            }
+            document.getElementById('sarkor-form-title').innerText = titleText;
             
             document.getElementById('sarkor-attempts').disabled = true; 
             document.getElementById('sarkor-success').disabled = true; 
@@ -552,37 +564,76 @@
             const res = await fetch(`${baseUrl}sarkor.json`); 
             const allSarkorData = await res.json();
             
-            let totalAttempts = 0, totalSuccess = 0, totalHours = 0, totalMinutes = 0;
-            
-            if (allSarkorData) {
-                Object.keys(allSarkorData).forEach(wKey => {
-                    const workerData = allSarkorData[wKey];
-                    if (workerData) {
-                        Object.keys(workerData).forEach(dateKey => {
-                            // Agar sana tanlangan diapazon ichida bo'lsa
-                            if (dateKey >= rangeStartDateStr && dateKey <= rangeEndDateStr) {
-                                const dayData = workerData[dateKey];
-                                totalAttempts += parseInt(dayData.attempts) || 0;
-                                totalSuccess += parseInt(dayData.success) || 0;
-                                totalHours += parseInt(dayData.hours) || 0;
-                                totalMinutes += parseInt(dayData.minutes) || 0;
-                            }
-                        });
-                    }
-                });
-            }
-            
-            if (totalMinutes >= 60) {
-                totalHours += Math.floor(totalMinutes / 60);
-                totalMinutes = totalMinutes % 60;
+            const breakdownRowsContainer = document.getElementById('sarkor-breakdown-rows');
+            breakdownRowsContainer.innerHTML = '';
+            document.getElementById('sarkor-breakdown-card').classList.remove('hidden');
+
+            let grandAttempts = 0, grandSuccess = 0, grandHours = 0, grandMinutes = 0;
+
+            // Keshda bor bo'lgan barcha operatorlar kesimida aylanamiz
+            Object.keys(cachedWorkersDict).forEach(wKey => {
+                const fullName = cachedWorkersDict[wKey];
+                let wAttempts = 0, wSuccess = 0, wHours = 0, wMinutes = 0;
+
+                if (allSarkorData && allSarkorData[wKey]) {
+                    const workerDates = allSarkorData[wKey];
+                    Object.keys(workerDates).forEach(dateKey => {
+                        // Agar diapazon tanlangan bo'lsa oraliqni, bitta kun bo'lsa faqat o'sha kunni tekshiradi
+                        const isInRange = (dateKey >= rangeStartDateStr && dateKey <= targetEndDate);
+                        if (isInRange) {
+                            const dayData = workerDates[dateKey];
+                            wAttempts += parseInt(dayData.attempts) || 0;
+                            wSuccess += parseInt(dayData.success) || 0;
+                            wHours += parseInt(dayData.hours) || 0;
+                            wMinutes += parseInt(dayData.minutes) || 0;
+                        }
+                    });
+                }
+
+                if (wMinutes >= 60) { wHours += Math.floor(wMinutes / 60); wMinutes = wMinutes % 60; }
+
+                // Jami jamlanmaga qo'shish (Daqiqalarni to'g'ridan to'g'ri qo'shib boramiz)
+                grandAttempts += wAttempts;
+                grandSuccess += wSuccess;
+                grandHours += wHours;
+                grandMinutes += wMinutes;
+
+                // Xodim qatorini jadvalga qo'shish
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition";
+                tr.innerHTML = `
+                    <td class="py-2.5 font-medium text-gray-700">👤 ${fullName}</td>
+                    <td class="text-center font-semibold text-gray-600">${wAttempts}</td>
+                    <td class="text-center font-semibold text-green-600">${wSuccess}</td>
+                    <td class="text-center text-gray-500">${wHours}s ${wMinutes}m</td>
+                `;
+                breakdownRowsContainer.appendChild(tr);
+            });
+
+            // Daqiqalarni soatga o'tkazish (Grand Total uchun)
+            if (grandMinutes >= 60) {
+                grandHours += Math.floor(grandMinutes / 60);
+                grandMinutes = grandMinutes % 60;
             }
 
-            document.getElementById('sarkor-attempts').value = totalAttempts; 
-            document.getElementById('sarkor-success').value = totalSuccess; 
-            document.getElementById('sarkor-hours').value = totalHours; 
-            document.getElementById('sarkor-minutes').value = totalMinutes;
+            // JADVAL TAGIGA JAMLOVCHI (ИТОГО) QATORINI QO'SHISH
+            const totalTr = document.createElement('tr');
+            totalTr.className = "bg-blue-50 font-bold border-t border-gray-300 text-gray-900";
+            totalTr.innerHTML = `
+                <td class="py-2.5 pl-2 text-blue-700">🗂️ JAMI (Jamlama)</td>
+                <td class="text-center text-slate-800 text-sm">${grandAttempts}</td>
+                <td class="text-center text-green-700 text-sm">${grandSuccess}</td>
+                <td class="text-center text-blue-900">${grandHours}s ${grandMinutes}m</td>
+            `;
+            breakdownRowsContainer.appendChild(totalTr);
+
+            // Form elementlariga ham qiymatni kiritish
+            document.getElementById('sarkor-attempts').value = grandAttempts; 
+            document.getElementById('sarkor-success').value = grandSuccess; 
+            document.getElementById('sarkor-hours').value = grandHours; 
+            document.getElementById('sarkor-minutes').value = grandMinutes;
             
-            updateSarkorMiniChart(totalAttempts, totalSuccess);
+            updateSarkorMiniChart(grandAttempts, grandSuccess);
         }
 
         function resetSarkorFormFields(title) {
