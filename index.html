@@ -344,32 +344,36 @@
         </main>
     </div>
 
-    <!-- Firebase SDKs for auth (used to get token for REST requests) -->
+    <!-- Firebase SDKs for auth (compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
     <script>
-        // <-- CONFIGURE: put your Firebase project values here -->
+        // Firebase configuration (you provided these values)
         const firebaseConfig = {
-            apiKey: "PASTE_API_KEY",
-            authDomain: "PROJECT_ID.firebaseapp.com",
+            apiKey: "AIzaSyAyv8BWfBxfkmIwcepc-dPTwcHtaF5fzoY",
+            authDomain: "hisotb-46af8.firebaseapp.com",
             databaseURL: "https://hisotb-46af8-default-rtdb.firebaseio.com",
-            projectId: "PROJECT_ID"
+            projectId: "hisotb-46af8",
+            storageBucket: "hisotb-46af8.firebasestorage.app",
+            messagingSenderId: "585273924657",
+            appId: "1:585273924657:web:6aa23c7193a9cce6960910",
+            measurementId: "G-E1S5XWWC4F"
         };
         firebase.initializeApp(firebaseConfig);
 
-        // base firebase -> o'zgartiring agar sizning baza URL boshqacha bo'lsa
+        // base firebase URL
         const baseUrl = "https://hisotb-46af8-default-rtdb.firebaseio.com/";
         let currentUser = null;
         let allRegisteredUsers = {}; // { username: { fullName, role } }
         let ropEditing = null;
 
         // AUTH TOKEN + fetch wrapper to avoid 401
+        // Make sure Anonymous sign-in is enabled in Firebase Console (Authentication -> Sign-in method -> Anonymous)
         let firebaseIdToken = null;
         async function ensureAuth() {
             try {
                 if (!firebase.auth().currentUser) {
-                    // anonymous sign-in; you can change to email/password workflow if you prefer
                     await firebase.auth().signInAnonymously();
                 }
                 const u = firebase.auth().currentUser;
@@ -382,7 +386,6 @@
         }
 
         async function fetchWithAuth(path, options = {}) {
-            // path: full URL without trailing .json (we'll add it)
             if (!firebaseIdToken) await ensureAuth();
             const sep = path.includes('?') ? '&' : '?';
             const url = `${path}.json${sep}auth=${encodeURIComponent(firebaseIdToken)}`;
@@ -434,7 +437,6 @@
             }
 
             try {
-                // use fetchWithAuth to avoid 401
                 const res = await fetchWithAuth(`${baseUrl}users/${encodeURIComponent(user)}`);
                 const userData = await res.json();
                 if (userData && userData.password === pass) {
