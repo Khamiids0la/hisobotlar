@@ -6,579 +6,100 @@
     <title>Hisobotchi by khamiid</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Kalendar diapazoni uchun Flatpickr kutubxonasi -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <style>
         .view-section { display: none; }
         .view-section.active { display: flex; }
+        .sub-view { display: none; }
+        .sub-view.active { display: block; }
+        .calendar-day { transition: all 0.2s ease-in-out; cursor: pointer; }
+        .calendar-day:hover { transform: scale(1.1); background-color: #dbeafe; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-gray-100 font-sans antialiased">
 
     <div id="login-section" class="view-section active min-h-screen items-center justify-center p-4 bg-slate-900">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-extrabold text-gray-800 tracking-tight">Hisobotchi</h2>
-                <p class="text-gray-400 mt-2 text-sm">by khamiid | Tizimga kirish</p>
-            </div>
-            <form id="login-form" class="space-y-5">
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Foydalanuvchi nomi</label>
-                    <input type="text" id="login-username" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition bg-gray-50">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Parol</label>
-                    <input type="password" id="login-password" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition bg-gray-50">
-                </div>
-                <div id="login-error" class="text-red-500 text-sm hidden text-center font-medium"></div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-200 transition cursor-pointer">Kirish</button>
-            </form>
         </div>
-    </div>
 
     <div id="app-section" class="view-section min-h-screen flex-col md:flex-row w-full hidden!">
-        
-        <aside class="w-full md:w-64 bg-slate-900 text-white flex flex-col justify-between p-4 shrink-0">
-            <div>
-                <div class="mb-8 p-2 border-b border-slate-800">
-                    <h1 class="text-xl font-bold tracking-tight">Hisobotchi</h1>
-                    <p class="text-xs text-slate-400 mt-1">by khamiid</p>
-                </div>
-                
-                <nav class="space-y-1">
-                    <button id="menu-users" onclick="switchView('users-view')" class="w-full text-left hidden flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
-                        <span>👤</span> Hisob Yaratish (Users)
-                    </button>
-                    <button id="menu-crm" onclick="switchView('crm-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
-                        <span>⚡</span> CRM Live
-                    </button>
-                    <button id="menu-rop" onclick="switchView('rop-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
-                        <span>👑</span> ROP Bo'limi
-                    </button>
-                </nav>
-            </div>
-
-            <div class="mt-auto pt-4 border-t border-slate-800">
-                <div class="flex items-center justify-between mb-4 px-2">
-                    <div class="truncate mr-2">
-                        <p id="user-display-name" class="text-sm font-semibold truncate"></p>
-                        <span id="user-badge" class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md"></span>
-                    </div>
-                </div>
-                <button onclick="logout()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white text-sm font-medium py-2.5 rounded-xl transition text-center block cursor-pointer">
-                    Chiqish
-                </button>
-            </div>
-        </aside>
-
         <main class="flex-1 p-6 md:p-8 overflow-y-auto bg-gray-50">
             
-            <div id="users-view" class="sub-view space-y-6 w-full hidden">
-                <div class="flex justify-between items-center pb-4 border-b border-gray-200">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">Tizim Foydalanuvchilari</h2>
-                        <p class="text-sm text-gray-500">Yangi hisoblar yarating, tahrirlang yoki o'chiring</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 h-fit">
-                        <h3 id="form-title" class="text-base font-bold text-gray-700 mb-4">Yangi foydalanuvchi qo'shish</h3>
-                        <form id="user-form" class="space-y-4">
-                            <input type="hidden" id="edit-id">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Login</label>
-                                <input type="text" id="username" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Parol</label>
-                                <input type="password" id="password" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">To'liq ismi</label>
-                                <input type="text" id="fullname" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Tizimdagi roli</label>
-                                <select id="role" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white">
-                                    <option value="worker">Worker (Operator)</option>
-                                    <option value="boss">Boss (Faqat ma'lumotlarni ko'ruvchi)</option>
-                                </select>
-                            </div>
-                            <div class="flex gap-2 pt-2">
-                                <button type="submit" id="submit-btn" class="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm">Saqlash</button>
-                                <button type="button" id="cancel-btn" class="hidden w-full bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl text-sm">Bekor qilish</button>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 lg:col-span-2">
-                        <table class="w-full text-left text-sm">
-                            <thead>
-                                <tr class="border-b border-gray-100 text-gray-400 font-medium"><th class="pb-3">Login</th><th class="pb-3">Ismi</th><th class="pb-3">Roli</th><th class="pb-3 text-right">Amallar</th></tr>
-                            </thead>
-                            <tbody id="users-table-body" class="text-gray-600 divide-y divide-gray-50"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="crm-view" class="sub-view space-y-6 w-full hidden">
-                <div class="flex justify-between items-center pb-4 border-b border-gray-200">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">CRM Live Voronkalar</h2>
-                        <p class="text-sm text-gray-500">Linyalar va voronkalardagi lidlar holatini vizual tahlil qiling</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-4">
-                        <h3 class="text-base font-bold text-gray-700">Voronkalar (Linyalar)</h3>
-                        <div class="pb-2 border-b border-gray-100">
-                            <button id="btn-total-funnel" onclick="selectTotalFunnel()" class="w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition flex justify-between items-center bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 cursor-pointer">
-                                <span>🗂️ Jami voronkalar</span> <span class="text-xs bg-blue-600 text-white px-2 py-0.5 rounded-md">Yig'indi</span>
-                            </button>
-                        </div>
-                        <div id="funnel-list" class="space-y-2"></div>
-                        <div id="add-funnel-container" class="pt-4 border-t border-gray-100 hidden">
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Yangi voronka nomi</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="new-funnel-name" placeholder="Masalan: Linya 4" class="flex-1 border border-gray-200 rounded-xl p-2 text-sm">
-                                <button onclick="addNewFunnel()" class="bg-blue-600 text-white px-3 rounded-xl">+</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="funnel-details-card" class="lg:col-span-2 space-y-6 hidden">
-                        <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
-                            <div class="w-full relative" style="height: 250px;"><canvas id="funnelChart"></canvas></div>
-                        </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
-                            <div class="flex justify-between items-center mb-6">
-                                <h3 id="selected-funnel-title" class="text-lg font-bold text-gray-800">Yuklanmoqda...</h3>
-                                <span id="crm-mode-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full">Live Rejim</span>
-                            </div>
-                            <form id="crm-stages-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="p-3 rounded-xl bg-sky-50"><label class="block text-xs font-bold text-sky-900 mb-1">1. Yangi lid</label><input type="number" id="stage-1" min="0" class="w-full bg-white border border-sky-200 rounded-lg p-2 text-sm"></div>
-                                <div class="p-3 rounded-xl bg-amber-50"><label class="block text-xs font-bold text-amber-900 mb-1">2. O'tkazib yuborilgan</label><input type="number" id="stage-2" min="0" class="w-full bg-white border border-sky-200 rounded-lg p-2 text-sm"></div>
-                                <div class="p-3 rounded-xl bg-orange-50"><label class="block text-xs font-bold text-orange-900 mb-1">3. Bog'lanib bo'lmadi</label><input type="number" id="stage-3" min="0" class="w-full bg-white border border-sky-200 rounded-lg p-2 text-sm"></div>
-                                <div class="p-3 rounded-xl bg-indigo-50"><label class="block text-xs font-bold text-indigo-900 mb-1">4. Qayta aloqa</label><input type="number" id="stage-4" min="0" class="w-full bg-white border border-sky-200 rounded-lg p-2 text-sm"></div>
-                                <div class="p-3 rounded-xl bg-purple-50"><label class="block text-xs font-bold text-purple-900 mb-1">5. Offisga chaqirildi</label><input type="number" id="stage-5" min="0" class="w-full bg-white border border-sky-200 rounded-lg p-2 text-sm"></div>
-                                <div class="p-3 rounded-xl bg-emerald-50"><label class="block text-xs font-bold text-emerald-900 mb-1">6. Offisga keldi</label><input type="number" id="stage-6" min="0" class="w-full bg-white border border-sky-200 rounded-lg p-2 text-sm"></div>
-                                <div class="p-3 rounded-xl bg-teal-50"><label class="block text-xs font-bold text-teal-900 mb-1">7. Keldi sotib olmadi</label><input type="number" id="stage-7" min="0" class="w-full bg-white border border-sky-200 rounded-lg p-2 text-sm"></div>
-                                <div class="p-3 rounded-xl bg-green-50"><label class="block text-xs font-bold text-green-900 mb-1">8. Keldi</label><input type="number" id="stage-8" min="0" class="w-full bg-white border border-sky-200 rounded-lg p-2 text-sm"></div>
-                                <div class="p-3 rounded-xl bg-rose-50 md:col-span-2"><label class="block text-xs font-bold text-rose-900 mb-1">9. Sifatsiz lid</label><input type="number" id="stage-9" min="0" class="w-full bg-white border border-sky-200 rounded-lg p-2 text-sm"></div>
-                                <div id="crm-save-container" class="md:col-span-2 pt-2 flex justify-end hidden"><button type="submit" class="bg-slate-900 text-white font-semibold px-6 py-3 rounded-xl text-sm shadow-lg">Saqlash</button></div>
-                            </form>
-                        </div>
-                    </div>
-                    <div id="funnel-placeholder" class="bg-gray-100/50 border border-dashed border-gray-200 p-12 rounded-2xl lg:col-span-2 flex flex-col items-center justify-center text-center text-gray-400"><span class="text-4xl mb-2">📊</span><p class="text-sm font-medium">Linyani tanlang</p></div>
-                </div>
-            </div>
-
-            <!-- ROP BO'LIMI (TO'LIQ YANGILANDI) -->
-            <div id="rop-view" class="sub-view space-y-6 w-full hidden">
-                <div class="flex justify-between items-center pb-4 border-b border-gray-200">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ROP Kunlik Hisobot Bo'limi</h2>
-                        <p class="text-sm text-gray-500">Xodimlarning kunlik urinishlari va vaqt tahlili</p>
-                    </div>
-                </div>
-
+            <div id="rop-view" class="sub-view active space-y-6 w-full animate-fade-in">
+                <h2 class="text-2xl font-bold text-gray-800">ROP Bo'limi</h2>
+                
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-3">
-                        <h3 class="text-base font-bold text-gray-700 border-b border-gray-100 pb-2">Xodimlar (Workers)</h3>
-                        <!-- Jami xodimlar bo'limi tugmasi -->
-                        <div id="rop-total-btn-container" class="pb-1">
-                            <button id="btn-rop-total" onclick="selectRopTotal()" class="w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition flex justify-between items-center bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 cursor-pointer">
-                                <span>🗂️ Jami xodimlar</span> <span class="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded">Jamlama</span>
-                            </button>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border">
+                        <h3 class="font-bold mb-4">Xodimlar</h3>
+                        <div id="rop-workers-list" class="space-y-1"></div>
+                        
+                        <div class="mt-8 pt-6 border-t">
+                            <h3 class="font-bold text-sm mb-4">Statistika "Jami"</h3>
+                            <div class="flex justify-between items-center mb-4">
+                                <button onclick="changeRopMonth(-1)" class="p-2 bg-gray-100 rounded">◀</button>
+                                <span id="rop-month-title" class="font-bold text-sm"></span>
+                                <button onclick="changeRopMonth(1)" class="p-2 bg-gray-100 rounded">▶</button>
+                            </div>
+                            <div id="rop-calendar-grid" class="grid grid-cols-7 gap-1 text-[10px] text-center"></div>
                         </div>
-                        <div id="rop-workers-list" class="space-y-1.5"></div>
                     </div>
 
-                    <div id="rop-main-panel" class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6 hidden">
-                        
-                        <!-- Diapazonli Kalendar Bo'limi -->
-                        <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200 flex flex-col justify-between">
-                            <div>
-                                <h3 class="text-base font-bold text-gray-800 mb-2">Kalendar (Sana tanlash)</h3>
-                                <p class="text-xs text-gray-400 mb-4">Kerakli kunni bitta bosing yoki sichqoncha bilan oraliqni (diapazonni) tanlang</p>
-                                <div class="mb-4">
-                                    <input type="text" id="rop-flatpickr" placeholder="Sanani tanlang..." class="w-full border border-gray-200 rounded-xl p-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50">
+                    <div class="lg:col-span-3">
+                        <div id="rop-main-panel" class="space-y-6">
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                                <h3 id="rop-stat-title" class="font-bold mb-4">Xodim statistika</h3>
+                                <div class="grid grid-cols-4 gap-4">
+                                    <div class="bg-blue-50 p-4 rounded-xl text-center"><p class="text-[10px] text-blue-500 font-bold uppercase">Ob</p><p id="rop-stat-ob" class="text-xl font-black">0</p></div>
+                                    <div class="bg-emerald-50 p-4 rounded-xl text-center"><p class="text-[10px] text-emerald-500 font-bold uppercase">Aktiv</p><p id="rop-stat-akt" class="text-xl font-black">0</p></div>
+                                    <div class="bg-rose-50 p-4 rounded-xl text-center"><p class="text-[10px] text-rose-500 font-bold uppercase">Brak</p><p id="rop-stat-brak" class="text-xl font-black">0</p></div>
+                                    <div class="bg-indigo-50 p-4 rounded-xl text-center"><p class="text-[10px] text-indigo-500 font-bold uppercase">Zakaz</p><p id="rop-stat-zakaz" class="text-xl font-black">0</p></div>
                                 </div>
                             </div>
-                            
-                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-100 mt-2">
-                                <span class="text-xs font-bold text-gray-400 block mb-1">Filtrlangan rejim:</span>
-                                <p id="calendar-filter-status" class="text-sm font-bold text-gray-700">Sana tanlanmagan</p>
-                            </div>
                         </div>
-
-                        <div class="space-y-4">
-                            <div class="bg-white p-4 rounded-2xl shadow-xs border border-gray-200 h-36 flex flex-col items-center justify-center relative">
-                                <h4 class="text-xs font-bold text-gray-400 absolute top-3 left-4">Samaradorlik ko'rsatkichi</h4>
-                                <div class="w-full h-full pt-4"><canvas id="ropMiniChart"></canvas></div>
-                            </div>
-
-                            <div class="bg-white p-5 rounded-2xl shadow-xs border border-gray-200">
-                                <h3 id="rop-form-title" class="text-sm font-bold text-gray-800 mb-4 text-blue-600">Kunni tanlang...</h3>
-                                
-                                <form id="rop-data-form" class="space-y-3">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Urinishlar soni (Calls)</label>
-                                        <input type="number" id="rop-attempts" min="0" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-500 mb-1">Muvaffaqiyatli qo'ng'iroq</label>
-                                        <input type="number" id="rop-success" min="0" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                                    </div>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label class="block text-xs font-semibold text-gray-500 mb-1">Sarflangan Soat</label>
-                                            <input type="number" id="rop-hours" min="0" max="999" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-semibold text-gray-500 mb-1">Daqiqa</label>
-                                            <input type="number" id="rop-minutes" min="0" max="59" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                                        </div>
-                                    </div>
-                                    
-                                    <div id="rop-save-btn-container" class="pt-2 hidden">
-                                        <button type="submit" class="w-full bg-slate-900 hover:bg-black text-white font-semibold py-2.5 rounded-xl text-sm shadow-md transition cursor-pointer">Ma'lumotlarni Saqlash 💾</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
                     </div>
-
-                    <div id="rop-placeholder" class="bg-gray-100/50 border border-dashed border-gray-200 p-12 rounded-2xl lg:col-span-3 flex flex-col items-center justify-center text-center text-gray-400"><span class="text-4xl mb-2">👑</span><p class="text-sm font-medium">Xodimni tanlang</p></div>
                 </div>
             </div>
 
-        </main>
+            </main>
     </div>
 
     <script>
+        // Bazaviy o'zgaruvchilar
         const baseUrl = "https://hisotb-46af8-default-rtdb.firebaseio.com/";
-        let currentUser = null;
-        let selectedFunnelId = null;
-        let myChart = null;
+        let ropCalYear = 2026, ropCalMonth = 6;
+        let selectedWorker = null;
 
-        let selectedWorkerUsername = null; 
-        let selectedDatesArray = []; 
-        let ropChartObj = null;
-        let flatpickrInstance = null;
-
-        const stageColors = ['rgba(14, 165, 233, 0.75)', 'rgba(245, 158, 11, 0.75)', 'rgba(249, 115, 22, 0.75)', 'rgba(99, 102, 241, 0.75)', 'rgba(168, 85, 247, 0.75)', 'rgba(16, 185, 129, 0.75)', 'rgba(20, 184, 166, 0.75)', 'rgba(34, 197, 94, 0.75)', 'rgba(244, 63, 94, 0.75)'];
-        const stageBorderColors = ['#0ea5e9', '#f59e0b', '#f97316', '#6366f1', '#a855f7', '#10b981', '#14b8a6', '#22c55e', '#f43f5e'];
-
-        function switchView(viewId) {
-            document.querySelectorAll('.sub-view').forEach(view => view.classList.add('hidden'));
-            document.getElementById(viewId).classList.remove('hidden');
-            document.getElementById('menu-users').className = "text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer " + (currentUser.role === 'superboss' ? 'w-full' : 'hidden!');
-            document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer";
-            document.getElementById('menu-rop').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer";
-
-            if (viewId === 'users-view') document.getElementById('menu-users').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white";
-            else if (viewId === 'crm-view') { document.getElementById('menu-crm').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white"; loadFunnelsList(); }
-            else if (viewId === 'rop-view') { document.getElementById('menu-rop').className = "w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition bg-slate-800 text-white"; loadRopWorkersList(); }
-        }
-
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const user = document.getElementById('login-username').value.trim().toLowerCase();
-            const pass = document.getElementById('login-password').value;
-            const errorDiv = document.getElementById('login-error');
-            errorDiv.classList.add('hidden');
-
-            if (user === 'khamiid' && pass === '2236') {
-                currentUser = { username: 'khamiid', role: 'superboss', fullName: 'Khamid' };
-                initApp(); return;
-            }
-            try {
-                const res = await fetch(`${baseUrl}users/${user}.json`);
-                const userData = await res.json();
-                if (userData && userData.password === pass) { currentUser = { username: user, ...userData }; initApp(); }
-                else { errorDiv.innerText = "Login yoki parol noto'g'ri!"; errorDiv.classList.remove('hidden'); }
-            } catch (err) { errorDiv.innerText = "Xatolik."; errorDiv.classList.remove('hidden'); }
-        });
-
-        function initApp() {
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('app-section').className = "min-h-screen flex flex-col md:flex-row w-full";
-            document.getElementById('user-display-name').innerText = currentUser.fullName;
-            const badge = document.getElementById('user-badge');
-
-            if (currentUser.role === 'superboss') {
-                badge.innerText = 'Super Boss'; badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-red-500 text-white';
-                loadUsersList(); switchView('users-view');
-            } else {
-                badge.innerText = currentUser.role === 'boss' ? 'Boss' : 'Worker'; badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-purple-600 text-white';
-                switchView('crm-view');
-            }
-        }
-
-        function logout() {
-            currentUser = null; selectedFunnelId = null; selectedWorkerUsername = null; selectedDatesArray = [];
-            if(myChart) { myChart.destroy(); myChart = null; }
-            if(ropChartObj) { ropChartObj.destroy(); ropChartObj = null; }
-            document.getElementById('login-form').reset();
-            document.getElementById('app-section').className = "view-section min-h-screen flex-col md:flex-row w-full hidden!";
-            document.getElementById('login-section').style.display = 'flex';
-            document.getElementById('funnel-details-card').classList.add('hidden'); document.getElementById('funnel-placeholder').classList.remove('hidden');
-            document.getElementById('rop-main-panel').classList.add('hidden'); document.getElementById('rop-placeholder').classList.remove('hidden');
-        }
-
-        async function loadUsersList() {
-            const res = await fetch(`${baseUrl}users.json`); const data = await res.json();
-            const tableBody = document.getElementById('users-table-body'); tableBody.innerHTML = '';
-            let trAdmin = document.createElement('tr'); trAdmin.className = "hover:bg-gray-50 transition";
-            trAdmin.innerHTML = `<td class="py-3 font-semibold text-gray-900">khamiid</td><td>Khamid</td><td><span class="bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-md font-medium">Super Boss</span></td><td class="text-right text-gray-400 text-xs italic">Tizim Egasi</td>`;
-            tableBody.appendChild(trAdmin);
-            if (!data) return;
-            Object.keys(data).forEach(key => {
-                if(key === 'khamiid') return;
-                const user = data[key]; const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="py-3 font-medium">${key}</td><td>${user.fullName}</td><td>${user.role}</td><td class="text-right"><button onclick="editUser('${key}', '${user.fullName}', '${user.role}', '${user.password}')" class="text-blue-600 mr-2">Tahrirlash</button><button onclick="deleteUser('${key}')" class="text-red-600">O'chirish</button></td>`;
-                tableBody.appendChild(tr);
-            });
-        }
-
-        document.getElementById('user-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-            const password = document.getElementById('password').value; const fullName = document.getElementById('fullname').value; const role = document.getElementById('role').value; const editId = document.getElementById('edit-id').value;
-            if (editId) await fetch(`${baseUrl}users/${editId}.json`, { method: 'PATCH', body: JSON.stringify({ password, fullName, role }) });
-            else await fetch(`${baseUrl}users/${username}.json`, { method: 'PUT', body: JSON.stringify({ password, fullName, role }) });
-            resetUserForm(); loadUsersList();
-        });
-
-        window.editUser = function(id, fullName, role, password) {
-            document.getElementById('edit-id').value = id; document.getElementById('username').value = id; document.getElementById('username').disabled = true; document.getElementById('password').value = password; document.getElementById('fullname').value = fullName; document.getElementById('role').value = role; document.getElementById('cancel-btn').classList.remove('hidden');
-        };
-        window.deleteUser = async function(id) { if (confirm("O'chirilsinmi?")) { await fetch(`${baseUrl}users/${id}.json`, { method: 'DELETE' }); loadUsersList(); } };
-        document.getElementById('cancel-btn').addEventListener('click', resetUserForm);
-        function resetUserForm() { document.getElementById('user-form').reset(); document.getElementById('edit-id').value = ''; document.getElementById('username').disabled = false; document.getElementById('cancel-btn').classList.add('hidden'); }
-
-        async function loadFunnelsList() {
-            const res = await fetch(`${baseUrl}funnels.json`); const data = await res.json();
-            const container = document.getElementById('funnel-list'); container.innerHTML = ''; if (!data) return;
-            Object.keys(data).forEach(key => {
-                const btn = document.createElement('button'); btn.className = `w-full text-left px-4 py-3 rounded-xl text-sm font-medium transition flex justify-between items-center cursor-pointer ${selectedFunnelId === key ? 'bg-slate-900 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'}`;
-                btn.innerHTML = `<span>📂 ${data[key].name}</span>`; btn.onclick = () => selectFunnel(key, data[key].name); container.appendChild(btn);
-            });
-        }
-        async function addNewFunnel() {
-            const name = document.getElementById('new-funnel-name').value.trim(); if (!name) return;
-            const id = name.toLowerCase().replace(/[^a-z0-9_]/g, '_') + '_' + Math.floor(Math.random() * 100);
-            await fetch(`${baseUrl}funnels/${id}.json`, { method: 'PUT', body: JSON.stringify({ name }) });
-            document.getElementById('new-funnel-name').value = ''; loadFunnelsList();
-        }
-        async function selectTotalFunnel() {
-            selectedFunnelId = "total_summary"; document.getElementById('funnel-placeholder').classList.add('hidden'); document.getElementById('funnel-details-card').classList.remove('hidden');
-            document.getElementById('selected-funnel-title').innerText = "Jami Voronkalar (Jamlama)"; document.getElementById('crm-save-container').classList.add('hidden');
-            for (let i = 1; i <= 9; i++) document.getElementById(`stage-${i}`).disabled = true;
-            const res = await fetch(`${baseUrl}crm_live.json`); const allLiveSummary = await res.json(); const totals = [0,0,0,0,0,0,0,0,0];
-            if (allLiveSummary) {
-                Object.keys(allLiveSummary).forEach(fk => {
-                    for (let i = 1; i <= 9; i++) totals[i - 1] += allLiveSummary[fk][`stage_${i}`] ? parseInt(allLiveSummary[fk][`stage_${i}`]) : 0;
-                });
-            }
-            for (let i = 1; i <= 9; i++) document.getElementById(`stage-${i}`).value = totals[i - 1];
-            updateChartAnimation(totals);
-        }
-        async function selectFunnel(id, name) {
-            selectedFunnelId = id; document.getElementById('funnel-placeholder').classList.add('hidden'); document.getElementById('funnel-details-card').classList.remove('hidden'); document.getElementById('selected-funnel-title').innerText = name;
-            const res = await fetch(`${baseUrl}crm_live/${id}.json`); const data = await res.json(); const values = [];
-            for (let i = 1; i <= 9; i++) {
-                const val = (data && data[`stage_${i}`]) ? data[`stage_${i}`] : 0; const inp = document.getElementById(`stage-${i}`); inp.value = val; values.push(val);
-                if (currentUser.role === 'superboss') { inp.disabled = false; document.getElementById('crm-save-container').classList.remove('hidden'); }
-                else { inp.disabled = true; document.getElementById('crm-save-container').classList.add('hidden'); }
-            }
-            updateChartAnimation(values);
-        }
-        function updateChartAnimation(chartData) {
-            const ctx = document.getElementById('funnelChart').getContext('2d');
-            if (myChart) { myChart.data.datasets[0].data = chartData; myChart.update(); } 
-            else {
-                myChart = new Chart(ctx, { type: 'bar', data: { labels: ['Lid', 'O\'tkazilgan', 'Bog\'lanilmadi', 'Qayta', 'Ofis Chaq.', 'Ofis Keldi', 'Sotib olmadi', 'Keldi', 'Sifatsiz'], datasets: [{ data: chartData, backgroundColor: stageColors, borderColor: stageBorderColors, borderWidth: 1.5, borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
-            }
-        }
-        document.getElementById('crm-stages-form').addEventListener('submit', async (e) => {
-            e.preventDefault(); if (selectedFunnelId === "total_summary" || currentUser.role !== 'superboss') return;
-            const d = {}; const nv = []; for (let i = 1; i <= 9; i++) { const v = parseInt(document.getElementById(`stage-${i}`).value) || 0; d[`stage_${i}`] = v; nv.push(v); }
-            await fetch(`${baseUrl}crm_live/${selectedFunnelId}.json`, { method: 'PUT', body: JSON.stringify(d) }); updateChartAnimation(nv); alert("Saqlandi! ⚡");
-        });
-
-        // ================= ROP KUNLIK HISOBOT LOGIKASI =================
-        async function loadRopWorkersList() {
-            const container = document.getElementById('rop-workers-list'); container.innerHTML = '';
+        // Kalendar yaratish funksiyasi
+        function buildRopCalendar() {
+            const grid = document.getElementById('rop-calendar-grid');
+            grid.innerHTML = '';
+            const date = new Date(ropCalYear, ropCalMonth, 1);
+            document.getElementById('rop-month-title').innerText = date.toLocaleString('uz-UZ', { month: 'long', year: 'numeric' });
             
-            if (currentUser.role === 'worker') {
-                document.getElementById('rop-total-btn-container').classList.add('hidden!');
-                const btn = document.createElement('button'); btn.className = "w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold bg-blue-600 text-white shadow-xs";
-                btn.innerHTML = `🌟 ${currentUser.fullName} (Siz)`; btn.onclick = () => selectWorker(currentUser.username); container.appendChild(btn); selectWorker(currentUser.username); return;
-            }
-            
-            document.getElementById('rop-total-btn-container').classList.remove('hidden!');
-            const totalBtn = document.getElementById('btn-rop-total');
-            if (selectedWorkerUsername === "total_summary") {
-                totalBtn.className = "w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition flex justify-between items-center bg-slate-900 text-white cursor-pointer border border-slate-900";
-            } else {
-                totalBtn.className = "w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition flex justify-between items-center bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 cursor-pointer";
-            }
-
-            const res = await fetch(`${baseUrl}users.json`); const data = await res.json(); if(!data) return;
-            Object.keys(data).forEach(key => {
-                if(data[key].role !== 'worker') return;
-                const btn = document.createElement('button'); btn.className = `w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex justify-between items-center ${selectedWorkerUsername === key ? 'bg-slate-900 text-white' : 'bg-gray-50 hover:bg-gray-100 text-gray-700'}`;
-                btn.innerHTML = `<span>👤 ${data[key].fullName}</span> <span class="text-[10px] opacity-40">id: ${key}</span>`; btn.onclick = () => selectWorker(key); container.appendChild(btn);
-            });
-        }
-
-        function selectWorker(username) {
-            selectedWorkerUsername = username; document.getElementById('rop-placeholder').classList.add('hidden'); document.getElementById('rop-main-panel').classList.remove('hidden');
-            loadRopWorkersList();
-            initFlatpickrCalendar();
-            resetRopFormFields("Sana belgilang...");
-        }
-
-        function selectRopTotal() {
-            selectedWorkerUsername = "total_summary"; document.getElementById('rop-placeholder').classList.add('hidden'); document.getElementById('rop-main-panel').classList.remove('hidden');
-            loadRopWorkersList();
-            initFlatpickrCalendar();
-            resetRopFormFields("Sana belgilang (Jamlama)...");
-        }
-
-        function initFlatpickrCalendar() {
-            if (flatpickrInstance) { flatpickrInstance.destroy(); }
-            
-            flatpickrInstance = flatpickr("#rop-flatpickr", {
-                mode: "range",
-                dateFormat: "Y-m-d",
-                placeholder: "Sanani tanlang (Kunlik / Oraliq)...",
-                onClose: function(selectedDates, dateStr, instance) {
-                    if (selectedDates.length === 0) {
-                        document.getElementById('calendar-filter-status').innerText = "Sana tanlanmagan";
-                        resetRopFormFields(selectedWorkerUsername === "total_summary" ? "Jamlama rejim..." : "Kunni tanlang...");
-                        return;
-                    }
-
-                    selectedDatesArray = selectedDates.map(d => instance.formatDate(d, "Y-m-d"));
-                    
-                    if (selectedDatesArray.length === 1) {
-                        document.getElementById('calendar-filter-status').innerText = `Kunlik: ${selectedDatesArray[0]}`;
-                        fetchRopDataForDates(selectedDatesArray);
-                    } else if (selectedDatesArray.length === 2) {
-                        document.getElementById('calendar-filter-status').innerText = `Oraliq: ${selectedDatesArray[0]} dan ${selectedDatesArray[1]} gacha`;
-                        
-                        let start = new Date(selectedDates[0]);
-                        let end = new Date(selectedDates[1]);
-                        let datesRangeList = [];
-                        while (start <= end) {
-                            datesRangeList.push(instance.formatDate(new Date(start), "Y-m-d"));
-                            start.setDate(start.getDate() + 1);
-                        }
-                        fetchRopDataForDates(datesRangeList);
-                    }
-                }
-            });
-            flatpickrInstance.clear();
-        }
-
-        async function fetchRopDataForDates(datesList) {
-            let totalAttempts = 0, totalSuccess = 0, totalHours = 0, totalMinutes = 0;
-            let isRange = datesList.length > 1;
-
-            if (selectedWorkerUsername === "total_summary") {
-                document.getElementById('rop-form-title').innerText = isRange ? "📊 Jami Jamoa Jamlamasi (Oraliq)" : `📊 Jami Jamoa: ${datesList[0]}`;
-                document.getElementById('rop-save-btn-container').classList.add('hidden');
-                setFieldsDisabled(true);
-
-                const res = await fetch(`${baseUrl}sarkor.json`); const allData = await res.json();
-                if (allData) {
-                    Object.keys(allData).forEach(wKey => {
-                        datesList.forEach(dStr => {
-                            if (allData[wKey] && allData[wKey][dStr]) {
-                                const dayData = allData[wKey][dStr];
-                                totalAttempts += parseInt(dayData.attempts) || 0;
-                                totalSuccess += parseInt(dayData.success) || 0;
-                                totalHours += parseInt(dayData.hours) || 0;
-                                totalMinutes += parseInt(dayData.minutes) || 0;
-                            }
-                        });
-                    });
-                }
-            } else {
-                document.getElementById('rop-form-title').innerText = isRange ? `📅 ${selectedWorkerUsername} (Oraliq hisobot)` : `📅 Sana: ${datesList[0]}`;
-                
-                const isEditable = !isRange && (currentUser.role === 'superboss' || currentUser.username === selectedWorkerUsername);
-                if (isEditable) document.getElementById('rop-save-btn-container').classList.remove('hidden');
-                else document.getElementById('rop-save-btn-container').classList.add('hidden');
-                setFieldsDisabled(!isEditable);
-
-                const res = await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}.json`); const workerData = await res.json();
-                if (workerData) {
-                    datesList.forEach(dStr => {
-                        if (workerData[dStr]) {
-                            totalAttempts += parseInt(workerData[dStr].attempts) || 0;
-                            totalSuccess += parseInt(workerData[dStr].success) || 0;
-                            totalHours += parseInt(workerData[dStr].hours) || 0;
-                            totalMinutes += parseInt(workerData[dStr].minutes) || 0;
-                        }
-                    });
-                }
-            }
-
-            if (totalMinutes >= 60) {
-                totalHours += Math.floor(totalMinutes / 60);
-                totalMinutes = totalMinutes % 60;
-            }
-
-            document.getElementById('rop-attempts').value = totalAttempts || (isRange || selectedWorkerUsername==="total_summary" ? 0 : '');
-            document.getElementById('rop-success').value = totalSuccess || (isRange || selectedWorkerUsername==="total_summary" ? 0 : '');
-            document.getElementById('rop-hours').value = totalHours || (isRange || selectedWorkerUsername==="total_summary" ? 0 : '');
-            document.getElementById('rop-minutes').value = totalMinutes || (isRange || selectedWorkerUsername==="total_summary" ? 0 : '');
-            
-            updateRopMiniChart(totalAttempts, totalSuccess);
-        }
-
-        function setFieldsDisabled(status) {
-            document.getElementById('rop-attempts').disabled = status;
-            document.getElementById('rop-success').disabled = status;
-            document.getElementById('rop-hours').disabled = status;
-            document.getElementById('rop-minutes').disabled = status;
-        }
-
-        function resetRopFormFields(title) {
-            document.getElementById('rop-form-title').innerText = title; 
-            document.getElementById('rop-data-form').reset(); 
-            document.getElementById('rop-save-btn-container').classList.add('hidden'); 
-            updateRopMiniChart(0, 0);
-        }
-
-        function updateRopMiniChart(attempts, success) {
-            const ctx = document.getElementById('ropMiniChart').getContext('2d'); const fail = (attempts - success) < 0 ? 0 : (attempts - success);
-            if (ropChartObj) { ropChartObj.data.datasets[0].data = [success, fail]; ropChartObj.update(); } 
-            else {
-                ropChartObj = new Chart(ctx, { type: 'doughnut', data: { labels: ['Muvaffaqiyatli qo\'ng\'iroq', 'Urinishlar (Natijasiz)'], datasets: [{ data: [success, fail], backgroundColor: ['#22c55e', '#e2e8f0'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '75%', plugins: { legend: { display: false } } } });
+            const daysInMonth = new Date(ropCalYear, ropCalMonth + 1, 0).getDate();
+            for(let i=1; i<=daysInMonth; i++) {
+                const btn = document.createElement('div');
+                btn.className = "calendar-day p-2 border rounded";
+                btn.innerText = i;
+                btn.onclick = () => loadStatsForDate(i);
+                grid.appendChild(btn);
             }
         }
 
-        document.getElementById('rop-data-form').addEventListener('submit', async (e) => {
-            e.preventDefault(); 
-            if (!selectedWorkerUsername || selectedWorkerUsername === "total_summary" || selectedDatesArray.length !== 1) return;
-            
-            const targetDateStr = selectedDatesArray[0];
-            const attempts = parseInt(document.getElementById('rop-attempts').value) || 0; 
-            const success = parseInt(document.getElementById('rop-success').value) || 0; 
-            const hours = parseInt(document.getElementById('rop-hours').value) || 0; 
-            const minutes = parseInt(document.getElementById('rop-minutes').value) || 0; 
-            
-            if (success > attempts) { alert("Muvaffaqiyatli qo'ng'iroqlar urinishlardan ko'p bo'lishi mumkin emas!"); return; }
-            
-            await fetch(`${baseUrl}sarkor/${selectedWorkerUsername}/${targetDateStr}.json`, { method: 'PUT', body: JSON.stringify({ attempts, success, hours, minutes }) });
-            updateRopMiniChart(attempts, success); alert("Hisobot muvaffaqiyatli saqlandi! 👑⚡");
-        });
+        function changeRopMonth(dir) {
+            ropCalMonth += dir;
+            if(ropCalMonth > 11) { ropCalMonth = 0; ropCalYear++; }
+            if(ropCalMonth < 0) { ropCalMonth = 11; ropCalYear--; }
+            buildRopCalendar();
+        }
+
+        async function loadStatsForDate(day) {
+            // Shu yerda Firebase'dan tanlangan sana va xodim bo'yicha ma'lumotni yuklaysiz
+            // Misol: fetch(`${baseUrl}rop_reports/${ropCalYear}-${ropCalMonth+1}-${day}/${selectedWorker}.json`)
+        }
+
+        // Boshlang'ich ishga tushirish
+        buildRopCalendar();
     </script>
 </body>
 </html>
