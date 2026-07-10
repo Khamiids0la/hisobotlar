@@ -1,947 +1,790 @@
 <!DOCTYPE html>
 <html lang="uz">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Hisobotchi by khamiid</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-        .view-section { display: none; }
-        .view-section.active { display: flex; }
-        .calendar-day { transition: all 0.2s ease-in-out; }
-        .calendar-day:hover:not(.disabled) { transform: scale(1.08); }
-        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .count { display: inline-block; transform-origin: center; transition: transform 0.35s ease; }
-        .count.grow { transform: scale(1.08); }
-        /* small responsive fix */
-        @media (max-width: 768px) {
-            aside { min-height: auto; }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SMS MED — Hisobotlar</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .view-section { display: none; }
+    .view-section.active { display: block; }
+    .card { background:#fff;padding:1rem;border-radius:12px;border:1px solid #e6e6e6 }
+  </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased">
+<body class="bg-gray-100 font-sans min-h-screen">
 
-    <!-- LOGIN -->
-    <div id="login-section" class="view-section active min-h-screen items-center justify-center p-4 bg-slate-900 flex">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
-            <div class="text-center mb-6">
-                <h2 class="text-3xl font-extrabold text-gray-800 tracking-tight">Hisobotchi</h2>
-                <p class="text-gray-400 mt-2 text-sm">by khamiid | Tizimga kirish</p>
-            </div>
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Foydalanuvchi nomi</label>
-                    <input type="text" id="login-username" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition bg-gray-50">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">Parol</label>
-                    <input type="password" id="login-password" required class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition bg-gray-50">
-                </div>
-                <div id="login-error" class="text-red-500 text-sm hidden text-center font-medium"></div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl shadow-lg shadow-blue-200 transition cursor-pointer">Kirish</button>
-            </form>
+  <!-- LOGIN -->
+  <div id="login-section" class="min-h-screen flex items-center justify-center p-6 view-section active">
+    <div class="card w-full max-w-md">
+      <h1 class="text-2xl font-bold mb-2">SMS MED — Hisobotlar</h1>
+      <p class="text-sm text-gray-600 mb-4">Tizimga kirish</p>
+      <form id="login-form" class="space-y-3">
+        <div>
+          <label class="block text-xs text-gray-600">Foydalanuvchi (username)</label>
+          <input id="login-username" class="w-full border rounded px-3 py-2" required />
         </div>
+        <div>
+          <label class="block text-xs text-gray-600">Parol</label>
+          <input id="login-password" type="password" class="w-full border rounded px-3 py-2" required />
+        </div>
+        <div id="login-error" class="text-red-500 text-sm hidden"></div>
+        <div class="flex gap-2">
+          <button class="bg-blue-600 text-white px-4 py-2 rounded" type="submit">Kirish</button>
+          <button id="demo-btn" type="button" class="bg-gray-200 px-4 py-2 rounded">Demo kirish</button>
+        </div>
+      </form>
+      <p class="text-xs text-gray-500 mt-4">Admin uchun: username = khamiid, parol = 2236 (local superuser)</p>
     </div>
+  </div>
 
-    <!-- APP -->
-    <div id="app-section" class="view-section min-h-screen flex-col md:flex-row w-full hidden">
-        <aside class="w-full md:w-64 bg-slate-900 text-white flex flex-col justify-between p-4 shrink-0">
+  <!-- APP -->
+  <div id="app-section" class="hidden min-h-screen flex">
+    <aside class="w-72 bg-slate-900 text-white p-4 flex flex-col">
+      <div class="mb-6">
+        <h2 class="text-xl font-bold">SMS MED</h2>
+        <p class="text-xs text-slate-300">Marketing hisobotlar</p>
+      </div>
+
+      <nav class="flex-1 space-y-2">
+        <button onclick="switchView('crm-live')" id="menu-crm" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">CRM Live</button>
+        <button onclick="switchView('sarkor')" id="menu-sarkor" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Sarkor</button>
+        <button onclick="switchView('rop')" id="menu-rop" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">ROP hisobot</button>
+        <button onclick="switchView('target')" id="menu-target" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Target</button>
+        <button onclick="switchView('davomat')" id="menu-davomat" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Davomat</button>
+        <button onclick="switchView('oylik')" id="menu-oylik" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Oylik</button>
+        <hr class="my-3 border-slate-700" />
+        <button onclick="switchView('admin')" id="menu-admin" class="w-full text-left px-3 py-2 rounded hover:bg-slate-800">Admin Panel</button>
+      </nav>
+
+      <div class="mt-auto">
+        <div class="text-sm mb-2">
+          <div id="user-display" class="font-semibold"></div>
+          <div id="user-role" class="text-xs text-slate-300"></div>
+        </div>
+        <button onclick="logout()" class="w-full bg-red-600 text-white py-2 rounded">Chiqish</button>
+      </div>
+    </aside>
+
+    <main class="flex-1 p-6 overflow-auto">
+      <!-- Top: clinic selector and date range -->
+      <div class="flex gap-4 mb-4">
+        <div class="card flex items-center gap-2">
+          <label class="text-sm text-gray-600">Klinika:</label>
+          <select id="clinic-select" class="border rounded px-2 py-1"></select>
+          <button onclick="openAddClinic()" class="ml-2 text-xs bg-green-600 text-white px-2 py-1 rounded">Klinika qo'sh</button>
+        </div>
+
+        <div class="card flex items-center gap-2">
+          <label class="text-sm text-gray-600">Sana start</label>
+          <input type="date" id="date-start" class="border rounded px-2 py-1" />
+          <label class="text-sm text-gray-600">Sana end</label>
+          <input type="date" id="date-end" class="border rounded px-2 py-1" />
+          <button onclick="refreshCurrentView()" class="ml-2 bg-slate-900 text-white px-3 py-1 rounded">Filter</button>
+        </div>
+      </div>
+
+      <!-- Views -->
+      <section id="crm-live" class="view-section active">
+        <h3 class="text-xl font-bold mb-3">CRM Live</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="card">
+            <h4 class="font-semibold mb-2">Voronkalar</h4>
+            <div id="funnels-list" class="space-y-2"></div>
+            <div class="mt-3">
+              <input id="new-funnel-title" placeholder="Yangi voronka nomi" class="w-full border rounded px-2 py-1" />
+              <div class="flex gap-2 mt-2">
+                <button onclick="addFunnel()" class="bg-blue-600 text-white px-3 py-1 rounded">Qo'shish</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card lg:col-span-2">
+            <div class="flex justify-between items-center mb-2">
+              <h4 class="font-semibold">Leadlar</h4>
+              <div class="flex gap-2">
+                <input id="lead-search" placeholder="Telefon yoki ism qidirish" class="border rounded px-2 py-1" oninput="renderLeads()" />
+                <button onclick="openAddLead()" class="bg-green-600 text-white px-3 py-1 rounded">Lead qo'sh</button>
+              </div>
+            </div>
+
+            <div id="leads-table" class="overflow-auto max-h-96">
+              <!-- leads rendered here -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="sarkor" class="view-section">
+        <h3 class="text-xl font-bold mb-3">Sarkor — Qo'ng'iroqlar statistikasi</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card">
+            <h4 class="font-semibold mb-2">Qo'ng'iroq kiritish</h4>
             <div>
-                <div class="mb-6 p-2 border-b border-slate-800">
-                    <h1 class="text-xl font-bold tracking-tight">Hisobotchi</h1>
-                    <p class="text-xs text-slate-400 mt-1">by khamiid</p>
-                </div>
-                <nav class="space-y-1">
-                    <button id="menu-users" onclick="switchView('users-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white">
-                        <span>👤</span> Hisob Yaratish
-                    </button>
-                    <button id="menu-rop" onclick="switchView('rop-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white">
-                        <span>📉</span> ROP Kunlik Hisobot
-                    </button>
-                    <button id="menu-target" onclick="switchView('target-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white">
-                        <span>🎯</span> Target Bo'limi
-                    </button>
-                    <button id="menu-crm" onclick="switchView('crm-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white">
-                        <span>⚡</span> CRM Live
-                    </button>
-                    <button id="menu-sarkor" onclick="switchView('sarkor-view')" class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-400 hover:bg-slate-800 hover:text-white">
-                        <span>👑</span> Sarkor Bo'limi
-                    </button>
-                </nav>
+              <label class="text-xs">Worker (username)</label>
+              <input id="sarkor-worker" class="w-full border rounded px-2 py-1" />
+              <label class="text-xs">Natija</label>
+              <select id="sarkor-result" class="w-full border rounded px-2 py-1">
+                <option value="connected">Connected</option>
+                <option value="failed">Failed</option>
+                <option value="no_answer">No answer</option>
+              </select>
+              <label class="text-xs">Davomiylik (soniya)</label>
+              <input id="sarkor-duration" type="number" class="w-full border rounded px-2 py-1" />
+              <div class="mt-2">
+                <button onclick="addSarkorEntry()" class="bg-blue-600 text-white px-3 py-1 rounded">Saqlash</button>
+              </div>
             </div>
-            <div class="mt-auto pt-4 border-t border-slate-800">
-                <div class="flex items-center justify-between mb-4 px-2">
-                    <div class="truncate mr-2">
-                        <p id="user-display-name" class="text-sm font-semibold truncate"></p>
-                        <span id="user-badge" class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md"></span>
-                    </div>
-                </div>
-                <button onclick="logout()" class="w-full bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white text-sm font-medium py-2.5 rounded-xl transition text-center block cursor-pointer">Chiqish</button>
+          </div>
+
+          <div class="card">
+            <h4 class="font-semibold mb-2">Natijalar (tanlangan diapazon)</h4>
+            <div id="sarkor-stats"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="rop" class="view-section">
+        <h3 class="text-xl font-bold mb-3">ROP — Kunlik hisobot</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="card">
+            <h4 class="font-semibold mb-2">Hisobot qo'shish</h4>
+            <label class="text-xs">Worker</label>
+            <input id="rop-worker" class="w-full border rounded px-2 py-1" />
+            <label class="text-xs">Jami obrobotka</label>
+            <input id="rop-ob" type="number" class="w-full border rounded px-2 py-1" />
+            <label class="text-xs">Aktiv</label>
+            <input id="rop-akt" type="number" class="w-full border rounded px-2 py-1" />
+            <label class="text-xs">Brak</label>
+            <input id="rop-brak" type="number" class="w-full border rounded px-2 py-1" />
+            <label class="text-xs">Nedozvon</label>
+            <input id="rop-ned" type="number" class="w-full border rounded px-2 py-1" />
+            <label class="text-xs">Zakaz</label>
+            <input id="rop-zakaz" type="number" class="w-full border rounded px-2 py-1" />
+            <div class="mt-2">
+              <button onclick="saveRop()" class="bg-blue-600 text-white px-3 py-1 rounded">Saqlash</button>
             </div>
-        </aside>
+          </div>
 
-        <main class="flex-1 p-6 md:p-8 overflow-y-auto bg-gray-50 min-h-screen">
-            <!-- USERS -->
-            <div id="users-view" class="sub-view space-y-6 w-full hidden">
-                <div class="flex justify-between items-center pb-4 border-b border-gray-200">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">Tizim Foydalanuvchilari</h2>
-                        <p class="text-sm text-gray-500">Yangi hisoblar yarating, tahrirlang yoki o'chiring</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 h-fit">
-                        <h3 id="form-title" class="text-base font-bold text-gray-700 mb-4">Yangi foydalanuvchi qo'shish</h3>
-                        <form id="user-form" class="space-y-4">
-                            <input type="hidden" id="edit-id">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Login</label>
-                                <input type="text" id="username" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Parol</label>
-                                <input type="password" id="password" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">To'liq ismi</label>
-                                <input type="text" id="fullname" required class="w-full border border-gray-200 rounded-xl p-2.5 text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-500 mb-1">Tizimdagi roli</label>
-                                <select id="role" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white">
-                                    <option value="worker">Worker (Operator)</option>
-                                    <option value="boss">Boss (Faqat ma'lumotlarni ko'ruvchi)</option>
-                                    <option value="superboss">Superboss (Admin)</option>
-                                </select>
-                            </div>
-                            <div class="flex gap-2 pt-2">
-                                <button type="submit" id="submit-btn" class="w-full bg-blue-600 text-white font-semibold py-2.5 rounded-xl text-sm">Saqlash</button>
-                                <button type="button" id="cancel-btn" class="hidden w-full bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl text-sm">Bekor qilish</button>
-                            </div>
-                        </form>
-                    </div>
+          <div class="card lg:col-span-2">
+            <h4 class="font-semibold mb-2">ROP jadvali</h4>
+            <div id="rop-table" class="overflow-auto max-h-96"></div>
+          </div>
+        </div>
+      </section>
 
-                    <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 lg:col-span-2">
-                        <table class="w-full text-left text-sm">
-                            <thead>
-                                <tr class="border-b border-gray-100 text-gray-400 font-medium">
-                                    <th class="pb-3">Login</th>
-                                    <th class="pb-3">Ismi</th>
-                                    <th class="pb-3">Roli</th>
-                                    <th class="pb-3 text-right">Amal</th>
-                                </tr>
-                            </thead>
-                            <tbody id="users-table-body" class="text-gray-600 divide-y divide-gray-50"></tbody>
-                        </table>
-                    </div>
-                </div>
+      <section id="target" class="view-section">
+        <h3 class="text-xl font-bold mb-3">Target — Filial kesimida</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div class="card">
+            <h4 class="font-semibold mb-2">Filial qo'shish</h4>
+            <input id="branch-name" placeholder="Filial nomi" class="w-full border rounded px-2 py-1" />
+            <input id="branch-id" placeholder="branchId (key)" class="w-full border rounded px-2 py-1 mt-2" />
+            <div class="mt-2">
+              <button onclick="addBranch()" class="bg-green-600 text-white px-3 py-1 rounded">Qo'shish</button>
             </div>
+          </div>
 
-            <!-- ROP VIEW -->
-            <div id="rop-view" class="sub-view space-y-6 w-full hidden">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 border-b border-gray-200">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ROP Kunlik Hisobot Bo'limi</h2>
-                        <p class="text-sm text-gray-500">Workerlar hisoboti va foizli konversiyalarning avtomatik hisob-kitoblari</p>
-                    </div>
-                    <div class="flex items-center gap-3 bg-white p-2 rounded-xl border border-gray-200 shadow-xs">
-                        <span class="text-xs font-semibold text-gray-500 pl-2">Sana:</span>
-                        <input type="date" id="rop-date" onchange="loadRopReports()" class="border-0 bg-transparent text-sm font-bold text-gray-800 outline-none p-1 cursor-pointer">
-                        <span class="text-xs font-semibold text-gray-500">-</span>
-                        <input type="date" id="rop-date-end" onchange="loadRopReports()" class="border-0 bg-transparent text-sm font-bold text-gray-800 outline-none p-1 cursor-pointer">
-                    </div>
-                </div>
+          <div class="card lg:col-span-2">
+            <h4 class="font-semibold mb-2">Filiallar va Target</h4>
+            <div id="branches-list"></div>
+          </div>
+        </div>
+      </section>
 
-                <!-- Totals -->
-                <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-blue-600">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Jami Obrobotka</p>
-                        <p id="rop-total-ob" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-emerald-500">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Aktiv Sog'lom</p>
-                        <p id="rop-total-akt" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="rop-total-akt-pct" class="text-xs text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-rose-500">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Brak</p>
-                        <p id="rop-total-brak" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="rop-total-brak-pct" class="text-xs text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-amber-500">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Nedozvon</p>
-                        <p id="rop-total-ned" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="rop-total-ned-pct" class="text-xs text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-indigo-600 col-span-2 lg:col-span-1">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Zakaz (Konversiya)</p>
-                        <p id="rop-total-zakaz" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="rop-total-zakaz-pct" class="text-xs text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                </div>
+      <section id="davomat" class="view-section">
+        <h3 class="text-xl font-bold mb-3">Davomat</h3>
+        <div class="card">
+          <label class="text-xs">Worker</label>
+          <input id="att-worker" class="w-full border rounded px-2 py-1" />
+          <label class="text-xs">Kirish vaqti</label>
+          <input id="att-in" type="time" class="w-full border rounded px-2 py-1" />
+          <label class="text-xs">Chiqish vaqti</label>
+          <input id="att-out" type="time" class="w-full border rounded px-2 py-1" />
+          <div class="mt-2">
+            <button onclick="saveAttendance()" class="bg-blue-600 text-white px-3 py-1 rounded">Saqlash</button>
+          </div>
+          <div class="mt-4" id="attendance-list"></div>
+        </div>
+      </section>
 
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                    <!-- FORM CARD -->
-                    <div id="rop-form-card" class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 h-fit space-y-4">
-                        <div class="border-b border-gray-100 pb-2">
-                            <h3 id="rop-form-title" class="text-base font-bold text-gray-800">Hisobot Kiritish</h3>
-                            <p class="text-xs text-gray-400 mt-0.5" id="rop-form-subtitle">Siz faqat o'zingizga oid hisobotni topshira olasiz; admin boshqa worker nomidan ham kiritishi mumkin.</p>
-                        </div>
-                        <form id="rop-data-form" class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1">Worker (operator)</label>
-                                <!-- For workers this will be disabled & prefilled, for admin a select -->
-                                <select id="rop-worker-select" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm bg-white outline-none"></select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-600 mb-1">Jami obrobotka lid</label>
-                                <input type="number" id="rop-in-ob" min="0" required oninput="calcLiveRopForm()" class="w-full border border-gray-200 rounded-xl p-2.5 text-sm outline-none">
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs font-bold text-emerald-700 mb-1">Aktiv sog'lom lid</label>
-                                    <input type="number" id="rop-in-akt" min="0" required oninput="calcLiveRopForm()" class="w-full border border-emerald-200 rounded-xl p-2.5 text-sm outline-none">
-                                    <span id="fc-akt" class="text-[11px] text-emerald-600 font-bold">0%</span>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-rose-700 mb-1">Brak lid</label>
-                                    <input type="number" id="rop-in-brak" min="0" required oninput="calcLiveRopForm()" class="w-full border border-rose-200 rounded-xl p-2.5 text-sm outline-none">
-                                    <span id="fc-brak" class="text-[11px] text-rose-600 font-bold">0%</span>
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs font-bold text-amber-700 mb-1">Nedozvon</label>
-                                    <input type="number" id="rop-in-ned" min="0" required oninput="calcLiveRopForm()" class="w-full border border-amber-200 rounded-xl p-2.5 text-sm outline-none">
-                                    <span id="fc-ned" class="text-[11px] text-amber-600 font-bold">0%</span>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-indigo-700 mb-1">Zakaz soni</label>
-                                    <input type="number" id="rop-in-zakaz" min="0" required oninput="calcLiveRopForm()" class="w-full border border-indigo-200 rounded-xl p-2.5 text-sm outline-none">
-                                    <span id="fc-zakaz" class="text-[11px] text-indigo-600 font-bold">0%</span>
-                                </div>
-                            </div>
-                            <input type="hidden" id="rop-edit-id" />
-                            <div id="rop-submit-container" class="pt-2">
-                                <button type="submit" id="rop-save-btn" class="w-full bg-slate-900 hover:bg-black text-white font-semibold py-2.5 rounded-xl text-sm shadow-md transition cursor-pointer">Saqlash</button>
-                            </div>
-                        </form>
-                    </div>
+      <section id="oylik" class="view-section">
+        <h3 class="text-xl font-bold mb-3">Oylik</h3>
+        <div class="card">
+          <label class="text-xs">Worker</label>
+          <input id="pay-worker" class="w-full border rounded px-2 py-1" />
+          <label class="text-xs">Oy (YYYY-MM)</label>
+          <input id="pay-month" placeholder="2026-07" class="w-full border rounded px-2 py-1" />
+          <label class="text-xs">Asosiy maosh</label>
+          <input id="pay-base" type="number" class="w-full border rounded px-2 py-1" />
+          <label class="text-xs">Bonus</label>
+          <input id="pay-bonus" type="number" class="w-full border rounded px-2 py-1" />
+          <div class="mt-2">
+            <button onclick="savePayroll()" class="bg-blue-600 text-white px-3 py-1 rounded">Saqlash</button>
+          </div>
+          <div id="payroll-list" class="mt-4"></div>
+        </div>
+      </section>
 
-                    <!-- Table -->
-                    <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 xl:col-span-2 overflow-x-auto">
-                        <h3 class="text-base font-bold text-gray-800 mb-4">Kunlik Operatorlar Ro'yxati</h3>
-                        <table class="w-full text-left text-xs whitespace-nowrap">
-                            <thead>
-                                <tr class="border-b border-gray-100 text-gray-400 font-bold uppercase tracking-wider">
-                                    <th class="pb-3">Worker</th>
-                                    <th class="pb-3">Obrobotka</th>
-                                    <th class="pb-3">Aktiv (%)</th>
-                                    <th class="pb-3">Brak (%)</th>
-                                    <th class="pb-3">Nedozvon (%)</th>
-                                    <th class="pb-3">Zakaz (Konv %)</th>
-                                    <th class="pb-3 text-right">Amal</th>
-                                </tr>
-                            </thead>
-                            <tbody id="rop-table-body" class="text-gray-600 divide-y divide-gray-50"></tbody>
-                        </table>
-                    </div>
-                </div>
+      <section id="admin" class="view-section">
+        <h3 class="text-xl font-bold mb-3">Admin Panel — Klinika va bo'limlar</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card">
+            <h4 class="font-semibold">Yangi klinika</h4>
+            <input id="clinic-name" placeholder="Klinika nomi" class="w-full border rounded px-2 py-1" />
+            <input id="clinic-id" placeholder="clinicId (key)" class="w-full border rounded px-2 py-1 mt-2" />
+            <div class="mt-2">
+              <button onclick="createClinic()" class="bg-green-600 text-white px-3 py-1 rounded">Yaratish</button>
             </div>
+          </div>
 
-            <!-- TARGET (kept simple) -->
-            <div id="target-view" class="sub-view space-y-6 w-full hidden">
-                <div class="flex justify-between items-center pb-4 border-b border-gray-200">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">🎯 Target Bo'limi</h2>
-                        <p class="text-sm text-gray-500">Filiallar kesimida xarajat va lidlar tahlili</p>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
-                    <p class="text-sm text-gray-500">Target bo'limi — mavjud funksiyalar saqlanadi (bu file-larda qisqaroq qoladi).</p>
-                </div>
-            </div>
+          <div class="card">
+            <h4 class="font-semibold">Klinikalar ro'yxati</h4>
+            <div id="clinics-list"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
-            <!-- CRM -->
-            <div id="crm-view" class="sub-view space-y-6 w-full hidden">
-                <div class="flex justify-between items-center pb-4 border-b border-gray-200">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">CRM Live Voronkalar</h2>
-                        <p class="text-sm text-gray-500">Linyalar va voronkalardagi lidlar holatini vizual tahlil qiling</p>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200">
-                    <p class="text-sm text-gray-500">CRM bo'limi — hozircha ko'rgazmali.</p>
-                </div>
-            </div>
+  <!-- Firebase SDKs (compat for quick prototyping) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 
-            <!-- SARKOR -->
-            <div id="sarkor-view" class="sub-view space-y-6 w-full hidden">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pb-4 border-b border-gray-200">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">Sarkor Bo'limi</h2>
-                        <p class="text-sm text-gray-500">Xodimlarning kunlik urinishlari va vaqt tahlili</p>
-                    </div>
-                    <div class="flex items-center gap-3 bg-white p-2 rounded-xl border border-gray-200 shadow-xs">
-                        <span class="text-xs font-semibold text-gray-500 pl-2">Sana diapazoni:</span>
-                        <input type="date" id="sarkor-date-start" onchange="loadSarkorTotals()" class="border-0 bg-transparent text-sm font-bold text-gray-800 outline-none p-1 cursor-pointer">
-                        <span class="text-xs font-semibold text-gray-500">-</span>
-                        <input type="date" id="sarkor-date-end" onchange="loadSarkorTotals()" class="border-0 bg-transparent text-sm font-bold text-gray-800 outline-none p-1 cursor-pointer">
-                    </div>
-                </div>
+  <script>
+    // Firebase config (kechirish uchun sizning DB url qo'yilgan)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAyv8BWfBxfkmIwcepc-dPTwcHtaF5fzoY",
+      authDomain: "hisotb-46af8.firebaseapp.com",
+      databaseURL: "https://hisotb-46af8-default-rtdb.firebaseio.com",
+      projectId: "hisotb-46af8",
+      storageBucket: "hisotb-46af8.firebasestorage.app",
+      messagingSenderId: "585273924657",
+      appId: "1:585273924657:web:6aa23c7193a9cce6960910"
+    };
+    firebase.initializeApp(firebaseConfig);
 
-                <!-- SARKOR TOTALS -->
-                <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-blue-600">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Jami Obrobotka</p>
-                        <p id="sarkor-total-ob" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-emerald-500">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Aktiv Sog'lom</p>
-                        <p id="sarkor-total-akt" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="sarkor-total-akt-pct" class="text-xs text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-rose-500">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Brak</p>
-                        <p id="sarkor-total-brak" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="sarkor-total-brak-pct" class="text-xs text-rose-600 font-bold bg-rose-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-amber-500">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Nedozvon</p>
-                        <p id="sarkor-total-ned" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="sarkor-total-ned-pct" class="text-xs text-amber-600 font-bold bg-amber-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-xs border-l-4 border-l-indigo-600 col-span-2 lg:col-span-1">
-                        <p class="text-xs font-bold text-gray-400 uppercase">Zakaz (Konversiya)</p>
-                        <p id="sarkor-total-zakaz" class="text-2xl font-black text-gray-800 mt-1">0</p>
-                        <span id="sarkor-total-zakaz-pct" class="text-xs text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded-md">0%</span>
-                    </div>
-                </div>
+    const baseUrl = "https://hisotb-46af8-default-rtdb.firebaseio.com/"; // siz bergan DB
 
-                <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-200 overflow-x-auto">
-                    <h3 class="text-base font-bold text-gray-800 mb-4">Workerlar bo'yicha jami (diapazon)</h3>
-                    <table class="w-full text-left text-sm whitespace-nowrap">
-                        <thead>
-                            <tr class="border-b border-gray-100 text-gray-400 font-bold uppercase tracking-wider">
-                                <th class="pb-3">Worker</th>
-                                <th class="pb-3">Obrobotka</th>
-                                <th class="pb-3">Aktiv</th>
-                                <th class="pb-3">Brak</th>
-                                <th class="pb-3">Nedozvon</th>
-                                <th class="pb-3">Zakaz</th>
-                            </tr>
-                        </thead>
-                        <tbody id="sarkor-table-body" class="text-gray-600 divide-y divide-gray-50"></tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Firebase SDKs for auth (compat) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-
-    <script>
-        // Firebase configuration (you provided these values)
-        const firebaseConfig = {
-            apiKey: "AIzaSyAyv8BWfBxfkmIwcepc-dPTwcHtaF5fzoY",
-            authDomain: "hisotb-46af8.firebaseapp.com",
-            databaseURL: "https://hisotb-46af8-default-rtdb.firebaseio.com",
-            projectId: "hisotb-46af8",
-            storageBucket: "hisotb-46af8.firebasestorage.app",
-            messagingSenderId: "585273924657",
-            appId: "1:585273924657:web:6aa23c7193a9cce6960910",
-            measurementId: "G-E1S5XWWC4F"
-        };
-        firebase.initializeApp(firebaseConfig);
-
-        // base firebase URL
-        const baseUrl = "https://hisotb-46af8-default-rtdb.firebaseio.com/";
-        let currentUser = null;
-        let allRegisteredUsers = {}; // { username: { fullName, role } }
-        let ropEditing = null;
-
-        // AUTH TOKEN + fetch wrapper to avoid 401
-        // Make sure Anonymous sign-in is enabled in Firebase Console (Authentication -> Sign-in method -> Anonymous)
-        let firebaseIdToken = null;
-        async function ensureAuth() {
-            try {
-                if (!firebase.auth().currentUser) {
-                    await firebase.auth().signInAnonymously();
-                }
-                const u = firebase.auth().currentUser;
-                if (u) {
-                    firebaseIdToken = await u.getIdToken(true);
-                }
-            } catch (err) {
-                console.error('ensureAuth error', err);
-            }
+    let firebaseIdToken = null;
+    async function ensureAuth() {
+      try {
+        if (!firebase.auth().currentUser) {
+          await firebase.auth().signInAnonymously();
         }
+        const u = firebase.auth().currentUser;
+        if (u) firebaseIdToken = await u.getIdToken(true);
+      } catch (err) {
+        console.error('Auth error', err);
+      }
+    }
 
-        async function fetchWithAuth(path, options = {}) {
-            if (!firebaseIdToken) await ensureAuth();
-            const sep = path.includes('?') ? '&' : '?';
-            const url = `${path}.json${sep}auth=${encodeURIComponent(firebaseIdToken)}`;
-            return fetch(url, options);
+    async function fetchWithAuth(path, opts = {}) {
+      // path: full URL without .json (or relative to baseUrl). We'll accept both.
+      await ensureAuth();
+      const url = path.endsWith('.json') || path.startsWith('http') ? path : `${path}.json`;
+      const sep = url.includes('?') ? '&' : '?';
+      const full = url + sep + 'auth=' + encodeURIComponent(firebaseIdToken || '');
+      return fetch(full, opts);
+    }
+
+    // Simple helpers
+    function $(id){return document.getElementById(id)}
+    function switchView(id){
+      document.querySelectorAll('.view-section').forEach(s=>s.classList.remove('active'));
+      const el = $(id);
+      if (el) el.classList.add('active');
+      // refresh data for view
+      if (id==='crm-live') loadFunnelsAndLeads();
+      if (id==='sarkor') loadSarkorStats();
+      if (id==='rop') loadRopTable();
+      if (id==='admin') loadClinics();
+      if (id==='target') loadBranches();
+      if (id==='davomat') loadAttendanceList();
+      if (id==='oylik') loadPayrollList();
+    }
+
+    // LOGIN logic (very simple: checks /users/{username} in DB)
+    document.getElementById('login-form').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const u = $('login-username').value.trim().toLowerCase();
+      const p = $('login-password').value;
+      $('login-error').classList.add('hidden');
+      if (u === 'khamiid' && p === '2236') {
+        window.currentUser = { username:'khamiid', role:'superboss', fullName:'Khamid' };
+        initApp();
+        return;
+      }
+      try {
+        const res = await fetchWithAuth(baseUrl + 'users/' + encodeURIComponent(u));
+        const data = await res.json();
+        if (data && data.password === p) {
+          window.currentUser = { username: u, ...data };
+          initApp();
+        } else {
+          $('login-error').innerText = 'Login yoki parol noto\'g\'ri';
+          $('login-error').classList.remove('hidden');
         }
+      } catch (err){
+        console.error(err);
+        $('login-error').innerText = 'Xatolik';
+        $('login-error').classList.remove('hidden');
+      }
+    });
 
-        // UTIL
-        function toDateIso(d) {
-            if (!d) d = new Date();
-            return d.toISOString().split('T')[0];
+    // Demo button: auto-create a demo user
+    $('demo-btn').addEventListener('click', async ()=>{
+      window.currentUser = { username:'demo', role:'worker', fullName:'Demo User' };
+      initApp();
+    });
+
+    function initApp(){
+      $('login-section').classList.add('hidden');
+      $('app-section').classList.remove('hidden');
+      $('user-display').innerText = window.currentUser.fullName || window.currentUser.username;
+      $('user-role').innerText = (window.currentUser.role || 'worker').toUpperCase();
+      populateClinicSelect();
+      // set default dates
+      const d = new Date().toISOString().split('T')[0];
+      $('date-start').value = d; $('date-end').value = d;
+      switchView('crm-live');
+    }
+
+    function logout(){
+      window.currentUser = null;
+      $('app-section').classList.add('hidden');
+      $('login-section').classList.remove('hidden');
+    }
+
+    // -------------------------
+    // Admin: Clinics & Branches
+    // -------------------------
+    async function createClinic(){
+      const id = $('clinic-id').value.trim();
+      const name = $('clinic-name').value.trim();
+      if (!id || !name) return alert('clinicId va nom kiriting');
+      const payload = { name, createdAt: Date.now(), modules: { crm:true, sarkor:true, rop:true, target:true, davomat:true, oylik:true } };
+      try {
+        await fetchWithAuth(baseUrl + 'clinics/' + encodeURIComponent(id), { method:'PUT', body: JSON.stringify(payload) });
+        $('clinic-id').value=''; $('clinic-name').value='';
+        loadClinics();
+        populateClinicSelect();
+        alert('Klinika yaratildi');
+      } catch (e){ console.error(e); alert('Xatolik') }
+    }
+
+    async function loadClinics(){
+      try {
+        const res = await fetchWithAuth(baseUrl + 'clinics');
+        const data = await res.json() || {};
+        const container = $('clinics-list'); container.innerHTML='';
+        Object.keys(data).forEach(k=>{
+          const d = data[k];
+          const div = document.createElement('div');
+          div.className='p-2 border-b';
+          div.innerHTML = `<strong>${k}</strong> — ${d.name || ''} <button onclick="deleteClinic('${k}')" class="ml-2 text-xs text-red-600">O'chir</button>`;
+          container.appendChild(div);
+        });
+      } catch (e){ console.error(e) }
+    }
+
+    async function deleteClinic(id){
+      if(!confirm('O\'chirasizmi?')) return;
+      try {
+        await fetchWithAuth(baseUrl + 'clinics/' + encodeURIComponent(id), { method:'DELETE' });
+        loadClinics(); populateClinicSelect();
+      } catch(e){ console.error(e) }
+    }
+
+    async function populateClinicSelect(){
+      try {
+        const res = await fetchWithAuth(baseUrl + 'clinics');
+        const clinics = await res.json() || {};
+        const sel = $('clinic-select'); sel.innerHTML='';
+        Object.keys(clinics).forEach(k=>{
+          sel.innerHTML += `<option value="${k}">${clinics[k].name || k}</option>`;
+        });
+        if (!sel.value) sel.selectedIndex = 0;
+      } catch (e) { console.error(e) }
+    }
+
+    function openAddClinic(){
+      switchView('admin');
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    // -------------------------
+    // CRM: Funnels & Leads
+    // -------------------------
+    async function addFunnel(){
+      const clinic = $('clinic-select').value;
+      const title = $('new-funnel-title').value.trim();
+      if (!clinic || !title) return alert('Clinic va nom tanlang');
+      const id = 'f_' + Date.now();
+      const payload = { id, title, createdAt: Date.now() };
+      try {
+        await fetchWithAuth(baseUrl + `crm/${encodeURIComponent(clinic)}/funnels/${id}`, { method:'PUT', body: JSON.stringify(payload) });
+        $('new-funnel-title').value='';
+        loadFunnelsAndLeads();
+      } catch (e){ console.error(e) }
+    }
+
+    async function loadFunnelsAndLeads(){
+      const clinic = $('clinic-select').value;
+      if(!clinic) return;
+      // load funnels
+      try {
+        const fRes = await fetchWithAuth(baseUrl + `crm/${encodeURIComponent(clinic)}/funnels`);
+        const funnels = await fRes.json() || {};
+        const list = $('funnels-list'); list.innerHTML='';
+        const defaultStages = ['yangi lead','otkazib yuborilgan','boglanib bolmadi','qayta aloqa','ofisga chaqirildi','ofisga keldi','keldi sotib olmadi','keldi','sifatsiz lead'];
+        // if no funnels exist, create default stages (once)
+        if (Object.keys(funnels).length === 0) {
+          for (let i=0;i<defaultStages.length;i++){
+            const id = 'stage_' + i;
+            await fetchWithAuth(baseUrl + `crm/${encodeURIComponent(clinic)}/funnels/${id}`, { method:'PUT', body: JSON.stringify({ id, title: defaultStages[i], order:i })});
+          }
         }
+        // reload
+        const fRes2 = await fetchWithAuth(baseUrl + `crm/${encodeURIComponent(clinic)}/funnels`);
+        const funnels2 = await fRes2.json() || {};
+        Object.keys(funnels2).sort((a,b)=> (funnels2[a].order||0)-(funnels2[b].order||0)).forEach(k=>{
+          const f = funnels2[k];
+          const div = document.createElement('div');
+          div.className='p-2 border rounded';
+          div.innerHTML = `<div class="flex justify-between"><strong>${f.title}</strong>
+            <div><button onclick="deleteFunnel('${clinic}','${k}')" class="text-xs text-red-600 ml-2">O'chir</button></div></div>`;
+          list.appendChild(div);
+        });
+      } catch (e){ console.error(e) }
 
-        // NAV & VIEWS
-        function switchView(viewId) {
-            document.querySelectorAll('.sub-view').forEach(view => view.classList.add('hidden'));
-            const el = document.getElementById(viewId);
-            if (el) el.classList.remove('hidden');
+      // load leads
+      renderLeads();
+    }
 
-            ['menu-users','menu-rop','menu-target','menu-crm','menu-sarkor'].forEach(id => {
-                const b = document.getElementById(id);
-                if (b) b.classList.remove('bg-slate-800','text-white');
+    async function deleteFunnel(clinic, id){
+      if(!confirm('O\'chirasizmi?')) return;
+      try {
+        await fetchWithAuth(baseUrl + `crm/${encodeURIComponent(clinic)}/funnels/${encodeURIComponent(id)}`, { method:'DELETE' });
+        loadFunnelsAndLeads();
+      } catch (e){ console.error(e) }
+    }
+
+    function openAddLead(){
+      const name = prompt('Lead ismi:');
+      if (!name) return;
+      const phone = prompt('Telefon:');
+      if (!phone) return;
+      // default funnel stage = first funnel
+      saveLead({ name, phone });
+    }
+
+    async function saveLead({ id, name, phone, assignedTo, funnelStage }) {
+      const clinic = $('clinic-select').value;
+      if (!clinic) return alert('Clinic tanlang');
+      const leadId = id || 'lead_' + Date.now();
+      const payload = {
+        id: leadId,
+        name: name || '',
+        phone: phone || '',
+        assignedTo: assignedTo || '',
+        funnelStage: funnelStage || '',
+        createdAt: Date.now()
+      };
+      try {
+        await fetchWithAuth(baseUrl + `crm/${encodeURIComponent(clinic)}/leads/${encodeURIComponent(leadId)}`, { method:'PUT', body: JSON.stringify(payload) });
+        renderLeads();
+      } catch (e){ console.error(e) }
+    }
+
+    async function renderLeads(){
+      const clinic = $('clinic-select').value;
+      if (!clinic) return;
+      const search = $('lead-search').value.trim().toLowerCase();
+      try {
+        const res = await fetchWithAuth(baseUrl + `crm/${encodeURIComponent(clinic)}/leads`);
+        const leads = await res.json() || {};
+        const cont = $('leads-table'); cont.innerHTML = '';
+        const table = document.createElement('table');
+        table.className = 'w-full text-sm';
+        table.innerHTML = `<thead><tr class="text-left"><th>Ism</th><th>Telefon</th><th>Stage</th><th>Amal</th></tr></thead>`;
+        const tbody = document.createElement('tbody');
+        Object.keys(leads).reverse().forEach(k=>{
+          const L = leads[k];
+          if (search && !(L.name||'').toLowerCase().includes(search) && !(L.phone||'').includes(search)) return;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td class="py-1">${L.name||''}</td><td>${L.phone||''}</td><td>${L.funnelStage||''}</td>
+            <td><button onclick="changeLeadStage('${k}')" class="text-xs bg-yellow-100 px-2 rounded mr-2">Stage o'zgartir</button>
+            <button onclick="deleteLead('${k}')" class="text-xs bg-rose-100 px-2 rounded">O'chir</button></td>`;
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        cont.appendChild(table);
+      } catch (e){ console.error(e) }
+    }
+
+    async function changeLeadStage(leadId){
+      const clinic = $('clinic-select').value;
+      const newStage = prompt('Yangi stage (nomini kiriting):');
+      if (!newStage) return;
+      try {
+        // fetch lead
+        const res = await fetchWithAuth(baseUrl + `crm/${encodeURIComponent(clinic)}/leads/${encodeURIComponent(leadId)}`);
+        const L = await res.json();
+        L.funnelStage = newStage;
+        L.updatedAt = Date.now();
+        await fetchWithAuth(baseUrl + `crm/${encodeURIComponent(clinic)}/leads/${encodeURIComponent(leadId)}`, { method:'PUT', body: JSON.stringify(L) });
+        renderLeads();
+      } catch (e){ console.error(e) }
+    }
+
+    async function deleteLead(leadId){
+      if(!confirm('Lead o\'chirish?')) return;
+      const clinic = $('clinic-select').value;
+      try {
+        await fetchWithAuth(baseUrl + `crm/${encodeURIComponent(clinic)}/leads/${encodeURIComponent(leadId)}`, { method:'DELETE' });
+        renderLeads();
+      } catch (e){ console.error(e) }
+    }
+
+    // -------------------------
+    // SARKOR: calls
+    // -------------------------
+    async function addSarkorEntry(){
+      const date = $('date-start').value || new Date().toISOString().split('T')[0];
+      const worker = $('sarkor-worker').value.trim() || (window.currentUser && window.currentUser.username);
+      const duration = parseInt($('sarkor-duration').value) || 0;
+      const result = $('sarkor-result').value;
+      if (!worker) return alert('Worker kiritilsin');
+      const id = 'call_' + Date.now();
+      const payload = { id, worker, duration, result, ts: Date.now() };
+      try {
+        await fetchWithAuth(baseUrl + `sarkor/${encodeURIComponent(date)}/${encodeURIComponent(worker)}/${id}`, { method:'PUT', body: JSON.stringify(payload) });
+        alert('Qo\'ng\'iroq saqlandi');
+        $('sarkor-duration').value='';
+        loadSarkorStats();
+      } catch (e){ console.error(e) }
+    }
+
+    async function loadSarkorStats(){
+      const dateStart = $('date-start').value || new Date().toISOString().split('T')[0];
+      const dateEnd = $('date-end').value || dateStart;
+      try {
+        const res = await fetchWithAuth(baseUrl + 'sarkor');
+        const all = await res.json() || {};
+        // aggregate
+        const byWorker = {};
+        Object.keys(all).forEach(date=>{
+          if (date < dateStart || date > dateEnd) return;
+          const perDate = all[date] || {};
+          Object.keys(perDate).forEach(worker=>{
+            const items = perDate[worker] || {};
+            Object.keys(items).forEach(id=>{
+              const c = items[id];
+              if (!byWorker[worker]) byWorker[worker]={calls:0,connected:0,totalSec:0};
+              byWorker[worker].calls++;
+              if (c.result==='connected') byWorker[worker].connected++;
+              byWorker[worker].totalSec += parseInt(c.duration||0);
             });
-            if (viewId === 'users-view') document.getElementById('menu-users').classList.add('bg-slate-800','text-white');
-            if (viewId === 'rop-view') document.getElementById('menu-rop').classList.add('bg-slate-800','text-white');
-            if (viewId === 'target-view') document.getElementById('menu-target').classList.add('bg-slate-800','text-white');
-            if (viewId === 'crm-view') document.getElementById('menu-crm').classList.add('bg-slate-800','text-white');
-            if (viewId === 'sarkor-view') document.getElementById('menu-sarkor').classList.add('bg-slate-800','text-white');
-
-            if (viewId === 'users-view') loadUsersList();
-            if (viewId === 'rop-view') initRopView();
-            if (viewId === 'target-view') {/* initTargetView() if exists */ }
-            if (viewId === 'crm-view') {/* loadFunnelsList() if exists */ }
-            if (viewId === 'sarkor-view') initSarkorView();
-        }
-
-        // LOGIN
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const user = document.getElementById('login-username').value.trim().toLowerCase();
-            const pass = document.getElementById('login-password').value;
-            const errorDiv = document.getElementById('login-error');
-            errorDiv.classList.add('hidden');
-
-            // local superboss (offline)
-            if (user === 'khamiid' && pass === '2236') {
-                currentUser = { username: 'khamiid', role: 'superboss', fullName: 'Khamid' };
-                initApp();
-                return;
-            }
-
-            try {
-                const res = await fetchWithAuth(`${baseUrl}users/${encodeURIComponent(user)}`);
-                const userData = await res.json();
-                if (userData && userData.password === pass) {
-                    currentUser = { username: user, ...userData };
-                    initApp();
-                } else {
-                    errorDiv.innerText = "Login yoki parol noto'g'ri!";
-                    errorDiv.classList.remove('hidden');
-                }
-            } catch (err) {
-                console.error(err);
-                errorDiv.innerText = "Xatolik ro'y berdi.";
-                errorDiv.classList.remove('hidden');
-            }
+          });
         });
-
-        function initApp() {
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('app-section').classList.remove('hidden');
-            document.getElementById('app-section').classList.add('min-h-screen','flex','flex-col','md:flex-row','w-full');
-            document.getElementById('user-display-name').innerText = currentUser.fullName || currentUser.username;
-            const badge = document.getElementById('user-badge');
-
-            if (currentUser.role === 'superboss') {
-                badge.innerText = 'Super Boss';
-                badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-red-500 text-white';
-                loadUsersList();
-                switchView('users-view');
-            } else if (currentUser.role === 'boss') {
-                badge.innerText = 'Boss';
-                badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-purple-600 text-white';
-                switchView('rop-view');
-            } else {
-                badge.innerText = 'Worker';
-                badge.className = 'text-[10px] uppercase font-bold px-1.5 py-0.5 rounded-md bg-green-600 text-white';
-                switchView('rop-view');
-            }
-        }
-
-        function logout() {
-            currentUser = null;
-            allRegisteredUsers = {};
-            document.getElementById('login-form').reset();
-            document.getElementById('app-section').classList.add('hidden');
-            document.getElementById('login-section').style.display = 'flex';
-        }
-
-        // USERS CRUD & cache
-        async function loadUsersList() {
-            try {
-                const res = await fetchWithAuth(`${baseUrl}users`);
-                const data = await res.json() || {};
-                allRegisteredUsers = {}; // reset
-                const tableBody = document.getElementById('users-table-body');
-                tableBody.innerHTML = '';
-
-                // Add admin always if not present
-                if (!data['khamiid']) {
-                    data['khamiid'] = { fullName: 'Khamid', role: 'superboss', password: '2236' };
-                }
-
-                Object.keys(data).forEach(key => {
-                    const user = data[key] || {};
-                    allRegisteredUsers[key] = { fullName: user.fullName || key, role: user.role || 'worker' };
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-gray-50 transition";
-                    tr.innerHTML = `<td class="py-3 font-medium">${key}</td><td>${user.fullName || ''}</td><td>${user.role || ''}</td>
-                    <td class="text-right">
-                        <button onclick="editUser('${key}','${(user.fullName||'').replace(/'/g,"\\'")}','${user.role||'worker'}','${user.password||''}')" class="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-md mr-2">Tahrir</button>
-                        <button onclick="deleteUser('${key}')" class="text-xs bg-rose-50 text-rose-700 px-2 py-1 rounded-md">O'chir</button>
-                    </td>`;
-                    tableBody.appendChild(tr);
-                });
-            } catch (e) {
-                console.error('loadUsersList error', e);
-            }
-        }
-
-        document.getElementById('user-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
-            const password = document.getElementById('password').value;
-            const fullName = document.getElementById('fullname').value;
-            const role = document.getElementById('role').value;
-            const editId = document.getElementById('edit-id').value;
-
-            if (!username) return alert("Login kiriting!");
-            try {
-                if (editId) {
-                    await fetchWithAuth(`${baseUrl}users/${encodeURIComponent(editId)}`, {
-                        method: 'PATCH',
-                        body: JSON.stringify({ password, fullName, role })
-                    });
-                } else {
-                    await fetchWithAuth(`${baseUrl}users/${encodeURIComponent(username)}`, {
-                        method: 'PUT',
-                        body: JSON.stringify({ password, fullName, role })
-                    });
-                }
-                document.getElementById('user-form').reset();
-                document.getElementById('edit-id').value = '';
-                loadUsersList();
-            } catch (e) {
-                console.error(e);
-                alert("Xatolik yuz berdi!");
-            }
+        const el = $('sarkor-stats'); el.innerHTML='';
+        Object.keys(byWorker).forEach(w=>{
+          const o = byWorker[w];
+          const div = document.createElement('div');
+          div.className='p-2 border-b';
+          div.innerHTML = `<strong>${w}</strong> — Calls: ${o.calls}, Connected: ${o.connected}, Total min: ${Math.round(o.totalSec/60)}`;
+          el.appendChild(div);
         });
+      } catch (e){ console.error(e) }
+    }
 
-        window.editUser = function(id, fullName, role, password) {
-            document.getElementById('edit-id').value = id;
-            document.getElementById('username').value = id;
-            document.getElementById('username').disabled = true;
-            document.getElementById('password').value = password || '';
-            document.getElementById('fullname').value = fullName || '';
-            document.getElementById('role').value = role || 'worker';
-            document.getElementById('cancel-btn').classList.remove('hidden');
-        };
-        window.deleteUser = async function(id) {
-            if (!confirm("O'chirilsinmi?")) return;
-            try {
-                await fetchWithAuth(`${baseUrl}users/${encodeURIComponent(id)}`, { method: 'DELETE' });
-                loadUsersList();
-            } catch (e) {
-                console.error(e);
-                alert("O'chirishda xatolik yuz berdi!");
-            }
-        };
-        document.getElementById('cancel-btn').addEventListener('click', () => {
-            document.getElementById('user-form').reset();
-            document.getElementById('edit-id').value = '';
-            document.getElementById('username').disabled = false;
-            document.getElementById('cancel-btn').classList.add('hidden');
+    // -------------------------
+    // ROP: per-date per-worker
+    // -------------------------
+    async function saveRop(){
+      const date = $('date-start').value || new Date().toISOString().split('T')[0];
+      const worker = $('rop-worker').value.trim() || (window.currentUser && window.currentUser.username);
+      if (!worker) return alert('Worker kiriting');
+      const ob = parseInt($('rop-ob').value) || 0;
+      const akt = parseInt($('rop-akt').value) || 0;
+      const brak = parseInt($('rop-brak').value) || 0;
+      const ned = parseInt($('rop-ned').value) || 0;
+      const zakaz = parseInt($('rop-zakaz').value) || 0;
+      const payload = { ob, akt, brak, ned, zakaz, ts: Date.now(), enteredBy: window.currentUser && window.currentUser.username };
+      try {
+        await fetchWithAuth(baseUrl + `rop_reports/${encodeURIComponent(date)}/${encodeURIComponent(worker)}`, { method:'PUT', body: JSON.stringify(payload) });
+        alert('ROP saqlandi');
+        loadRopTable();
+      } catch (e){ console.error(e) }
+    }
+
+    async function loadRopTable(){
+      const dateStart = $('date-start').value || new Date().toISOString().split('T')[0];
+      const dateEnd = $('date-end').value || dateStart;
+      try {
+        const res = await fetchWithAuth(baseUrl + 'rop_reports');
+        const all = await res.json() || {};
+        const container = $('rop-table'); container.innerHTML='';
+        const table = document.createElement('table'); table.className='w-full text-sm';
+        table.innerHTML = `<thead><tr><th>Worker</th><th>Date</th><th>Ob</th><th>Akt %</th><th>Brak %</th><th>Ned %</th><th>Zakaz %</th></tr></thead>`;
+        const tbody = document.createElement('tbody');
+        Object.keys(all).sort().forEach(date=>{
+          if (date < dateStart || date > dateEnd) return;
+          const perDate = all[date] || {};
+          Object.keys(perDate).forEach(w=>{
+            const r = perDate[w] || {};
+            const ob = parseInt(r.ob||0);
+            const aktPct = ob>0?Math.round((r.akt/ob)*100):0;
+            const brakPct = ob>0?Math.round((r.brak/ob)*100):0;
+            const nedPct = ob>0?Math.round((r.ned/ob)*100):0;
+            const zakPct = ob>0?Math.round((r.zakaz/ob)*100):0;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td class="py-1">${w}</td><td>${date}</td><td>${ob}</td><td>${aktPct}%</td><td>${brakPct}%</td><td>${nedPct}%</td><td>${zakPct}%</td>`;
+            tbody.appendChild(tr);
+          });
         });
+        table.appendChild(tbody); container.appendChild(table);
+      } catch (e){ console.error(e) }
+    }
 
-        // ===== ROP logic =====
-        function initRopView() {
-            // defaults
-            const dateIn = document.getElementById('rop-date');
-            const dateEndIn = document.getElementById('rop-date-end');
-            if (!dateIn.value) dateIn.value = toDateIso(new Date());
-            if (!dateEndIn.value) dateEndIn.value = toDateIso(new Date());
-            populateRopWorkerSelect();
-            loadRopReports();
-        }
+    // -------------------------
+    // Target: branches and targets
+    // -------------------------
+    async function addBranch(){
+      const clinic = $('clinic-select').value;
+      const id = $('branch-id').value.trim();
+      const name = $('branch-name').value.trim();
+      if (!clinic || !id || !name) return alert('Clinic, branchId va nom kiriting');
+      try {
+        await fetchWithAuth(baseUrl + `branches/${encodeURIComponent(clinic)}/${encodeURIComponent(id)}`, { method:'PUT', body: JSON.stringify({ id, name, createdAt: Date.now() }) });
+        $('branch-name').value=''; $('branch-id').value='';
+        loadBranches();
+      } catch (e){ console.error(e) }
+    }
 
-        async function populateRopWorkerSelect() {
-            // Ensure users cache is filled
-            try {
-                if (Object.keys(allRegisteredUsers).length === 0) {
-                    const res = await fetchWithAuth(`${baseUrl}users`);
-                    const data = await res.json() || {};
-                    Object.keys(data).forEach(k => {
-                        allRegisteredUsers[k] = { fullName: data[k].fullName || k, role: data[k].role || 'worker' };
-                    });
-                }
-            } catch (e) {
-                console.warn('populateRopWorkerSelect: could not load users', e);
-            }
-            const sel = document.getElementById('rop-worker-select');
-            sel.innerHTML = '';
-            // If currentUser is worker — only allow them
-            if (currentUser && currentUser.role === 'worker') {
-                sel.innerHTML = `<option value="${currentUser.username}">${allRegisteredUsers[currentUser.username]?.fullName || currentUser.username}</option>`;
-                sel.disabled = true;
-            } else {
-                // Admin or boss -> can choose any worker (exclude supervisiors optional)
-                sel.innerHTML = `<option value="">-- Worker tanlang --</option>`;
-                Object.keys(allRegisteredUsers).forEach(u => {
-                    const meta = allRegisteredUsers[u];
-                    sel.innerHTML += `<option value="${u}">${meta.fullName} (${u})</option>`;
-                });
-                sel.disabled = false;
-            }
-        }
-
-        function calcLiveRopForm() {
-            const ob = parseInt(document.getElementById('rop-in-ob').value) || 0;
-            const akt = parseInt(document.getElementById('rop-in-akt').value) || 0;
-            const brak = parseInt(document.getElementById('rop-in-brak').value) || 0;
-            const ned = parseInt(document.getElementById('rop-in-ned').value) || 0;
-            const zakaz = parseInt(document.getElementById('rop-in-zakaz').value) || 0;
-
-            const fcAkt = ob > 0 ? Math.round((akt / ob) * 100) : 0;
-            const fcBrak = ob > 0 ? Math.round((brak / ob) * 100) : 0;
-            const fcNed = ob > 0 ? Math.round((ned / ob) * 100) : 0;
-            const fcZakaz = ob > 0 ? Math.round((zakaz / ob) * 100) : 0;
-
-            document.getElementById('fc-akt').innerText = fcAkt + '%';
-            document.getElementById('fc-brak').innerText = fcBrak + '%';
-            document.getElementById('fc-ned').innerText = fcNed + '%';
-            document.getElementById('fc-zakaz').innerText = fcZakaz + '%';
-        }
-
-        document.getElementById('rop-data-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            // date for this report (we use rop-date input as the day)
-            const date = document.getElementById('rop-date').value || toDateIso(new Date());
-            // enforce worker: if current user is worker, always submit under their username
-            let worker = document.getElementById('rop-worker-select').value;
-            if (currentUser && currentUser.role === 'worker') {
-                worker = currentUser.username;
-            }
-            if (!worker) return alert('Worker tanlang!');
-            const ob = parseInt(document.getElementById('rop-in-ob').value) || 0;
-            const akt = parseInt(document.getElementById('rop-in-akt').value) || 0;
-            const brak = parseInt(document.getElementById('rop-in-brak').value) || 0;
-            const ned = parseInt(document.getElementById('rop-in-ned').value) || 0;
-            const zakaz = parseInt(document.getElementById('rop-in-zakaz').value) || 0;
-
-            const payload = { ob, akt, brak, ned, zakaz, worker, ts: Date.now() };
-
-            const editId = document.getElementById('rop-edit-id').value;
-
-            try {
-                // If editing, ensure user has rights
-                if (editId) {
-                    // Only owner or boss/superboss can edit
-                    if (!(currentUser && (currentUser.username === editId || currentUser.role === 'boss' || currentUser.role === 'superboss'))) {
-                        return alert('Siz bu hisobotni tahrirlashga haqli emassiz.');
-                    }
-                }
-
-                await fetchWithAuth(`${baseUrl}rop_reports/${encodeURIComponent(date)}/${encodeURIComponent(worker)}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(payload)
-                });
-
-                if (editId) {
-                    alert('Hisobot yangilandi ✅');
-                } else {
-                    alert('Hisobot saqlandi ✅');
-                }
-
-                document.getElementById('rop-data-form').reset();
-                document.getElementById('rop-edit-id').value = '';
-                // restore worker select disabled/enabled according to role
-                await populateRopWorkerSelect();
-                loadRopReports();
-            } catch (err) {
-                console.error('save rop error', err);
-                alert('Saqlashda xatolik yuz berdi!');
-            }
+    async function loadBranches(){
+      const clinic = $('clinic-select').value;
+      if (!clinic) return;
+      try {
+        const res = await fetchWithAuth(baseUrl + `branches/${encodeURIComponent(clinic)}`);
+        const branches = await res.json() || {};
+        const el = $('branches-list'); el.innerHTML='';
+        Object.keys(branches).forEach(b=>{
+          const bdata = branches[b] || {};
+          const div = document.createElement('div'); div.className='p-2 border-b';
+          div.innerHTML = `<strong>${b}</strong> — ${bdata.name || ''} <button onclick="openBranchTarget('${b}')" class="ml-2 text-xs bg-blue-100 px-2 rounded">Open</button>`;
+          el.appendChild(div);
         });
+      } catch (e){ console.error(e) }
+    }
 
-        // load, filter and render rop reports across date range
-        async function loadRopReports() {
-            const dateStart = document.getElementById('rop-date').value || toDateIso(new Date());
-            const dateEnd = document.getElementById('rop-date-end').value || dateStart;
+    async function openBranchTarget(branchId){
+      const clinic = $('clinic-select').value;
+      const expense = prompt('Sarflangan pul (miqdor):', '0');
+      if (expense === null) return;
+      const leads = prompt('Lead soni:', '0');
+      if (leads === null) return;
+      const ob = prompt('Jami obrobotka:', '0');
+      const akt = prompt('Aktiv:', '0');
+      const brak = prompt('Brak:', '0');
+      const ned = prompt('Nedozvon:', '0');
+      const zakaz = prompt('Zakaz:', '0');
+      const period = $('date-start').value || new Date().toISOString().split('T')[0];
+      const payload = { expense: Number(expense), leads: Number(leads), ob: Number(ob), akt: Number(akt), brak: Number(brak), ned: Number(ned), zakaz: Number(zakaz), ts: Date.now() };
+      try {
+        await fetchWithAuth(baseUrl + `target/${encodeURIComponent(clinic)}/${encodeURIComponent(period)}/${encodeURIComponent(branchId)}`, { method:'PUT', body: JSON.stringify(payload) });
+        alert('Target saqlandi');
+      } catch (e){ console.error(e) }
+    }
 
-            try {
-                const res = await fetchWithAuth(`${baseUrl}rop_reports`);
-                const all = await res.json() || {};
+    // -------------------------
+    // Attendance
+    // -------------------------
+    async function saveAttendance(){
+      const date = $('date-start').value || new Date().toISOString().split('T')[0];
+      const worker = $('att-worker').value.trim() || (window.currentUser && window.currentUser.username);
+      const inTime = $('att-in').value;
+      const outTime = $('att-out').value;
+      if (!worker) return alert('Worker kiritilsin');
+      const payload = { worker, inTime, outTime, ts: Date.now() };
+      try {
+        const id = 'att_' + Date.now();
+        await fetchWithAuth(baseUrl + `attendance/${encodeURIComponent(date)}/${encodeURIComponent(worker)}/${id}`, { method:'PUT', body: JSON.stringify(payload) });
+        alert('Davomat saqlandi');
+        loadAttendanceList();
+      } catch (e){ console.error(e) }
+    }
 
-                // totals
-                let totalOb = 0, totalAkt = 0, totalBrak = 0, totalNed = 0, totalZakaz = 0;
+    async function loadAttendanceList(){
+      const dateStart = $('date-start').value || new Date().toISOString().split('T')[0];
+      const res = await fetchWithAuth(baseUrl + `attendance/${encodeURIComponent(dateStart)}`);
+      const data = await res.json() || {};
+      const el = $('attendance-list'); el.innerHTML='';
+      Object.keys(data).forEach(worker=>{
+        const items = data[worker] || {};
+        Object.keys(items).forEach(id=>{
+          const r = items[id];
+          const div = document.createElement('div'); div.className='p-2 border-b';
+          div.innerText = `${r.worker} — IN: ${r.inTime || '-'} OUT: ${r.outTime || '-'}`;
+          el.appendChild(div);
+        });
+      });
+    }
 
-                // collect rows per worker (latest within date range will be shown per date)
-                const rows = []; // { date, worker, ob, akt, ... }
+    // -------------------------
+    // Payroll
+    // -------------------------
+    async function savePayroll(){
+      const month = $('pay-month').value.trim();
+      const worker = $('pay-worker').value.trim();
+      if (!month || !worker) return alert('Oy va worker kiritilsin');
+      const base = Number($('pay-base').value) || 0;
+      const bonus = Number($('pay-bonus').value) || 0;
+      const payload = { base, bonus, total: base+bonus, ts: Date.now(), by: window.currentUser && window.currentUser.username };
+      try {
+        await fetchWithAuth(baseUrl + `payroll/${encodeURIComponent(month)}/${encodeURIComponent(worker)}`, { method:'PUT', body: JSON.stringify(payload) });
+        alert('Payroll saqlandi'); loadPayrollList();
+      } catch (e){ console.error(e) }
+    }
 
-                Object.keys(all).sort().forEach(date => {
-                    if (date >= dateStart && date <= dateEnd) {
-                        const perDate = all[date] || {};
-                        Object.keys(perDate).forEach(worker => {
-                            const r = perDate[worker] || {};
-                            const ob = parseInt(r.ob || 0);
-                            const akt = parseInt(r.akt || 0);
-                            const brak = parseInt(r.brak || 0);
-                            const ned = parseInt(r.ned || 0);
-                            const zakaz = parseInt(r.zakaz || 0);
+    async function loadPayrollList(){
+      const el = $('payroll-list'); el.innerHTML='';
+      try {
+        const res = await fetchWithAuth(baseUrl + 'payroll');
+        const all = await res.json() || {};
+        Object.keys(all).forEach(month=>{
+          const m = all[month] || {};
+          const div = document.createElement('div'); div.className='p-2 border-b';
+          div.innerHTML = `<strong>${month}</strong>`;
+          Object.keys(m).forEach(worker=>{
+            const p = m[worker];
+            const sub = document.createElement('div'); sub.className='pl-4';
+            sub.innerText = `${worker} — ${p.total} (base:${p.base}, bonus:${p.bonus})`;
+            div.appendChild(sub);
+          });
+          el.appendChild(div);
+        });
+      } catch (e){ console.error(e) }
+    }
 
-                            totalOb += ob;
-                            totalAkt += akt;
-                            totalBrak += brak;
-                            totalNed += ned;
-                            totalZakaz += zakaz;
+    // -------------------------
+    // Utils
+    // -------------------------
+    function refreshCurrentView(){
+      const active = document.querySelector('.view-section.active');
+      if (!active) return;
+      if (active.id === 'crm-live') loadFunnelsAndLeads();
+      if (active.id === 'sarkor') loadSarkorStats();
+      if (active.id === 'rop') loadRopTable();
+      if (active.id === 'target') loadBranches();
+      if (active.id === 'davomat') loadAttendanceList();
+    }
 
-                            rows.push({ date, worker, ob, akt, brak, ned, zakaz });
-                        });
-                    }
-                });
-
-                // update totals cards
-                document.getElementById('rop-total-ob').innerText = totalOb;
-                document.getElementById('rop-total-akt').innerText = totalAkt;
-                document.getElementById('rop-total-brak').innerText = totalBrak;
-                document.getElementById('rop-total-ned').innerText = totalNed;
-                document.getElementById('rop-total-zakaz').innerText = totalZakaz;
-
-                // update percentages
-                document.getElementById('rop-total-akt-pct').innerText = (totalOb > 0 ? Math.round((totalAkt/totalOb)*100) : 0) + '%';
-                document.getElementById('rop-total-brak-pct').innerText = (totalOb > 0 ? Math.round((totalBrak/totalOb)*100) : 0) + '%';
-                document.getElementById('rop-total-ned-pct').innerText = (totalOb > 0 ? Math.round((totalNed/totalOb)*100) : 0) + '%';
-                document.getElementById('rop-total-zakaz-pct').innerText = (totalOb > 0 ? Math.round((totalZakaz/totalOb)*100) : 0) + '%';
-
-                // render table grouped by worker (latest record first by date)
-                rows.sort((a,b) => a.worker.localeCompare(b.worker) || b.date.localeCompare(a.date));
-
-                const tbody = document.getElementById('rop-table-body');
-                tbody.innerHTML = '';
-
-                rows.forEach(r => {
-                    // permissions: worker can only edit/delete their own rows; boss and superboss can also edit/delete
-                    const canEdit = (currentUser && (currentUser.role === 'superboss' || currentUser.role === 'boss' || currentUser.username === r.worker));
-                    const ob = r.ob || 0;
-                    const aktPct = ob > 0 ? Math.round((r.akt/ob)*100) : 0;
-                    const brakPct = ob > 0 ? Math.round((r.brak/ob)*100) : 0;
-                    const nedPct = ob > 0 ? Math.round((r.ned/ob)*100) : 0;
-                    const zakazPct = ob > 0 ? Math.round((r.zakaz/ob)*100) : 0;
-
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 transition font-medium text-gray-700";
-                    tr.innerHTML = `
-                        <td class="py-3 font-bold text-gray-900">${allRegisteredUsers[r.worker]?.fullName || r.worker}</td>
-                        <td class="font-semibold">${ob}</td>
-                        <td>${aktPct}%</td>
-                        <td>${brakPct}%</td>
-                        <td>${nedPct}%</td>
-                        <td>${zakazPct}%</td>
-                        <td class="text-right">
-                            ${canEdit ? `<button class="text-xs bg-yellow-50 text-yellow-700 px-2 py-1 rounded-md mr-2" onclick="editRop('${r.date}','${r.worker}')">Tahrir</button>
-                                         <button class="text-xs bg-rose-50 text-rose-700 px-2 py-1 rounded-md" onclick="deleteRop('${r.date}','${r.worker}')">O'chir</button>`
-                                     : '<span class="text-xs text-gray-400 px-2 py-1 rounded-md">—</span>'}
-                        </td>`;
-                    tbody.appendChild(tr);
-                });
-
-            } catch (e) {
-                console.error('loadRopReports error', e);
-            }
-        }
-
-        // edit rop: load particular date/worker into form
-        async function editRop(date, worker) {
-            try {
-                // check permission first
-                if (!(currentUser && (currentUser.role === 'superboss' || currentUser.role === 'boss' || currentUser.username === worker))) {
-                    return alert('Siz bu hisobotni tahrirlashga haqli emassiz.');
-                }
-
-                const res = await fetchWithAuth(`${baseUrl}rop_reports/${encodeURIComponent(date)}/${encodeURIComponent(worker)}`);
-                const data = await res.json();
-                if (!data) return alert('Topilmadi');
-                // set date inputs to the selection date for editing context
-                document.getElementById('rop-date').value = date;
-                // prefill worker select and disable if current is worker
-                if (currentUser.role === 'worker') {
-                    populateRopWorkerSelect();
-                } else {
-                    await populateRopWorkerSelect();
-                    document.getElementById('rop-worker-select').value = worker;
-                }
-
-                document.getElementById('rop-in-ob').value = data.ob || 0;
-                document.getElementById('rop-in-akt').value = data.akt || 0;
-                document.getElementById('rop-in-brak').value = data.brak || 0;
-                document.getElementById('rop-in-ned').value = data.ned || 0;
-                document.getElementById('rop-in-zakaz').value = data.zakaz || 0;
-                document.getElementById('rop-edit-id').value = worker; // store worker as edit id
-                calcLiveRopForm();
-                // scroll to form
-                document.getElementById('rop-form-card').scrollIntoView({behavior:'smooth', block:'center'});
-            } catch (e) {
-                console.error('editRop error', e);
-            }
-        }
-
-        async function deleteRop(date, worker) {
-            // check permission first
-            if (!(currentUser && (currentUser.role === 'superboss' || currentUser.role === 'boss' || currentUser.username === worker))) {
-                return alert('Siz bu hisobotni o\'chirishga haqli emassiz.');
-            }
-
-            if (!confirm('Ushbu hisobotni o`chirmoqchimisiz?')) return;
-            try {
-                await fetchWithAuth(`${baseUrl}rop_reports/${encodeURIComponent(date)}/${encodeURIComponent(worker)}`, { method: 'DELETE' });
-                alert('O`chirildi ✅');
-                loadRopReports();
-            } catch (e) {
-                console.error('deleteRop error', e);
-                alert('O`chirishda xatolik yuz berdi!');
-            }
-        }
-
-        // small helpers: animate numbers (optional)
-        function animateValue(el, start, end, duration = 700) {
-            if (!el) return;
-            const range = end - start;
-            const minTimer = 16;
-            const stepTime = Math.max(Math.floor(duration / Math.abs(range || 1)), minTimer);
-            let current = start;
-            const increment = range > 0 ? 1 : -1;
-            const timer = setInterval(() => {
-                current += increment;
-                el.innerText = current;
-                el.classList.add('grow');
-                setTimeout(() => el.classList.remove('grow'), 200);
-                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
-                    clearInterval(timer);
-                    el.innerText = end;
-                }
-            }, stepTime);
-        }
-
-        // ===== SARKOR: totals & diapazon =====
-        function initSarkorView() {
-            const startIn = document.getElementById('sarkor-date-start');
-            const endIn = document.getElementById('sarkor-date-end');
-            if (!startIn.value) startIn.value = toDateIso(new Date());
-            if (!endIn.value) endIn.value = toDateIso(new Date());
-            loadSarkorTotals();
-        }
-
-        async function loadSarkorTotals() {
-            const dateStart = document.getElementById('sarkor-date-start').value || toDateIso(new Date());
-            const dateEnd = document.getElementById('sarkor-date-end').value || dateStart;
-
-            try {
-                const res = await fetchWithAuth(`${baseUrl}rop_reports`);
-                const all = await res.json() || {};
-
-                // totals
-                let totalOb = 0, totalAkt = 0, totalBrak = 0, totalNed = 0, totalZakaz = 0;
-                const byWorker = {}; // worker -> sums
-
-                Object.keys(all).sort().forEach(date => {
-                    if (date >= dateStart && date <= dateEnd) {
-                        const perDate = all[date] || {};
-                        Object.keys(perDate).forEach(worker => {
-                            const r = perDate[worker] || {};
-                            const ob = parseInt(r.ob || 0);
-                            const akt = parseInt(r.akt || 0);
-                            const brak = parseInt(r.brak || 0);
-                            const ned = parseInt(r.ned || 0);
-                            const zakaz = parseInt(r.zakaz || 0);
-
-                            totalOb += ob;
-                            totalAkt += akt;
-                            totalBrak += brak;
-                            totalNed += ned;
-                            totalZakaz += zakaz;
-
-                            if (!byWorker[worker]) byWorker[worker] = { ob:0, akt:0, brak:0, ned:0, zakaz:0 };
-                            byWorker[worker].ob += ob;
-                            byWorker[worker].akt += akt;
-                            byWorker[worker].brak += brak;
-                            byWorker[worker].ned += ned;
-                            byWorker[worker].zakaz += zakaz;
-                        });
-                    }
-                });
-
-                // update cards
-                document.getElementById('sarkor-total-ob').innerText = totalOb;
-                document.getElementById('sarkor-total-akt').innerText = totalAkt;
-                document.getElementById('sarkor-total-brak').innerText = totalBrak;
-                document.getElementById('sarkor-total-ned').innerText = totalNed;
-                document.getElementById('sarkor-total-zakaz').innerText = totalZakaz;
-
-                document.getElementById('sarkor-total-akt-pct').innerText = (totalOb > 0 ? Math.round((totalAkt/totalOb)*100) : 0) + '%';
-                document.getElementById('sarkor-total-brak-pct').innerText = (totalOb > 0 ? Math.round((totalBrak/totalOb)*100) : 0) + '%';
-                document.getElementById('sarkor-total-ned-pct').innerText = (totalOb > 0 ? Math.round((totalNed/totalOb)*100) : 0) + '%';
-                document.getElementById('sarkor-total-zakaz-pct').innerText = (totalOb > 0 ? Math.round((totalZakaz/totalOb)*100) : 0) + '%';
-
-                // render table
-                const tbody = document.getElementById('sarkor-table-body');
-                tbody.innerHTML = '';
-                Object.keys(byWorker).sort().forEach(worker => {
-                    const w = byWorker[worker];
-                    const ob = w.ob;
-                    const aktPct = ob > 0 ? Math.round((w.akt/ob)*100) : 0;
-                    const brakPct = ob > 0 ? Math.round((w.brak/ob)*100) : 0;
-                    const nedPct = ob > 0 ? Math.round((w.ned/ob)*100) : 0;
-                    const zakazPct = ob > 0 ? Math.round((w.zakaz/ob)*100) : 0;
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50 transition font-medium text-gray-700";
-                    tr.innerHTML = `
-                        <td class="py-3 font-semibold">${allRegisteredUsers[worker]?.fullName || worker}</td>
-                        <td class="font-semibold">${ob}</td>
-                        <td>${aktPct}%</td>
-                        <td>${brakPct}%</td>
-                        <td>${nedPct}%</td>
-                        <td>${zakazPct}%</td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-
-            } catch (e) {
-                console.error('loadSarkorTotals error', e);
-            }
-        }
-
-        // initial load of registered users map (for labels)
-        (async function prefetchUsers() {
-            try {
-                const res = await fetchWithAuth(`${baseUrl}users`);
-                const data = await res.json() || {};
-                Object.keys(data).forEach(k => allRegisteredUsers[k] = { fullName: data[k].fullName || k, role: data[k].role || 'worker' });
-            } catch (e) {
-                // ignore
-            }
-        })();
-
-        // On load: show login or app according to session (no persistent session in this simple example)
-        // But if you want to auto-login, implement here.
-
-    </script>
+    // initial prefetch (clinics)
+    (async function prefetch(){
+      try { await ensureAuth(); await populateClinicSelect(); } catch(e){ console.warn(e) }
+    })();
+  </script>
 </body>
 </html>
