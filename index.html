@@ -1,1 +1,666 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SMS MED — Hisobotlar (MVP, single-file)</title>
 
+  <!-- Flatpickr (calendar) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    /* ===== Inline styles (minimal) ===== */
+    body { font-family: Arial, sans-serif; margin:0; background:#f6f8fa; color:#222; }
+    .topbar { background:#0b6886; color:white; padding:12px 20px; display:flex; justify-content:space-between; align-items:center; }
+    .container { display:flex; gap:20px; padding:20px; }
+    .sidebar { width:300px; }
+    .card { background:white; padding:12px; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.08); margin-bottom:12px; }
+    .modules ul { list-style:none; padding:0; margin:0; }
+    .module-item { padding:8px; cursor:pointer; border-radius:4px; }
+    .module-item:hover { background:#eef6fa; }
+    .main { flex:1; min-height:70vh; }
+    .calendar-row { margin-top:8px; }
+    .modal { position:fixed; left:0; top:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; }
+    .modal-content { background:white; padding:18px; border-radius:6px; width:90%; max-width:680px; position:relative; max-height:90vh; overflow:auto; }
+    #modal-close { position:absolute; right:8px; top:8px; }
+    .funnel { border:1px dashed #ccc; padding:8px; margin-bottom:8px; background:#fafafa; }
+    input, select, textarea, button { font:inherit; padding:6px; margin:6px 0; width:100%; box-sizing:border-box; }
+    label { display:block; margin-top:8px; }
+    .small { width:auto; display:inline-block; }
+    .top-actions { display:flex; gap:10px; align-items:center; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <h1 style="margin:0;font-size:18px;">SMS MED — Hisobotlar</h1>
+    <div id="auth-area" class="top-actions">
+      <span id="user-email" style="font-size:14px;"></span>
+      <button id="btn-logout" style="display:none">Chiqish</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <aside class="sidebar">
+      <div id="admin-panel-controls" class="card">
+        <h3 style="margin-top:0">Admin Controls</h3>
+        <button id="btn-open-add-clinic">Klinika qo'shish</button>
+        <button id="btn-open-add-worker">Ishchi qo'shish</button>
+        <button id="btn-open-add-funnel">Voronka qo'shish</button>
+      </div>
+
+      <nav class="modules card">
+        <h3 style="margin-top:0">Modullar</h3>
+        <ul id="module-list">
+          <li data-module="crm_live" class="module-item">1. CRM Live</li>
+          <li data-module="sarkor" class="module-item">2. Sarkor</li>
+          <li data-module="rop" class="module-item">3. ROP hisobot</li>
+          <li data-module="target" class="module-item">4. Target</li>
+          <li data-module="davomat" class="module-item">5. Davomat</li>
+          <li data-module="oylik" class="module-item">6. Oylik</li>
+        </ul>
+      </nav>
+
+      <div class="card">
+        <h3 style="margin-top:0">Tanlangan klinika</h3>
+        <select id="clinic-select"><option value="">— Klinikani tanlang —</option></select>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Ishchilar</h3>
+        <ul id="worker-list" style="padding-left:0;list-style:none;margin:0;"></ul>
+      </div>
+    </aside>
+
+    <main class="main card">
+      <div id="module-header">
+        <h2 id="module-title" style="margin-top:0">Modulni tanlang</h2>
+      </div>
+
+      <div id="module-controls" class="card" style="display:none">
+        <div id="target-branch-filter" style="display:none">
+          <label>Filial tanlash (Target uchun):</label>
+          <select id="branch-select"><option value="">— Filial —</option></select>
+        </div>
+
+        <div class="calendar-row">
+          <label for="date-picker">Kalendar — bitta yoki interval tanlash:</label>
+          <input id="date-picker" placeholder="Kun yoki interval tanlang" readonly />
+        </div>
+      </div>
+
+      <div id="module-body" class="card">
+        <!-- Module-specific forms will be injected here -->
+        <p>Panelga kirib, modul tanlang yoki avval kirish qiling.</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal" style="display:none">
+    <div class="modal-content">
+      <button id="modal-close">X</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Flatpickr -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+  <!-- Firebase + App logic in a single module -->
+  <script type="module">
+    // ====== Firebase imports (v9 modular) ======
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+    import {
+      getFirestore,
+      collection, doc, setDoc, addDoc, getDocs, getDoc, query, where,
+      onSnapshot, updateDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    /* ====== REPLACE THESE VALUES with your Firebase project's config ======
+       You can find this in Firebase Console -> Project settings -> SDK setup.
+       Example values shown earlier in conversation — replace with YOURS.
+    */
+    const firebaseConfig = {
+      apiKey: "AIzaSyBERC96DsIZb2uUV3lyQvfm-IAXXB8dBcU",
+      authDomain: "hisobotbykhamiid.firebaseapp.com",
+      projectId: "hisobotbykhamiid",
+      storageBucket: "hisobotbykhamiid.appspot.com", // ensure correct format
+      messagingSenderId: "978712148272",
+      appId: "1:978712148272:web:3a8b20cb61952eef05b0f5",
+      measurementId: "G-TESQYZ3XMK"
+    };
+    // ======================================================================
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ===== UI refs =====
+    const btnLogout = document.getElementById('btn-logout');
+    const userEmailSpan = document.getElementById('user-email');
+
+    const clinicSelect = document.getElementById('clinic-select');
+    const workerListEl = document.getElementById('worker-list');
+    const moduleList = document.getElementById('module-list');
+    const moduleTitle = document.getElementById('module-title');
+    const moduleControls = document.getElementById('module-controls');
+    const moduleBody = document.getElementById('module-body');
+    const datePickerInput = document.getElementById('date-picker');
+    const targetBranchFilter = document.getElementById('target-branch-filter');
+    const branchSelect = document.getElementById('branch-select');
+
+    const modal = document.getElementById('modal');
+    const modalBody = document.getElementById('modal-body');
+    const modalClose = document.getElementById('modal-close');
+
+    const btnAddClinic = document.getElementById('btn-open-add-clinic');
+    const btnAddWorker = document.getElementById('btn-open-add-worker');
+    const btnAddFunnel = document.getElementById('btn-open-add-funnel');
+
+    // state
+    let currentUser = null;
+    let currentUserDoc = null;
+    let currentClinicId = null;
+    let currentModule = null;
+
+    // Setup flatpickr for the main picker
+    flatpickr(datePickerInput, { mode: "range", dateFormat: "Y-m-d" });
+
+    // Auth listeners
+    btnLogout.addEventListener('click', () => signOut(auth));
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        userEmailSpan.textContent = user.email;
+        btnLogout.style.display = 'inline-block';
+        const uDoc = await getDoc(doc(db, 'users', user.uid));
+        currentUserDoc = uDoc.exists() ? uDoc.data() : null;
+        await loadClinics();
+        await loadWorkers();
+      } else {
+        currentUser = null;
+        currentUserDoc = null;
+        userEmailSpan.textContent = '';
+        btnLogout.style.display = 'none';
+        showAuthModal();
+      }
+    });
+
+    // module nav
+    moduleList.addEventListener('click', (e) => {
+      const li = e.target.closest('.module-item');
+      if (!li) return;
+      currentModule = li.dataset.module;
+      moduleTitle.textContent = li.textContent;
+      moduleControls.style.display = 'block';
+      targetBranchFilter.style.display = (currentModule === 'target') ? 'block' : 'none';
+      renderModuleBody();
+    });
+
+    clinicSelect.addEventListener('change', (e) => {
+      currentClinicId = e.target.value || null;
+      loadWorkers();
+      loadBranches();
+      renderModuleBody();
+    });
+
+    modalClose.addEventListener('click', () => modal.style.display = 'none');
+
+    btnAddClinic.addEventListener('click', openAddClinic);
+    btnAddWorker.addEventListener('click', openAddWorker);
+    btnAddFunnel.addEventListener('click', openAddFunnel);
+
+    // ====== AUTH MODAL ======
+    function showAuthModal() {
+      modalBody.innerHTML = `
+        <h3>Kirish / Ro'yxatdan o'tish</h3>
+        <input id="auth-email" placeholder="Email" />
+        <input id="auth-pass" placeholder="Parol" type="password" />
+        <div style="display:flex;gap:8px;">
+          <button id="auth-login" class="small">Kirish</button>
+          <button id="auth-register" class="small">Ro'yxatdan o'tish</button>
+        </div>
+        <p style="font-size:13px;color:#666">Admin qilish uchun users koleksiyasiga role: "admin" qo'lda qo'shing.</p>
+      `;
+      modal.style.display = 'flex';
+      document.getElementById('auth-login').addEventListener('click', async () => {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        try {
+          await signInWithEmailAndPassword(auth, email, pass);
+          modal.style.display = 'none';
+        } catch (e) {
+          alert('Kirish xatosi: ' + e.message);
+        }
+      });
+      document.getElementById('auth-register').addEventListener('click', async () => {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, email, pass);
+          await setDoc(doc(db, 'users', cred.user.uid), {
+            email, role: 'operator', clinicIds: [], createdAt: serverTimestamp()
+          });
+          alert('Ro\'yxatdan o\'tildi (operator rolida).');
+          modal.style.display = 'none';
+        } catch (e) {
+          alert('Ro\'yxatdan o\'tishda xato: ' + e.message);
+        }
+      });
+    }
+
+    // ====== Load clinics, branches, workers ======
+    async function loadClinics() {
+      clinicSelect.innerHTML = `<option value="">— Klinikani tanlang —</option>`;
+      const snap = await getDocs(collection(db, 'clinics'));
+      snap.forEach(d => {
+        const op = document.createElement('option');
+        op.value = d.id;
+        op.textContent = d.data().name;
+        clinicSelect.appendChild(op);
+      });
+    }
+
+    async function loadBranches() {
+      branchSelect.innerHTML = `<option value="">— Filial tanlang —</option>`;
+      if (!currentClinicId) return;
+      const snap = await getDocs(collection(db, 'clinics', currentClinicId, 'branches'));
+      snap.forEach(d => {
+        const op = document.createElement('option');
+        op.value = d.id;
+        op.textContent = d.data().name;
+        branchSelect.appendChild(op);
+      });
+    }
+
+    async function loadWorkers() {
+      workerListEl.innerHTML = '';
+      if (!currentUser) return;
+      const usersRef = collection(db, 'users');
+      if (currentUserDoc && currentUserDoc.role === 'admin') {
+        const all = await getDocs(usersRef);
+        all.forEach(d => addWorkerListItem(d.id, d.data()));
+      } else if (currentUserDoc && currentUserDoc.role === 'boss') {
+        const q = query(usersRef, where('clinicIds', 'array-contains', currentClinicId));
+        const snap = await getDocs(q);
+        snap.forEach(d => addWorkerListItem(d.id, d.data()));
+      } else if (currentUserDoc && currentUserDoc.role === 'operator') {
+        const d = await getDoc(doc(db, 'users', currentUser.uid));
+        if (d.exists()) addWorkerListItem(d.id, d.data());
+      } else {
+        // fallback: show none
+      }
+    }
+
+    function addWorkerListItem(id, data) {
+      const li = document.createElement('li');
+      li.textContent = `${data.email || data.name || id} — ${data.role || 'operator'}`;
+      li.style.cursor = 'pointer';
+      li.dataset.uid = id;
+      li.addEventListener('click', () => openWorkerCalendar(id, data));
+      workerListEl.appendChild(li);
+    }
+
+    // ===== Worker calendar modal =====
+    function openWorkerCalendar(uid, data) {
+      modalBody.innerHTML = `
+        <h3>${data.email || data.name} — Kalendar</h3>
+        <p>Kerakli kundagi statistikani kiriting yoki tahrirlang.</p>
+        <input id="worker-date" placeholder="Tanlang" readonly />
+        <div id="worker-stats">
+          <label>Qo'ng'iroqlar soni: <input id="stat-calls" type="number" value="0"></label>
+          <label>Ulanganlar: <input id="stat-connected" type="number" value="0"></label>
+          <label>Suhbat daqiqasi (min): <input id="stat-min" type="number" value="0"></label>
+          <label>Order soni: <input id="stat-orders" type="number" value="0"></label>
+        </div>
+        <button id="save-worker-stat">Saqlash</button>
+      `;
+      modal.style.display = 'flex';
+      flatpickr("#worker-date", {dateFormat: "Y-m-d"});
+      document.getElementById('save-worker-stat').addEventListener('click', async () => {
+        const date = document.getElementById('worker-date').value;
+        if (!date || !currentClinicId) { alert('Klinika va sana kerak'); return; }
+        const payload = {
+          userId: uid,
+          date,
+          calls: Number(document.getElementById('stat-calls').value),
+          connected: Number(document.getElementById('stat-connected').value),
+          minutes: Number(document.getElementById('stat-min').value),
+          orders: Number(document.getElementById('stat-orders').value),
+          updatedAt: serverTimestamp()
+        };
+        // store under clinics/{clinicId}/workers/{uid}/daily/{date}
+        await setDoc(doc(db, 'clinics', currentClinicId, 'workers', uid, 'daily', date), payload);
+        alert('Saqlangan');
+        modal.style.display = 'none';
+      }, { once: true });
+    }
+
+    // ===== Admin modals =====
+    function openAddClinic() {
+      modalBody.innerHTML = `
+        <h3>Yangi klinika qo'shish</h3>
+        <input id="clinic-name" placeholder="Klinika nomi" />
+        <button id="save-clinic">Qo'shish</button>
+      `;
+      modal.style.display = 'flex';
+      document.getElementById('save-clinic').addEventListener('click', async () => {
+        const name = document.getElementById('clinic-name').value.trim();
+        if (!name) return alert('Nomi kiritilsin');
+        const cRef = await addDoc(collection(db, 'clinics'), { name, createdAt: serverTimestamp() });
+        alert('Klinika yaratildi: ' + cRef.id);
+        modal.style.display = 'none';
+        loadClinics();
+      }, { once: true });
+    }
+
+    function openAddWorker() {
+      modalBody.innerHTML = `
+        <h3>Ishchi qo'shish</h3>
+        <input id="worker-email" placeholder="Email" />
+        <input id="worker-pass" placeholder="Parol" />
+        <select id="worker-role">
+          <option value="operator">operator</option>
+          <option value="boss">boss</option>
+          <option value="admin">admin</option>
+        </select>
+        <label>Bu ishchi qaysi klinikalarga tegishli (checkbox):</label>
+        <div id="clinic-checkboxes" style="max-height:150px;overflow:auto;"></div>
+        <button id="save-worker">Saqlash</button>
+      `;
+      modal.style.display = 'flex';
+      (async () => {
+        const snap = await getDocs(collection(db, 'clinics'));
+        const wrap = document.getElementById('clinic-checkboxes');
+        snap.forEach(d => {
+          const id = d.id;
+          const label = document.createElement('label');
+          label.innerHTML = `<input type="checkbox" value="${id}"/> ${d.data().name}<br/>`;
+          wrap.appendChild(label);
+        });
+      })();
+      document.getElementById('save-worker').addEventListener('click', async () => {
+        const email = document.getElementById('worker-email').value;
+        const pass = document.getElementById('worker-pass').value;
+        const role = document.getElementById('worker-role').value;
+        const checked = Array.from(document.querySelectorAll('#clinic-checkboxes input:checked')).map(i => i.value);
+        if (!email || !pass) return alert('Email va parol kerak');
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, email, pass);
+          await setDoc(doc(db, 'users', cred.user.uid), {
+            email, role, clinicIds: checked, createdAt: serverTimestamp()
+          });
+          alert('Ishchi yaratildi.');
+          modal.style.display = 'none';
+          loadWorkers();
+        } catch (e) {
+          alert('Xato: ' + e.message);
+        }
+      }, { once: true });
+    }
+
+    function openAddFunnel() {
+      if (!currentClinicId) return alert('Avval klinikani tanlang');
+      modalBody.innerHTML = `
+        <h3>Voronka (Funnel) qo'shish — ${currentClinicId}</h3>
+        <input id="funnel-name" placeholder="Voronka nomi" />
+        <textarea id="funnel-stages" placeholder="Har bir qatorga stage nomini yozing (yangi lid, ... )" style="height:120px"></textarea>
+        <button id="save-funnel">Saqlash</button>
+      `;
+      modal.style.display = 'flex';
+      document.getElementById('save-funnel').addEventListener('click', async () => {
+        const name = document.getElementById('funnel-name').value.trim();
+        const stagesRaw = document.getElementById('funnel-stages').value.trim();
+        if (!name || !stagesRaw) return alert('Nom va stage kerak');
+        const stages = stagesRaw.split('\n').map(s => s.trim()).filter(Boolean);
+        await addDoc(collection(db, 'clinics', currentClinicId, 'funnels'), { name, stages, createdAt: serverTimestamp() });
+        alert('Voronka qo\'shildi');
+        modal.style.display = 'none';
+      }, { once: true });
+    }
+
+    // ===== Module renderers =====
+    function renderModuleBody() {
+      moduleBody.innerHTML = '';
+      if (!currentModule) return;
+      if (!currentClinicId && currentModule !== 'target') {
+        moduleBody.innerHTML = `<p>Klinika tanlanmagan. Bosh sahifadagi ro'yxatdan klinikani tanlang.</p>`;
+        return;
+      }
+      flatpickr(datePickerInput, { mode: "range", dateFormat: "Y-m-d" });
+
+      if (currentModule === 'crm_live') renderCrmLive();
+      else if (currentModule === 'sarkor') renderSarkor();
+      else if (currentModule === 'rop') renderRop();
+      else if (currentModule === 'target') renderTarget();
+      else if (currentModule === 'davomat') renderDavomat();
+      else if (currentModule === 'oylik') renderOylik();
+    }
+
+    // CRM Live
+    async function renderCrmLive() {
+      moduleBody.innerHTML = `
+        <h3>CRM Live — Voronkalar</h3>
+        <div id="funnels-list"></div>
+        <div style="margin-top:12px">
+          <h4>Yangi lead qo'shish</h4>
+          <label>Stage: <select id="lead-stage"></select></label>
+          <label>Telefon: <input id="lead-phone"/></label>
+          <label>Qisqacha: <input id="lead-note"/></label>
+          <button id="save-lead">Saqlash</button>
+        </div>
+      `;
+      await loadFunnels();
+      document.getElementById('save-lead').addEventListener('click', async () => {
+        const stage = document.getElementById('lead-stage').value;
+        const phone = document.getElementById('lead-phone').value;
+        const note = document.getElementById('lead-note').value;
+        const payload = { stage, phone, note, createdAt: serverTimestamp(), createdBy: currentUser ? currentUser.uid : null };
+        const id = `${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+        await setDoc(doc(db, 'clinics', currentClinicId, 'crm_leads', id), payload);
+        alert('Lead saqlandi');
+        loadFunnels();
+      }, { once: true });
+    }
+
+    async function loadFunnels() {
+      const wrap = document.getElementById('funnels-list');
+      wrap.innerHTML = '';
+      const snap = await getDocs(collection(db, 'clinics', currentClinicId, 'funnels'));
+      const stageSelect = document.getElementById('lead-stage');
+      if (stageSelect) stageSelect.innerHTML = '';
+      snap.forEach(d => {
+        const data = d.data();
+        const box = document.createElement('div');
+        box.className = 'funnel';
+        box.innerHTML = `<h4>${data.name}</h4><ol>${data.stages.map(s => `<li>${s}</li>`).join('')}</ol>`;
+        wrap.appendChild(box);
+        if (stageSelect) data.stages.forEach(s => {
+          const op = document.createElement('option');
+          op.value = s;
+          op.textContent = s;
+          stageSelect.appendChild(op);
+        });
+      });
+    }
+
+    // Sarkor (call tracking)
+    function renderSarkor() {
+      moduleBody.innerHTML = `
+        <h3>Sarkor — Call tracking</h3>
+        <p>Kerakli kunni tanlang va ishchi ustiga bosib qo'ng'iroqlarni kiritadi.</p>
+        <button id="open-call-form">Qo'ng'iroq kiritish</button>
+      `;
+      document.getElementById('open-call-form').addEventListener('click', () => {
+        modalBody.innerHTML = `
+          <h3>Qo'ng'iroq kiriting</h3>
+          <input id="call-date" placeholder="Sana" readonly />
+          <select id="call-worker"></select>
+          <label>Urinishlar: <input id="call-attempts" type="number" value="1"></label>
+          <label>Ulandi (ha/yo'q): <select id="call-connected"><option value="0">Yo'q</option><option value="1">Ha</option></select></label>
+          <label>Daqiqa: <input id="call-min" type="number" value="0"></label>
+          <button id="save-call">Saqlash</button>
+        `;
+        modal.style.display = 'flex';
+        flatpickr("#call-date", {dateFormat: "Y-m-d"});
+        (async () => {
+          const snap = await getDocs(collection(db, 'users'));
+          const sel = document.getElementById('call-worker');
+          sel.innerHTML = '';
+          snap.forEach(d => {
+            const u = d.data();
+            const opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = u.email || u.name || d.id;
+            sel.appendChild(opt);
+          });
+        })();
+        document.getElementById('save-call').addEventListener('click', async () => {
+          const date = document.getElementById('call-date').value;
+          const worker = document.getElementById('call-worker').value;
+          if (!date || !worker || !currentClinicId) return alert('Sana, ishchi va klinika kerak');
+          const p = {
+            date, worker,
+            attempts: Number(document.getElementById('call-attempts').value),
+            connected: Number(document.getElementById('call-connected').value),
+            minutes: Number(document.getElementById('call-min').value),
+            createdAt: serverTimestamp()
+          };
+          await addDoc(collection(db, 'clinics', currentClinicId, 'calls'), p);
+          alert('Call saved');
+          modal.style.display = 'none';
+        }, { once: true });
+      });
+    }
+
+    // ROP
+    function renderRop() {
+      moduleBody.innerHTML = `
+        <h3>ROP hisobot (kunlik)</h3>
+        <label>Sana: <input id="rop-date" readonly/></label>
+        <label>Jami obrobotka lid: <input id="rop-total" type="number" value="0"/></label>
+        <label>Aktiv lid: <input id="rop-active" type="number" value="0"/></label>
+        <label>Nedozvon: <input id="rop-nedozvon" type="number" value="0"/></label>
+        <label>Zakaz soni: <input id="rop-orders" type="number" value="0"/></label>
+        <button id="save-rop">Saqlash</button>
+      `;
+      flatpickr("#rop-date", {dateFormat: "Y-m-d"});
+      document.getElementById('save-rop').addEventListener('click', async () => {
+        const date = document.getElementById('rop-date').value;
+        if (!date || !currentClinicId) return alert('Sana va klinika kerak');
+        const payload = {
+          date,
+          total_processed: Number(document.getElementById('rop-total').value),
+          active_leads: Number(document.getElementById('rop-active').value),
+          nedozvon: Number(document.getElementById('rop-nedozvon').value),
+          orders: Number(document.getElementById('rop-orders').value),
+          createdBy: currentUser ? currentUser.uid : null,
+          createdAt: serverTimestamp()
+        };
+        await setDoc(doc(db, 'clinics', currentClinicId, 'reports', `rop_${date}`), payload);
+        alert('ROP saqlandi');
+      }, { once: true });
+    }
+
+    // Target
+    function renderTarget() {
+      moduleBody.innerHTML = `
+        <h3>Target</h3>
+        <p>Bu modulda filial filtri ko'rsatiladi.</p>
+        <label>Sana: <input id="target-date" readonly /></label>
+        <label>Jami lid: <input id="target-total" type="number" value="0"/></label>
+        <label>CPL (lid narxi): <input id="target-cpl" type="number" value="0"/></label>
+        <label>Sog'lom lid narxi: <input id="target-good" type="number" value="0"/></label>
+        <button id="save-target">Saqlash</button>
+      `;
+      flatpickr("#target-date", {dateFormat: "Y-m-d"});
+      document.getElementById('save-target').addEventListener('click', async () => {
+        const date = document.getElementById('target-date').value;
+        const branch = branchSelect.value || 'all';
+        if (!date || !currentClinicId) return alert('Sana va klinika kerak');
+        const payload = {
+          date, branch,
+          total_leads: Number(document.getElementById('target-total').value),
+          cpl: Number(document.getElementById('target-cpl').value),
+          healthy_cpl: Number(document.getElementById('target-good').value),
+          createdAt: serverTimestamp()
+        };
+        await setDoc(doc(db, 'clinics', currentClinicId, 'reports', `target_${branch}_${date}`), payload);
+        alert('Target saqlandi');
+      }, { once: true });
+    }
+
+    // Davomat
+    function renderDavomat() {
+      moduleBody.innerHTML = `
+        <h3>Davomat (Keldi / Ketdi)</h3>
+        <label>Sana: <input id="dav-date" readonly/></label>
+        <label>Ishchi: <select id="dav-worker"></select></label>
+        <label>Keldi vaqti: <input id="dav-in" type="time" /></label>
+        <label>Ketdi vaqti: <input id="dav-out" type="time" /></label>
+        <button id="save-dav">Saqlash</button>
+      `;
+      flatpickr("#dav-date", {dateFormat: "Y-m-d"});
+      (async () => {
+        const snaps = await getDocs(collection(db, 'users'));
+        const sel = document.getElementById('dav-worker');
+        sel.innerHTML = '';
+        snaps.forEach(d => {
+          const op = document.createElement('option');
+          op.value = d.id;
+          op.textContent = d.data().email || d.data().name || d.id;
+          sel.appendChild(op);
+        });
+      })();
+      document.getElementById('save-dav').addEventListener('click', async () => {
+        const date = document.getElementById('dav-date').value;
+        const worker = document.getElementById('dav-worker').value;
+        if (!date || !worker || !currentClinicId) return alert('Sana, ishchi va klinika kerak');
+        const payload = {
+          date, worker,
+          inAt: document.getElementById('dav-in').value,
+          outAt: document.getElementById('dav-out').value,
+          createdAt: serverTimestamp()
+        };
+        await addDoc(collection(db, 'clinics', currentClinicId, 'attendance'), payload);
+        alert('Davomat saqlandi');
+      }, { once: true });
+    }
+
+    // Oylik
+    function renderOylik() {
+      moduleBody.innerHTML = `
+        <h3>Oylik — Ishchiga oylik kiriting</h3>
+        <label>Ishchi: <select id="salary-worker"></select></label>
+        <label>Oy: <input id="salary-month" type="month" /></label>
+        <label>Summa: <input id="salary-amount" type="number" /></label>
+        <button id="save-salary">Saqlash</button>
+      `;
+      (async () => {
+        const snaps = await getDocs(collection(db, 'users'));
+        const sel = document.getElementById('salary-worker');
+        sel.innerHTML = '';
+        snaps.forEach(d => {
+          const op = document.createElement('option');
+          op.value = d.id;
+          op.textContent = d.data().email || d.data().name || d.id;
+          sel.appendChild(op);
+        });
+      })();
+      document.getElementById('save-salary').addEventListener('click', async () => {
+        const worker = document.getElementById('salary-worker').value;
+        const month = document.getElementById('salary-month').value;
+        const amount = Number(document.getElementById('salary-amount').value);
+        if (!worker || !month) return alert('Ishchi va oy kerak');
+        await setDoc(doc(db, 'salaries', `${worker}_${month}`), { worker, month, amount, createdAt: serverTimestamp() });
+        alert('Oylik saqlandi');
+      }, { once: true });
+    }
+
+    // Initial tiny guidance logged to console
+    console.log('SMS MED single-file MVP loaded. Replace firebaseConfig with your config, enable Auth & Firestore in the console.');
+  </script>
+</body>
+</html>
